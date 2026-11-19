@@ -311,3 +311,9 @@ sketch
 !/data/**/
 !/data/**/.gitkeep
 !/data/**/README.md
+
+# 원천 데이터는 data/source/ 에 둔다. pipeline/source/ 에 데이터가 잘못 들어와도 커밋되지 않도록
+# 수집 코드(*.py)와 폴더 구조(.gitkeep)만 추적
+/pipeline/source/*
+!/pipeline/source/*.py
+!/pipeline/source/.gitkeep

@@ -1,6 +1,6 @@
 # 데이터 수집 설명서 (data_collecting.md)
 
-동네 생활 인프라 프로젝트의 원천 데이터를 **어디서, 어떤 방법으로, 어떤 형태로** 가져오는지 정리한 문서입니다.
+이 프로젝트(서울 · 법정동 아파트 매매가 예측, `INTENT.md` 참고)의 원천 데이터를 **어디서, 어떤 방법으로, 어떤 형태로** 가져오는지 정리한 문서입니다.
 수집 결과는 모두 `data/source/` 폴더에 원본 그대로 저장되며, 이후 단계는 이 폴더를 읽기만 합니다.
 수집 코드는 `pipeline/source/00_collect.py`, 출처 정의는 `metadata/src_source.csv`, 실거래 수집 계획은 `metadata/src_collect_plan.csv` 에 있습니다. 명령은 모두 프로젝트 루트(`mlo-03-p2-team1/`)에서 실행합니다.
 
@@ -209,7 +209,7 @@ python pipeline/source/00_collect.py seoul --force                  # 이번 달
 ```powershell
 (Get-Command python).Source               # 예약에 쓸 python.exe 경로 확인 (.venv 를 쓰면 .venv\Scripts\python.exe)
 python pipeline/source/00_collect.py seoul --plan         # 인증키·네트워크 확인 (1건 조회만, 저장 안 함)
-New-Item -ItemType Directory -Force logs  # 실행 기록 폴더 (Source 밖)
+New-Item -ItemType Directory -Force logs  # 실행 기록 폴더 (data/source 밖)
 ```
 
 **2) 등록** — 경로 두 개(`$py`, `$proj`)를 1)에서 확인한 값으로 바꾼 뒤 실행합니다.
@@ -272,7 +272,7 @@ schtasks /Create /TN "mlo-team1 seoul snapshot" /SC MONTHLY /D 1 /ST 09:00 `
 | ldong_code | code.go.kr → 법정동코드 목록조회 → **법정동코드 전체자료** 다운로드 | `*법정동*` | `data/source/files/ldong_code/` |
 | food_general_file | 출처 페이지(OA-16094) → **CSV 내려받기**. 받은 파일이 **42개 컬럼**(마지막이 `X좌표`·`Y좌표`·`법정동코드`)인지 확인. 이름 끝에 받은 날짜를 붙임 (예: `서울시 일반음식점 인허가 정보_20261201.csv`) | `*일반음식점*인허가*.csv` | `data/source/files/food_general_file/` |
 
-받은 다음 아래 명령으로 Downloads 의 파일을 Source 로 **복사**합니다 (Downloads 원본은 그대로 남음).
+받은 다음 아래 명령으로 Downloads 의 파일을 `data/source/files/` 로 **복사**합니다 (Downloads 원본은 그대로 남음).
 
 ```bash
 python pipeline/source/00_collect.py import                     # 기본: 사용자 Downloads 폴더
@@ -300,7 +300,7 @@ python pipeline/source/00_collect.py inventory
 
 ## 6. 원천 보존 원칙
 
-1. Source 의 원천 파일은 수정·이동·덮어쓰기·압축 해제를 하지 않는다.
+1. `data/source/` 의 원천 파일은 수정·이동·덮어쓰기·압축 해제를 하지 않는다.
 2. 모든 원천 파일은 저장 직후 읽기 전용 속성이 된다.
 3. 01 단계(`pipeline/bronze/01_bronze.py`)는 원천을 읽기 모드로만 열고, 실행 전후 SHA-256 을 비교해 하나라도 바뀌면 실패한다.
 4. 출력은 원천 폴더 밖(`data/bronze/`)에만 쓴다.
