@@ -1,6 +1,6 @@
 # 기술 스택 및 인프라 명세 (SPEC.md)
 
-> 본 문서는 **mlo-03-p2-team1** 프로젝트의 **기술 스택(Tech Stack)** 과 **인프라(Infrastructure) 환경**을 정의합니다. 도메인 데이터 상세 설계 및 테이블 스키마는 팀 의사결정 확정 후 후속 섹션으로 추가합니다.
+> 본 문서는 **mlo-03-p2-team1** 프로젝트의 **기술 스택(Tech Stack)** 과 **인프라(Infrastructure) 환경**을 정의합니다.
 
 ---
 
@@ -10,21 +10,21 @@
 
 ```mermaid
 flowchart LR
-    subgraph Local["로컬 / 온프레미스 실행 환경"]
-        P["Data Pipeline & ML\n(Python · NumPy · Pandas)"]
-        FS[("Local Storage\ndata/ (Parquet · CSV · XML)")]
-        B["Backend API\n(FastAPI · Uvicorn · psycopg3)"]
-        F["Frontend Display\n(React 18 · TypeScript · Vite · Three.js)"]
+    subgraph Local["로컬 및 온프레미스 실행 환경"]
+        P["Data Pipeline & ML - Python, NumPy, Pandas"]
+        FS["Local Storage - data/ Parquet, CSV, XML"]
+        B["Backend API - FastAPI, Uvicorn, psycopg3"]
+        F["Frontend Display - React 18, TypeScript, Vite, Three.js"]
     end
 
-    subgraph Infra["공용 DB 인프라 (192.168.0.2)"]
-        DB[("PostgreSQL Server\n(192.168.0.2:5432)")]
+    subgraph Infra["공용 DB 인프라 - 192.168.0.2"]
+        DB["PostgreSQL Server - 192.168.0.2:5432"]
     end
 
-    P <--> FS
-    P -->|정제 데이터 · 스타 스키마 · 예측 결과 적재| DB
-    DB -->|SQL 조회 (psycopg3)| B
-    B -->|REST API (/api/*)| F
+    P -->|"Parquet · CSV 읽기 및 쓰기"| FS
+    P -->|"정제 데이터 · 스타 스키마 · 예측 결과 적재"| DB
+    DB -->|"SQL 조회 - psycopg3"| B
+    B -->|"REST API - /api/*"| F
 ```
 
 ---
@@ -155,11 +155,3 @@ npm run dev
 # 프로덕션 타입 체크 및 번들 빌드
 npm run build
 ```
-
----
-
-## 6. 추후 확정 예정 항목 (TBD)
-
-- [ ] `data/` 내 수집·브론즈 스크립트(`00_collect.py`, `01_bronze.py`)와 `pipeline/` · `metadata/` 구조 통합 상세 규격
-- [ ] PostgreSQL 내 스키마(`silver`, `gold`, `ai_ready`) 및 Gold 스타 스키마 DDL 확정
-- [ ] Watch 폴더 자동 피딩 트리거 및 모델(결정 모델 / 협업 모델) 학습·추론 파이프라인 인터페이스 명세
