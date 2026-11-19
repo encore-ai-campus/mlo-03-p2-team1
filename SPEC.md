@@ -10,21 +10,21 @@
 
 ```mermaid
 flowchart LR
-    subgraph Local["로컬 / 온프레미스 실행 환경"]
-        P["Data Pipeline & ML\n(Python · NumPy · Pandas)"]
-        FS[("Local Storage\ndata/ (Parquet · CSV · XML)")]
-        B["Backend API\n(FastAPI · Uvicorn · psycopg3)"]
-        F["Frontend Display\n(React 18 · TypeScript · Vite · Three.js)"]
+    subgraph Local["로컬 및 온프레미스 실행 환경"]
+        P["Data Pipeline & ML - Python, NumPy, Pandas"]
+        FS["Local Storage - data/ Parquet, CSV, XML"]
+        B["Backend API - FastAPI, Uvicorn, psycopg3"]
+        F["Frontend Display - React 18, TypeScript, Vite, Three.js"]
     end
 
-    subgraph Infra["공용 DB 인프라 (192.168.0.2)"]
-        DB[("PostgreSQL Server\n(192.168.0.2:5432)")]
+    subgraph Infra["공용 DB 인프라 - 192.168.0.2"]
+        DB["PostgreSQL Server - 192.168.0.2:5432"]
     end
 
-    P <--> FS
-    P -->|정제 데이터 · 스타 스키마 · 예측 결과 적재| DB
-    DB -->|SQL 조회 (psycopg3)| B
-    B -->|REST API (/api/*)| F
+    P -->|"Parquet · CSV 읽기 및 쓰기"| FS
+    P -->|"정제 데이터 · 스타 스키마 · 예측 결과 적재"| DB
+    DB -->|"SQL 조회 - psycopg3"| B
+    B -->|"REST API - /api/*"| F
 ```
 
 ---
