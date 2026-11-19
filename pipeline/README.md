@@ -5,6 +5,7 @@
 | 폴더 | 역할 |
 |---|---|
 | `common/` | 여러 단계에서 같이 쓰는 코드 (경로, 입출력, DB 연결, 로그) |
+| `source/` | 외부(API, 내려받은 파일) → `data/source` (`metadata/src_*.csv`의 출처·수집 계획 사용) |
 | `bronze/` | `data/source` → `data/bronze` |
 | `silver/` | `data/bronze` → `data/silver` (`metadata/`의 표준·변환 규칙 사용) |
 | `gold/` | `data/silver` → `data/gold` |
