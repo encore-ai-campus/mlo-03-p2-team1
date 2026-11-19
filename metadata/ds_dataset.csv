@@ -1,0 +1,12 @@
+﻿dataset,title,kind,source,zip_member,encoding,encoding_errors,sep,item_path,output,done_marker,enabled,description
+store_info,소상공인시장진흥공단_상가(상권)정보,csv,files/store_info/*.zip,*.csv,auto,strict,",",,per_file,,Y,zip 안 시도별 CSV 16개
+hira_inst,건강보험심사평가원_전국 병의원 및 약국 현황,csv,files/hira_inst/*.zip,*.csv,auto,strict,",",,per_file,,Y,zip 안 CSV 12개 (파일마다 컬럼 구성이 다름)
+ldong_code,행정표준코드관리시스템_법정동코드 전체자료,csv,files/ldong_code/*,*.txt,auto,strict,	,,per_file,,Y,탭 구분 텍스트
+apt_trade,국토교통부_아파트 매매 실거래가 상세 자료,xml,api/apt_trade/**/*.xml,,,,,.//items/item,combined,,Y,API 응답 페이지 파일 전체 → parquet 1개
+apt_rent,국토교통부_아파트 전월세 실거래가 자료,xml,api/apt_rent/**/*.xml,,,,,.//items/item,combined,,Y,API 응답 페이지 파일 전체 → parquet 1개
+food_general,서울시 일반음식점 인허가 정보,xml,api/food_general/**/*.xml,,,,,./row,per_dir,_done_snapshot,Y,수집일 스냅샷 폴더 1개 → parquet 1개
+food_general_file,"서울시 일반음식점 인허가 정보 (CSV, 42개 컬럼)",csv,files/food_general_file/*.csv,,cp949,replace,",",,per_file,,Y,원천에 깨진 바이트 4건 → U+FFFD 로 두고 읽음
+food_rest,서울시 휴게음식점 인허가 정보,xml,api/food_rest/**/*.xml,,,,,./row,per_dir,_done_snapshot,Y,수집일 스냅샷 폴더 1개 → parquet 1개
+clinic,서울시 의원 인허가 정보,xml,api/clinic/**/*.xml,,,,,./row,per_dir,_done_snapshot,Y,수집일 스냅샷 폴더 1개 → parquet 1개
+pharmacy,서울시 약국 인허가 정보,xml,api/pharmacy/**/*.xml,,,,,./row,per_dir,_done_snapshot,Y,수집일 스냅샷 폴더 1개 → parquet 1개
+beauty,서울시 미용업 인허가 정보,xml,api/beauty/**/*.xml,,,,,./row,per_dir,_done_snapshot,Y,수집일 스냅샷 폴더 1개 → parquet 1개
