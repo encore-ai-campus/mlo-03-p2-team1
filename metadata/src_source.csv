@@ -1,0 +1,12 @@
+﻿dataset,title,page,method,endpoint,service,download_pattern
+apt_trade,국토교통부_아파트 매매 실거래가 상세 자료,https://www.data.go.kr/data/15126468/openapi.do,data_go_kr,https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev,,
+apt_rent,국토교통부_아파트 전월세 실거래가 자료,https://www.data.go.kr/data/15126474/openapi.do,data_go_kr,https://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent,,
+food_general,서울시 일반음식점 인허가 정보,https://data.seoul.go.kr/dataList/OA-23056/S/1/datasetView.do,seoul_api,,LOCALDATA_072404,
+food_rest,서울시 휴게음식점 인허가 정보,https://data.seoul.go.kr/dataList/OA-16095/S/1/datasetView.do,seoul_api,,LOCALDATA_072405,
+clinic,서울시 의원 인허가 정보,https://data.seoul.go.kr/dataList/OA-16480/S/1/datasetView.do,seoul_api,,LOCALDATA_010102,
+pharmacy,서울시 약국 인허가 정보,https://data.seoul.go.kr/dataList/OA-16484/S/1/datasetView.do,seoul_api,,LOCALDATA_010106,
+beauty,서울시 미용업 인허가 정보,https://data.seoul.go.kr/dataList/OA-16063/S/1/datasetView.do,seoul_api,,LOCALDATA_051801,
+store_info,소상공인시장진흥공단_상가(상권)정보,https://www.data.go.kr/data/15083033/fileData.do,file,,,*상가*상권*정보*.zip
+hira_inst,건강보험심사평가원_전국 병의원 및 약국 현황,https://www.data.go.kr/data/15051059/fileData.do,file,,,*병의원*약국*
+ldong_code,행정표준코드관리시스템_법정동코드 전체자료,https://www.code.go.kr,file,,,*법정동*
+food_general_file,"서울시 일반음식점 인허가 정보 (CSV, 42개 컬럼)",https://data.seoul.go.kr/dataList/OA-16094/S/1/datasetView.do,file,,,*일반음식점*인허가*.csv
