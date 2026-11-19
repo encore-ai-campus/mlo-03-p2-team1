@@ -1,0 +1,16 @@
+﻿param,dataset,value,unit,description
+REPL_WINDOW_DAYS,*,7,일,F1·F2 재등록·교체: B 인허가일이 A 분석용 폐업일 ±N일
+COLLECT_DT,food_general,2026-11-18,DATE,수집일. 미래 날짜 판정 기준 (C5)
+COLLECT_DT,food_rest,2026-11-18,DATE,수집일
+COLLECT_DT,clinic,2026-11-19,DATE,수집일
+COLLECT_DT,pharmacy,2026-11-19,DATE,수집일
+COLLECT_DT,beauty,2026-11-19,DATE,수집일
+ANLS_BGN_DT,*,2017-01-01,DATE,분석 시작 (2017Q1)
+ANLS_END_DT,*,2026-09-30,DATE,"분석 종료 (2026Q3, 실거래가 마지막 월). 모든 COLLECT_DT 보다 앞이어야 함"
+ABNRM_LCNS_BEFORE_DT,*,1950-01-01,DATE,이 날짜 이전 인허가일 → ABNRM_LCNS_DTM_YN (C5)
+SEOUL_SGG_PREFIX,apt_trade;apt_rent,11,,골드 서울 필터: SGG_CD 앞 2자리 (A3). 03은 쓰지 않음
+SEOUL_TM_X_MIN,*,179000,m,"서울 TM X 범위 (C6 OUT_SEOUL_COORD). 02 실측 서울 주소 업소 180,451~216,077"
+SEOUL_TM_X_MAX,*,219000,m,
+SEOUL_TM_Y_MIN,*,435000,m,"02 실측 436,477~465,536"
+SEOUL_TM_Y_MAX,*,467000,m,
+STORE_INFO_SNAPSHOT,store_info,2026-09,YYYY-MM,카페 규칙 C 상가정보 대조 기준 (E1). 현재 영업 중 업소만 대조
