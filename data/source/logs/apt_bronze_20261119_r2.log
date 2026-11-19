@@ -1,0 +1,6 @@
+[01] apt_trade | 원천 11974개 → 01_bronze__apt_trade.parquet: 원천 2,633,635 / bronze 2,633,635 (OK, unchanged)
+[01] apt_rent | 원천 12289개 → 01_bronze__apt_rent.parquet: 원천 6,050,483 / bronze 6,050,483 (OK, unchanged)
+[01_bronze__manifest.csv] 기존 31행 유지 (store_info, hira_inst, ldong_code, food_general, food_rest) + 이번 실행 2행
+
+[01] 완료 조건: 통과 | 행 수 일치 2/2 | 원천 불변 예 | 재실행 동일 2/2
+[01] 결과: bronze/README.md, bronze/01_bronze__manifest.csv
