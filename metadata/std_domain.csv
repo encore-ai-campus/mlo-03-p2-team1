@@ -1,0 +1,18 @@
+﻿rule,result_type,description,fail_when
+TRIM,STRING,"앞뒤 공백 제거, 빈 값 → NULL",없음
+TEXT,STRING,TRIM + 연속 공백을 1칸으로,없음
+NAME,STRING,"TEXT + 전각 영문·숫자·기호를 반각으로 (１４ → 14, （ → ()",없음
+CODE,STRING,TRIM + 영문 대문자. CODE(n) 은 숫자 코드가 n자리보다 짧으면 앞을 0 으로 채움,없음
+CONCAT,STRING,여러 원천 값을 이어 붙임 (a+b),일부만 비어 있음
+TEL,STRING,"숫자만 남긴 뒤 하이픈 표준형 (02-123-4567, 031-123-4567, 1588-1234)",없음 (자릿수가 이상하면 숫자만 남김)
+INT,INT64,쉼표·공백 제거 후 정수 (0004 → 4),정수가 아님
+MANWON,INT64,"INT + 만원 → 원 (× 10,000)",정수가 아님
+FLOOR,INT64,"층 표기 → 정수 (12 → 12, B1 → -1)","지, 반지층 처럼 숫자가 아님"
+FLOAT,FLOAT64,"FLOAT(n): 쉼표 제거 후 실수, 소수 n자리 반올림",숫자가 아님
+DATE,DATE,"DATE(형식): 날짜로 (형식은 Python strptime, 예 %Y-%m-%d)","형식이 다름, 없는 날짜"
+DATETIME,DATETIME,DATETIME(형식): 날짜 + 시각으로,형식이 다름
+YMD,DATE,년+월+일 세 컬럼을 하나의 날짜로,"없는 날짜, 일부만 비어 있음"
+TERM_BGN,DATE,TERM_BGN(형식): 기간 A~B 의 시작 A → 그 달 1일,형식이 다름 (~26.05 처럼 시작이 없음)
+TERM_END,DATE,TERM_END(형식): 기간 A~B 의 끝 B → 그 달 1일,형식이 다름
+HHMM,TIME,"900 → 09:00, 1830 → 18:30. 0 은 진료 없음 → NULL, 2400 → 23:59:59",시·분 범위 밖 (2410 등)
+YN,BOOL,"YN(참;거짓): 참 목록 → True, 거짓 목록 → False. BLANK 는 빈 값, 목록은 쉼표로 여러 개",목록에 없는 값

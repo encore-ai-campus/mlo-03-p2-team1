@@ -1,0 +1,420 @@
+﻿dataset,file_glob,source_column,standard_column,korean_name,type,rule,description
+*,*,_source_file,SRC_FILE_NM,원천 파일 경로,STRING,TRIM,bronze 추적 컬럼
+*,*,_source_row,SRC_ROW_NUM,원천 행 번호,INT64,INT,bronze 추적 컬럼 (1부터)
+apt_trade,*,aptNm,APT_NM,단지명,STRING,NAME,
+apt_trade,*,aptSeq,APT_KEY,단지 일련번호,STRING,TRIM,시군구코드-번호
+apt_trade,*,buildYear,BUILD_YEAR_NUM,건축년도,INT64,INT,
+apt_trade,*,dealYear+dealMonth+dealDay,DEAL_DTM,계약일,DATE,YMD,년·월·일 세 컬럼을 하나로
+apt_trade,*,excluUseAr,EXCL_AREA_NUM,전용면적(㎡),FLOAT64,FLOAT(4),
+apt_trade,*,floor,FLR_NUM,층,INT64,INT,지하는 음수
+apt_trade,*,jibun,JIBUN_TXT,지번,STRING,TRIM,본번-부번 원문
+apt_trade,*,sggCd,SGG_CD,시군구코드,STRING,CODE,법정동코드 앞 5자리
+apt_trade,*,umdNm,UMD_NM,법정동명,STRING,NAME,
+apt_trade,*,aptDong,APT_DONG_TXT,동,STRING,TRIM,
+apt_trade,*,bonbun,JIBUN_MAIN_NUM,지번 본번,INT64,INT,
+apt_trade,*,bubun,JIBUN_SUB_NUM,지번 부번,INT64,INT,
+apt_trade,*,buyerGbn,BUYER_SE_NM,매수자 구분,STRING,NAME,
+apt_trade,*,cdealDay,CNCL_DTM,해제사유 발생일,DATE,DATE(%y.%m.%d),yy.mm.dd
+apt_trade,*,cdealType,CNCL_YN,계약 해제 여부,BOOL,YN(O;BLANK),"O → True, 빈 값 → False"
+apt_trade,*,dealAmount,DEAL_AMT_NUM,거래금액(원),INT64,MANWON,원천 단위 만원
+apt_trade,*,dealingGbn,DEAL_SE_NM,거래 유형,STRING,NAME,중개거래 / 직거래
+apt_trade,*,estateAgentSggNm,AGENT_SGG_NM,중개사 소재지,STRING,TEXT,
+apt_trade,*,landCd,LAND_SE_CD,토지 구분코드,STRING,CODE,
+apt_trade,*,landLeaseholdGbn,LAND_LEASE_YN,토지임대부 여부,BOOL,YN(Y;N),
+apt_trade,*,rgstDate,RGST_DTM,등기일자,DATE,DATE(%y.%m.%d),yy.mm.dd
+apt_trade,*,roadNm,ROAD_NM,도로명,STRING,TEXT,
+apt_trade,*,roadNmBonbun,ROAD_BLDG_MAIN_NUM,도로명 건물 본번,INT64,INT,
+apt_trade,*,roadNmBubun,ROAD_BLDG_SUB_NUM,도로명 건물 부번,INT64,INT,
+apt_trade,*,roadNmCd,ROAD_NM_CD,도로명코드,STRING,CODE,
+apt_trade,*,roadNmSeq,ROAD_NM_SEQ_CD,도로명 일련번호,STRING,CODE,
+apt_trade,*,roadNmSggCd,ROAD_NM_SGG_CD,도로명 시군구코드,STRING,CODE,
+apt_trade,*,roadNmbCd,ROAD_GRND_SE_CD,도로명 지상지하 구분코드,STRING,CODE,
+apt_trade,*,slerGbn,SELLER_SE_NM,매도자 구분,STRING,NAME,
+apt_trade,*,umdCd,UMD_CD,읍면동코드,STRING,CODE,법정동코드 뒤 5자리
+apt_trade,*,sggCd+umdCd,LDONG_CD,법정동코드,STRING,CONCAT,시군구코드 + 읍면동코드 = 10자리
+apt_rent,*,aptNm,APT_NM,단지명,STRING,NAME,
+apt_rent,*,aptSeq,APT_KEY,단지 일련번호,STRING,TRIM,시군구코드-번호
+apt_rent,*,buildYear,BUILD_YEAR_NUM,건축년도,INT64,INT,
+apt_rent,*,dealYear+dealMonth+dealDay,DEAL_DTM,계약일,DATE,YMD,년·월·일 세 컬럼을 하나로
+apt_rent,*,excluUseAr,EXCL_AREA_NUM,전용면적(㎡),FLOAT64,FLOAT(4),
+apt_rent,*,floor,FLR_NUM,층,INT64,INT,지하는 음수
+apt_rent,*,jibun,JIBUN_TXT,지번,STRING,TRIM,본번-부번 원문
+apt_rent,*,sggCd,SGG_CD,시군구코드,STRING,CODE,법정동코드 앞 5자리
+apt_rent,*,umdNm,UMD_NM,법정동명,STRING,NAME,
+apt_rent,*,contractTerm,CNTRCT_TERM_TXT,계약기간(원문),STRING,TRIM,25.02~27.02 형식
+apt_rent,*,contractTerm,CNTRCT_BGN_DTM,계약 시작월,DATE,TERM_BGN(%y.%m),그 달 1일
+apt_rent,*,contractTerm,CNTRCT_END_DTM,계약 종료월,DATE,TERM_END(%y.%m),그 달 1일
+apt_rent,*,contractType,CNTRCT_SE_NM,계약 구분,STRING,NAME,신규 / 갱신
+apt_rent,*,deposit,DPST_AMT_NUM,보증금(원),INT64,MANWON,원천 단위 만원
+apt_rent,*,monthlyRent,MTHLY_RENT_AMT_NUM,월세(원),INT64,MANWON,원천 단위 만원. 0 = 전세
+apt_rent,*,preDeposit,PRE_DPST_AMT_NUM,종전 보증금(원),INT64,MANWON,
+apt_rent,*,preMonthlyRent,PRE_MTHLY_RENT_AMT_NUM,종전 월세(원),INT64,MANWON,
+apt_rent,*,roadnm,ROAD_NM_TXT,도로명+건물번호(원문),STRING,TEXT,매매의 ROAD_NM 과 달리 번호가 붙어 있음
+apt_rent,*,roadnmbcd,ROAD_GRND_SE_CD,도로명 지상지하 구분코드,STRING,CODE,
+apt_rent,*,roadnmbonbun,ROAD_BLDG_MAIN_NUM,도로명 건물 본번,INT64,INT,
+apt_rent,*,roadnmbubun,ROAD_BLDG_SUB_NUM,도로명 건물 부번,INT64,INT,
+apt_rent,*,roadnmcd,ROAD_NM_CD,도로명코드,STRING,CODE,
+apt_rent,*,roadnmseq,ROAD_NM_SEQ_CD,도로명 일련번호,STRING,CODE,
+apt_rent,*,roadnmsggcd,ROAD_NM_SGG_CD,도로명 시군구코드,STRING,CODE,
+apt_rent,*,useRRRight,RNW_RQST_USE_YN,계약갱신요구권 사용 여부,BOOL,YN(사용;),"사용 → True, 빈 값 → NULL"
+ldong_code,*,법정동코드,LDONG_CD,법정동코드,STRING,CODE,10자리
+ldong_code,*,법정동명,LDONG_NM,법정동명,STRING,TEXT,시도 시군구 읍면동 리
+ldong_code,*,폐지여부,ABL_YN,폐지 여부,BOOL,YN(폐지;존재),"폐지 → True, 존재 → False"
+store_info,*,상가업소번호,STORE_KEY,상가업소번호,STRING,TRIM,
+store_info,*,상호명,STORE_NM,상호명,STRING,NAME,
+store_info,*,지점명,BRNCH_NM,지점명,STRING,NAME,
+store_info,*,상권업종대분류코드,INDUTY_LCLS_CD,상권업종 대분류코드,STRING,CODE,
+store_info,*,상권업종대분류명,INDUTY_LCLS_NM,상권업종 대분류명,STRING,NAME,
+store_info,*,상권업종중분류코드,INDUTY_MCLS_CD,상권업종 중분류코드,STRING,CODE,
+store_info,*,상권업종중분류명,INDUTY_MCLS_NM,상권업종 중분류명,STRING,NAME,
+store_info,*,상권업종소분류코드,INDUTY_SCLS_CD,상권업종 소분류코드,STRING,CODE,
+store_info,*,상권업종소분류명,INDUTY_SCLS_NM,상권업종 소분류명,STRING,NAME,
+store_info,*,표준산업분류코드,KSIC_CD,표준산업분류코드,STRING,CODE,
+store_info,*,표준산업분류명,KSIC_NM,표준산업분류명,STRING,NAME,
+store_info,*,시도코드,SIDO_CD,시도코드,STRING,CODE,법정동코드 앞 2자리
+store_info,*,시도명,SIDO_NM,시도명,STRING,NAME,
+store_info,*,시군구코드,SGG_CD,시군구코드,STRING,CODE,법정동코드 앞 5자리
+store_info,*,시군구명,SGG_NM,시군구명,STRING,NAME,
+store_info,*,행정동코드,ADONG_CD,행정동코드,STRING,CODE,8자리
+store_info,*,행정동명,ADONG_NM,행정동명,STRING,NAME,
+store_info,*,법정동코드,LDONG_CD,법정동코드,STRING,CODE,10자리
+store_info,*,법정동명,LDONG_NM,법정동명,STRING,NAME,
+store_info,*,지번코드,PNU_CD,지번코드(필지고유번호),STRING,CODE,19자리
+store_info,*,대지구분코드,LAND_SE_CD,대지구분코드,STRING,CODE,"1 대지, 2 산"
+store_info,*,대지구분명,LAND_SE_NM,대지구분명,STRING,NAME,
+store_info,*,지번본번지,JIBUN_MAIN_NUM,지번 본번,INT64,INT,
+store_info,*,지번부번지,JIBUN_SUB_NUM,지번 부번,INT64,INT,
+store_info,*,지번주소,JIBUN_ADDR,지번주소,STRING,TEXT,
+store_info,*,도로명코드,ROAD_NM_CD,도로명코드,STRING,CODE,12자리
+store_info,*,도로명,ROAD_NM,도로명,STRING,TEXT,
+store_info,*,건물본번지,ROAD_BLDG_MAIN_NUM,건물 본번,INT64,INT,
+store_info,*,건물부번지,ROAD_BLDG_SUB_NUM,건물 부번,INT64,INT,
+store_info,*,건물관리번호,BLDG_KEY,건물관리번호,STRING,TRIM,25자리
+store_info,*,건물명,BLDG_NM,건물명,STRING,NAME,
+store_info,*,도로명주소,ROAD_ADDR,도로명주소,STRING,TEXT,
+store_info,*,구우편번호,OLD_ZIP_CD,구우편번호,STRING,CODE(6),
+store_info,*,신우편번호,ZIP_CD,우편번호,STRING,CODE(5),
+store_info,*,동정보,BLDG_DONG_TXT,동 정보,STRING,TRIM,
+store_info,*,층정보,FLR_INFO_TXT,층 정보(원문),STRING,TRIM,"지, B1 등 원문 보존"
+store_info,*,층정보,FLR_NUM,층,INT64,FLOOR,B1 → -1. 숫자로 못 바꾸면 결측 + 실패 기록
+store_info,*,호정보,HO_TXT,호 정보,STRING,TRIM,
+store_info,*,경도,LON_NUM,경도,FLOAT64,FLOAT(7),WGS84
+store_info,*,위도,LAT_NUM,위도,FLOAT64,FLOAT(7),WGS84
+hira_inst,*,암호화요양기호,MED_INST_KEY,암호화 요양기호,STRING,TRIM,요양기관 식별자
+hira_inst,*,요양기관명,MED_INST_NM,요양기관명,STRING,NAME,
+hira_inst,*,종별코드,INST_TYPE_CD,종별코드,STRING,CODE(2),
+hira_inst,*,종별코드명,INST_TYPE_NM,종별코드명,STRING,NAME,
+hira_inst,*,시도코드,HIRA_SIDO_CD,심평원 시도코드,STRING,CODE,심평원 자체 6자리 체계 (법정동 체계 아님)
+hira_inst,*,시도코드명,HIRA_SIDO_NM,심평원 시도명,STRING,NAME,
+hira_inst,*,시군구코드,HIRA_SGG_CD,심평원 시군구코드,STRING,CODE,심평원 자체 6자리 체계 (법정동 체계 아님)
+hira_inst,*,시군구코드명,HIRA_SGG_NM,심평원 시군구명,STRING,NAME,
+hira_inst,*,읍면동,UMD_NM,읍면동명,STRING,NAME,
+hira_inst,*,우편번호,ZIP_CD,우편번호,STRING,CODE(5),
+hira_inst,*,주소,ROAD_ADDR,주소,STRING,TEXT,도로명주소
+hira_inst,*,전화번호,MED_INST_TEL,전화번호,STRING,TEL,
+hira_inst,*,개설일자,ESTB_DTM,개설일자,DATE,DATE(%Y-%m-%d),
+hira_inst,*,좌표(X),LON_NUM,경도,FLOAT64,FLOAT(7),WGS84
+hira_inst,*,좌표(Y),LAT_NUM,위도,FLOAT64,FLOAT(7),WGS84
+hira_inst,*병원정보서비스*,병원홈페이지,HMPG_TXT,병원 홈페이지,STRING,TRIM,
+hira_inst,*병원정보서비스*,총의사수,DR_TOT_NUM,총 의사 수,INT64,INT,
+hira_inst,*병원정보서비스*,의과일반의 인원수,MDCN_GNRL_DR_NUM,의과 일반의 수,INT64,INT,
+hira_inst,*병원정보서비스*,의과인턴 인원수,MDCN_INTRN_DR_NUM,의과 인턴 수,INT64,INT,
+hira_inst,*병원정보서비스*,의과레지던트 인원수,MDCN_RSDNT_DR_NUM,의과 레지던트 수,INT64,INT,
+hira_inst,*병원정보서비스*,의과전문의 인원수,MDCN_SPCLST_DR_NUM,의과 전문의 수,INT64,INT,
+hira_inst,*병원정보서비스*,치과일반의 인원수,DNTL_GNRL_DR_NUM,치과 일반의 수,INT64,INT,
+hira_inst,*병원정보서비스*,치과인턴 인원수,DNTL_INTRN_DR_NUM,치과 인턴 수,INT64,INT,
+hira_inst,*병원정보서비스*,치과레지던트 인원수,DNTL_RSDNT_DR_NUM,치과 레지던트 수,INT64,INT,
+hira_inst,*병원정보서비스*,치과전문의 인원수,DNTL_SPCLST_DR_NUM,치과 전문의 수,INT64,INT,
+hira_inst,*병원정보서비스*,한방일반의 인원수,ORNTL_GNRL_DR_NUM,한방 일반의 수,INT64,INT,
+hira_inst,*병원정보서비스*,한방인턴 인원수,ORNTL_INTRN_DR_NUM,한방 인턴 수,INT64,INT,
+hira_inst,*병원정보서비스*,한방레지던트 인원수,ORNTL_RSDNT_DR_NUM,한방 레지던트 수,INT64,INT,
+hira_inst,*병원정보서비스*,한방전문의 인원수,ORNTL_SPCLST_DR_NUM,한방 전문의 수,INT64,INT,
+hira_inst,*병원정보서비스*,조산사 인원수,MDWF_NUM,조산사 수,INT64,INT,
+hira_inst,*시설정보*,설립구분코드,FNDTN_SE_CD,설립구분코드,STRING,CODE(2),
+hira_inst,*시설정보*,설립구분코드명,FNDTN_SE_NM,설립구분명,STRING,NAME,
+hira_inst,*시설정보*,일반입원실상급병상수,INPT_PREM_BED_NUM,일반입원실 상급병상 수,INT64,INT,
+hira_inst,*시설정보*,일반입원실일반병상수,INPT_STD_BED_NUM,일반입원실 일반병상 수,INT64,INT,
+hira_inst,*시설정보*,성인중환자병상수,ADULT_ICU_BED_NUM,성인 중환자 병상 수,INT64,INT,
+hira_inst,*시설정보*,소아중환자병상수,CHILD_ICU_BED_NUM,소아 중환자 병상 수,INT64,INT,
+hira_inst,*시설정보*,신생아중환자병상수,NBRN_ICU_BED_NUM,신생아 중환자 병상 수,INT64,INT,
+hira_inst,*시설정보*,분만실병상수,DLVRY_ROOM_BED_NUM,분만실 병상 수,INT64,INT,
+hira_inst,*시설정보*,수술실병상수,OPRT_ROOM_BED_NUM,수술실 병상 수,INT64,INT,
+hira_inst,*시설정보*,응급실병상수,ER_BED_NUM,응급실 병상 수,INT64,INT,
+hira_inst,*시설정보*,물리치료실병상수,PHYS_THRP_BED_NUM,물리치료실 병상 수,INT64,INT,
+hira_inst,*시설정보*,정신과폐쇄상급병상수,PSY_CLSD_PREM_BED_NUM,정신과 폐쇄 상급병상 수,INT64,INT,
+hira_inst,*시설정보*,정신과폐쇄일반병상수,PSY_CLSD_STD_BED_NUM,정신과 폐쇄 일반병상 수,INT64,INT,
+hira_inst,*시설정보*,정신과개방상급병상수,PSY_OPEN_PREM_BED_NUM,정신과 개방 상급병상 수,INT64,INT,
+hira_inst,*시설정보*,정신과개방일반병상수,PSY_OPEN_STD_BED_NUM,정신과 개방 일반병상 수,INT64,INT,
+hira_inst,*시설정보*,격리병실병상수,ISLT_ROOM_BED_NUM,격리병실 병상 수,INT64,INT,
+hira_inst,*시설정보*,무균치료실병상수,STRL_ROOM_BED_NUM,무균치료실 병상 수,INT64,INT,
+hira_inst,*세부정보*,위치_공공건물(장소)명,LOC_PLACE_NM,위치 기준 건물(장소)명,STRING,NAME,
+hira_inst,*세부정보*,위치_방향,LOC_DIR_TXT,위치 방향,STRING,TEXT,
+hira_inst,*세부정보*,위치_거리,LOC_DIST_TXT,위치 거리,STRING,TEXT,"100m, 약 100M 등 형식이 제각각"
+hira_inst,*세부정보*,주차_가능대수,PARK_CAPA_NUM,주차 가능 대수,INT64,INT,
+hira_inst,*세부정보*,주차_비용 부담여부,PARK_FEE_YN,주차 비용 부담 여부,BOOL,YN(Y;N),
+hira_inst,*세부정보*,주차_기타 안내사항,PARK_ETC_TXT,주차 기타 안내,STRING,TEXT,
+hira_inst,*세부정보*,휴진안내_일요일,SUN_CLOSE_TXT,일요일 휴진 안내,STRING,TEXT,
+hira_inst,*세부정보*,휴진안내_공휴일,HLDY_CLOSE_TXT,공휴일 휴진 안내,STRING,TEXT,
+hira_inst,*세부정보*,응급실_주간_운영여부,ER_DAY_OPER_YN,응급실 주간 운영 여부,BOOL,YN(Y;N),
+hira_inst,*세부정보*,응급실_주간_전화번호1,ER_DAY_TEL,응급실 주간 전화번호,STRING,TEL,
+hira_inst,*세부정보*,응급실_주간_전화번호2,ER_DAY_SUB_TEL,응급실 주간 보조 전화번호,STRING,TEL,
+hira_inst,*세부정보*,응급실_야간_운영여부,ER_NGT_OPER_YN,응급실 야간 운영 여부,BOOL,YN(Y;N),
+hira_inst,*세부정보*,응급실_야간_전화번호1,ER_NGT_TEL,응급실 야간 전화번호,STRING,TEL,
+hira_inst,*세부정보*,응급실_야간_전화번호2,ER_NGT_SUB_TEL,응급실 야간 보조 전화번호,STRING,TEL,
+hira_inst,*세부정보*,점심시간_평일,LUNCH_WKDY_TXT,평일 점심시간,STRING,TEXT,"12:00~13:00, 12시30분~ 등 형식이 제각각"
+hira_inst,*세부정보*,점심시간_토요일,LUNCH_SAT_TXT,토요일 점심시간,STRING,TEXT,
+hira_inst,*세부정보*,접수시간_평일,RCPT_WKDY_TXT,평일 접수시간,STRING,TEXT,
+hira_inst,*세부정보*,접수시간_토요일,RCPT_SAT_TXT,토요일 접수시간,STRING,TEXT,
+hira_inst,*세부정보*,진료시작시간_일요일,TRMT_SUN_BGN_DTM,일요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_일요일,TRMT_SUN_END_DTM,일요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*세부정보*,진료시작시간_월요일,TRMT_MON_BGN_DTM,월요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_월요일,TRMT_MON_END_DTM,월요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*세부정보*,진료시작시간_화요일,TRMT_TUE_BGN_DTM,화요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_화요일,TRMT_TUE_END_DTM,화요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*세부정보*,진료시작시간_수요일,TRMT_WED_BGN_DTM,수요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_수요일,TRMT_WED_END_DTM,수요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*세부정보*,진료시작시간_목요일,TRMT_THU_BGN_DTM,목요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_목요일,TRMT_THU_END_DTM,목요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*세부정보*,진료시작시간_금요일,TRMT_FRI_BGN_DTM,금요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_금요일,TRMT_FRI_END_DTM,금요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*세부정보*,진료시작시간_토요일,TRMT_SAT_BGN_DTM,토요일 진료 시작,TIME,HHMM,"900 → 09:00, 0 → 진료 없음"
+hira_inst,*세부정보*,진료종료시간_토요일,TRMT_SAT_END_DTM,토요일 진료 종료,TIME,HHMM,2400 → 23:59:59
+hira_inst,*진료과목정보*,진료과목코드,DGSBJT_CD,진료과목코드,STRING,CODE(2),
+hira_inst,*진료과목정보*,진료과목코드명,DGSBJT_NM,진료과목명,STRING,NAME,
+hira_inst,*진료과목정보*,과목별 전문의수,DGSBJT_SPCLST_NUM,과목별 전문의 수,INT64,INT,
+hira_inst,*진료과목정보*,선택진료 의사수,SLCT_TRMT_DR_NUM,선택진료 의사 수,INT64,INT,
+hira_inst,*교통정보*,교통편명,TRNSP_NM,교통편,STRING,NAME,
+hira_inst,*교통정보*,노선번호,ROUTE_NO_TXT,노선번호,STRING,TEXT,여러 노선이 쉼표로 이어진 원문
+hira_inst,*교통정보*,하차지점,GETOFF_PLACE_NM,하차 지점,STRING,NAME,
+hira_inst,*교통정보*,방향,TRNSP_DIR_TXT,방향,STRING,TEXT,
+hira_inst,*교통정보*,거리,TRNSP_DIST_TXT,거리,STRING,TEXT,
+hira_inst,*교통정보*,비고,RMRK_TXT,비고,STRING,TEXT,
+hira_inst,*의료장비정보*,장비코드,EQP_CD,장비코드,STRING,CODE,
+hira_inst,*의료장비정보*,장비코드명,EQP_NM,장비명,STRING,NAME,
+hira_inst,*의료장비정보*,장비대수,EQP_NUM,장비 대수,INT64,INT,
+hira_inst,*식대가산정보*,유형코드,MEAL_ADD_TYPE_CD,식대가산 유형코드,STRING,CODE(2),같은 이름이 간호등급 파일에도 있어 파일로 구분
+hira_inst,*식대가산정보*,유형코드명,MEAL_ADD_TYPE_NM,식대가산 유형명,STRING,NAME,
+hira_inst,*식대가산정보*,일반식 가산여부,GNRL_MEAL_ADD_YN,일반식 가산 여부,BOOL,YN(Y;N),
+hira_inst,*식대가산정보*,산정인원수,CALC_PRSN_NUM,산정 인원 수,INT64,INT,
+hira_inst,*식대가산정보*,치료식 등급,THRP_MEAL_GRD_CD,치료식 등급,STRING,CODE,"1~4, N"
+hira_inst,*간호등급정보*,유형코드,NURSE_GRD_TYPE_CD,간호등급 유형코드,STRING,CODE(2),
+hira_inst,*간호등급정보*,유형코드명,NURSE_GRD_TYPE_NM,간호등급 유형명,STRING,NAME,
+hira_inst,*간호등급정보*,간호등급,NURSE_GRD_CD,간호등급,STRING,CODE,숫자 또는 A
+hira_inst,*특수진료정보*,검색코드,SPCL_TRMT_CD,특수진료 코드,STRING,CODE,
+hira_inst,*특수진료정보*,검색코드명,SPCL_TRMT_NM,특수진료명,STRING,NAME,
+hira_inst,*전문병원지정분야*,검색코드,SPCL_HOSP_FIELD_CD,전문병원 지정분야 코드,STRING,CODE,
+hira_inst,*전문병원지정분야*,검색코드명,SPCL_HOSP_FIELD_NM,전문병원 지정분야명,STRING,NAME,
+hira_inst,*기타인력정보*,기타인력코드,ETC_STAFF_CD,기타인력 코드,STRING,CODE,
+hira_inst,*기타인력정보*,기타인력코드명,ETC_STAFF_NM,기타인력명,STRING,NAME,
+hira_inst,*기타인력정보*,기타인력수,ETC_STAFF_NUM,기타인력 수,INT64,INT,
+food_general,*,OPNSFTEAMCODE,LGOV_CD,개방자치단체코드,STRING,CODE,구청 코드 7자리
+food_general,*,MGTNO,LCNS_KEY,관리번호,STRING,TRIM,업소 식별자
+food_general,*,APVPERMYMD,LCNS_DTM,인허가일자,DATE,DATE(%Y-%m-%d),원천 값 끝에 공백이 붙어 있음
+food_general,*,TRDSTATEGBN,TRD_STATE_CD,영업상태코드,STRING,CODE(2),"01 영업, 03 폐업 등"
+food_general,*,TRDSTATENM,TRD_STATE_NM,영업상태명,STRING,NAME,
+food_general,*,DTLSTATEGBN,DTL_TRD_STATE_CD,상세영업상태코드,STRING,CODE(2),
+food_general,*,DTLSTATENM,DTL_TRD_STATE_NM,상세영업상태명,STRING,NAME,
+food_general,*,DCBYMD,CLSBIZ_DTM,폐업일자,DATE,DATE(%Y-%m-%d),
+food_general,*,SITETEL,SITE_TEL,소재지전화번호,STRING,TEL,
+food_general,*,SITEAREA,SITE_AREA_NUM,소재지면적(㎡),FLOAT64,FLOAT(2),쉼표 포함 값 있음
+food_general,*,SITEPOSTNO,SITE_ZIP_CD,소재지우편번호,STRING,CODE,옛 6자리 체계 (123-456)
+food_general,*,SITEWHLADDR,JIBUN_ADDR,지번주소,STRING,TEXT,
+food_general,*,RDNWHLADDR,ROAD_ADDR,도로명주소,STRING,TEXT,
+food_general,*,RDNPOSTNO,ROAD_ZIP_CD,도로명우편번호,STRING,CODE(5),
+food_general,*,BPLCNM,BPLC_NM,사업장명,STRING,NAME,
+food_general,*,LASTMODTS,LAST_MDFCN_DTM,최종수정시점,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+food_general,*,UPDATEGBN,UPD_SE_CD,데이터갱신구분,STRING,CODE,"I 신규, U 수정"
+food_general,*,UPDATEDT,UPD_DTM,데이터갱신일시,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+food_general,*,UPTAENM,UPTAE_NM,업태구분명,STRING,NAME,
+food_general,*,X,TM_X_NUM,좌표 X (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+food_general,*,Y,TM_Y_NUM,좌표 Y (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+food_general,*,SNTUPTAENM,SNT_UPTAE_NM,위생업태명,STRING,NAME,
+food_general,*,MANEIPCNT,MALE_EMP_NUM,남성종사자수,INT64,INT,
+food_general,*,WMEIPCNT,FEMALE_EMP_NUM,여성종사자수,INT64,INT,
+food_general,*,TRDPJUBNSENM,BPLC_VCNTY_SE_NM,영업장주변구분명,STRING,NAME,
+food_general,*,LVSENM,GRD_SE_NM,등급구분명,STRING,NAME,
+food_general,*,WTRSPLYFACILSENM,WTR_SPLY_FACIL_SE_NM,급수시설구분명,STRING,NAME,
+food_general,*,HOFFEPCNT,HQ_EMP_NUM,본사종업원수,INT64,INT,
+food_general,*,FCTYOWKEPCNT,FCTY_OFFC_EMP_NUM,공장사무직종업원수,INT64,INT,
+food_general,*,FCTYSILJOBEPCNT,FCTY_SALE_EMP_NUM,공장판매직종업원수,INT64,INT,
+food_general,*,FCTYPDTJOBEPCNT,FCTY_PRDCT_EMP_NUM,공장생산직종업원수,INT64,INT,
+food_general,*,BDNGOWNSENM,BLDG_OWN_SE_NM,건물소유구분명,STRING,NAME,
+food_general,*,ISREAM,GRNT_AMT_NUM,보증액,INT64,INT,
+food_general,*,MONAM,MTHLY_RENT_AMT_NUM,월세액,INT64,INT,
+food_general,*,MULTUSNUPSOYN,MULTI_USE_YN,다중이용업소여부,BOOL,YN(Y;N),
+food_general,*,FACILTOTSCP,FACIL_TOT_SCALE_NUM,시설총규모,FLOAT64,FLOAT(2),
+food_general,*,JTUPSOASGNNO,TRAD_ASGN_NO_TXT,전통업소지정번호,STRING,TRIM,깨진 값 포함. 원문 보존
+food_general,*,JTUPSOMAINEDF,TRAD_MAIN_FOOD_NM,전통업소주된음식,STRING,NAME,
+food_general,*,HOMEPAGE,HMPG_TXT,홈페이지,STRING,TRIM,
+food_rest,*,OPNSFTEAMCODE,LGOV_CD,개방자치단체코드,STRING,CODE,구청 코드 7자리
+food_rest,*,MGTNO,LCNS_KEY,관리번호,STRING,TRIM,업소 식별자
+food_rest,*,APVPERMYMD,LCNS_DTM,인허가일자,DATE,DATE(%Y-%m-%d),원천 값 끝에 공백이 붙어 있음
+food_rest,*,TRDSTATEGBN,TRD_STATE_CD,영업상태코드,STRING,CODE(2),"01 영업, 03 폐업 등"
+food_rest,*,TRDSTATENM,TRD_STATE_NM,영업상태명,STRING,NAME,
+food_rest,*,DTLSTATEGBN,DTL_TRD_STATE_CD,상세영업상태코드,STRING,CODE(2),
+food_rest,*,DTLSTATENM,DTL_TRD_STATE_NM,상세영업상태명,STRING,NAME,
+food_rest,*,DCBYMD,CLSBIZ_DTM,폐업일자,DATE,DATE(%Y-%m-%d),
+food_rest,*,SITETEL,SITE_TEL,소재지전화번호,STRING,TEL,
+food_rest,*,SITEAREA,SITE_AREA_NUM,소재지면적(㎡),FLOAT64,FLOAT(2),쉼표 포함 값 있음
+food_rest,*,SITEPOSTNO,SITE_ZIP_CD,소재지우편번호,STRING,CODE,옛 6자리 체계 (123-456)
+food_rest,*,SITEWHLADDR,JIBUN_ADDR,지번주소,STRING,TEXT,
+food_rest,*,RDNWHLADDR,ROAD_ADDR,도로명주소,STRING,TEXT,
+food_rest,*,RDNPOSTNO,ROAD_ZIP_CD,도로명우편번호,STRING,CODE(5),
+food_rest,*,BPLCNM,BPLC_NM,사업장명,STRING,NAME,
+food_rest,*,LASTMODTS,LAST_MDFCN_DTM,최종수정시점,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+food_rest,*,UPDATEGBN,UPD_SE_CD,데이터갱신구분,STRING,CODE,"I 신규, U 수정"
+food_rest,*,UPDATEDT,UPD_DTM,데이터갱신일시,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+food_rest,*,UPTAENM,UPTAE_NM,업태구분명,STRING,NAME,
+food_rest,*,X,TM_X_NUM,좌표 X (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+food_rest,*,Y,TM_Y_NUM,좌표 Y (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+food_rest,*,SNTUPTAENM,SNT_UPTAE_NM,위생업태명,STRING,NAME,
+food_rest,*,MANEIPCNT,MALE_EMP_NUM,남성종사자수,INT64,INT,
+food_rest,*,WMEIPCNT,FEMALE_EMP_NUM,여성종사자수,INT64,INT,
+food_rest,*,TRDPJUBNSENM,BPLC_VCNTY_SE_NM,영업장주변구분명,STRING,NAME,
+food_rest,*,LVSENM,GRD_SE_NM,등급구분명,STRING,NAME,
+food_rest,*,WTRSPLYFACILSENM,WTR_SPLY_FACIL_SE_NM,급수시설구분명,STRING,NAME,
+food_rest,*,HOFFEPCNT,HQ_EMP_NUM,본사종업원수,INT64,INT,
+food_rest,*,FCTYOWKEPCNT,FCTY_OFFC_EMP_NUM,공장사무직종업원수,INT64,INT,
+food_rest,*,FCTYSILJOBEPCNT,FCTY_SALE_EMP_NUM,공장판매직종업원수,INT64,INT,
+food_rest,*,FCTYPDTJOBEPCNT,FCTY_PRDCT_EMP_NUM,공장생산직종업원수,INT64,INT,
+food_rest,*,BDNGOWNSENM,BLDG_OWN_SE_NM,건물소유구분명,STRING,NAME,
+food_rest,*,ISREAM,GRNT_AMT_NUM,보증액,INT64,INT,
+food_rest,*,MONAM,MTHLY_RENT_AMT_NUM,월세액,INT64,INT,
+food_rest,*,MULTUSNUPSOYN,MULTI_USE_YN,다중이용업소여부,BOOL,YN(Y;N),
+food_rest,*,FACILTOTSCP,FACIL_TOT_SCALE_NUM,시설총규모,FLOAT64,FLOAT(2),
+food_rest,*,JTUPSOASGNNO,TRAD_ASGN_NO_TXT,전통업소지정번호,STRING,TRIM,깨진 값 포함. 원문 보존
+food_rest,*,JTUPSOMAINEDF,TRAD_MAIN_FOOD_NM,전통업소주된음식,STRING,NAME,
+food_rest,*,HOMEPAGE,HMPG_TXT,홈페이지,STRING,TRIM,
+food_general_file,*,개방자치단체코드,LGOV_CD,개방자치단체코드,STRING,CODE,구청 코드 7자리
+food_general_file,*,관리번호,LCNS_KEY,관리번호,STRING,TRIM,업소 식별자
+food_general_file,*,인허가일자,LCNS_DTM,인허가일자,DATE,DATE(%Y-%m-%d),원천 값 끝에 공백이 붙어 있음
+food_general_file,*,영업상태코드,TRD_STATE_CD,영업상태코드,STRING,CODE(2),"01 영업, 03 폐업 등"
+food_general_file,*,영업상태명,TRD_STATE_NM,영업상태명,STRING,NAME,
+food_general_file,*,상세영업상태코드,DTL_TRD_STATE_CD,상세영업상태코드,STRING,CODE(2),
+food_general_file,*,상세영업상태명,DTL_TRD_STATE_NM,상세영업상태명,STRING,NAME,
+food_general_file,*,폐업일자,CLSBIZ_DTM,폐업일자,DATE,DATE(%Y-%m-%d),
+food_general_file,*,전화번호,SITE_TEL,소재지전화번호,STRING,TEL,
+food_general_file,*,소재지면적,SITE_AREA_NUM,소재지면적(㎡),FLOAT64,FLOAT(2),쉼표 포함 값 있음
+food_general_file,*,소재지우편번호,SITE_ZIP_CD,소재지우편번호,STRING,CODE,옛 6자리 체계 (123-456)
+food_general_file,*,지번주소,JIBUN_ADDR,지번주소,STRING,TEXT,
+food_general_file,*,도로명주소,ROAD_ADDR,도로명주소,STRING,TEXT,
+food_general_file,*,도로명우편번호,ROAD_ZIP_CD,도로명우편번호,STRING,CODE(5),
+food_general_file,*,사업장명,BPLC_NM,사업장명,STRING,NAME,
+food_general_file,*,최종수정일자,LAST_MDFCN_DTM,최종수정시점,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+food_general_file,*,데이터갱신구분,UPD_SE_CD,데이터갱신구분,STRING,CODE,"I 신규, U 수정"
+food_general_file,*,데이터갱신일자,UPD_DTM,데이터갱신일시,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+food_general_file,*,업태구분명,UPTAE_NM,업태구분명,STRING,NAME,
+food_general_file,*,좌표정보(X),TM_X_NUM,좌표 X (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+food_general_file,*,좌표정보(Y),TM_Y_NUM,좌표 Y (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+food_general_file,*,위생업태명,SNT_UPTAE_NM,위생업태명,STRING,NAME,
+food_general_file,*,남성종사자수,MALE_EMP_NUM,남성종사자수,INT64,INT,
+food_general_file,*,여성종사자수,FEMALE_EMP_NUM,여성종사자수,INT64,INT,
+food_general_file,*,영업장주변구분명,BPLC_VCNTY_SE_NM,영업장주변구분명,STRING,NAME,
+food_general_file,*,등급구분명,GRD_SE_NM,등급구분명,STRING,NAME,
+food_general_file,*,급수시설구분명,WTR_SPLY_FACIL_SE_NM,급수시설구분명,STRING,NAME,
+food_general_file,*,본사종업원수,HQ_EMP_NUM,본사종업원수,INT64,INT,
+food_general_file,*,공장사무직종업원수,FCTY_OFFC_EMP_NUM,공장사무직종업원수,INT64,INT,
+food_general_file,*,공장판매직종업원수,FCTY_SALE_EMP_NUM,공장판매직종업원수,INT64,INT,
+food_general_file,*,공장생산직종업원수,FCTY_PRDCT_EMP_NUM,공장생산직종업원수,INT64,INT,
+food_general_file,*,건물소유구분명,BLDG_OWN_SE_NM,건물소유구분명,STRING,NAME,
+food_general_file,*,보증액,GRNT_AMT_NUM,보증액,INT64,INT,
+food_general_file,*,월세액,MTHLY_RENT_AMT_NUM,월세액,INT64,INT,
+food_general_file,*,다중이용업소여부,MULTI_USE_YN,다중이용업소여부,BOOL,YN(Y;N),
+food_general_file,*,시설총규모,FACIL_TOT_SCALE_NUM,시설총규모,FLOAT64,FLOAT(2),
+food_general_file,*,전통업소지정번호,TRAD_ASGN_NO_TXT,전통업소지정번호,STRING,TRIM,깨진 값 포함. 원문 보존
+food_general_file,*,전통업소주된음식,TRAD_MAIN_FOOD_NM,전통업소주된음식,STRING,NAME,
+food_general_file,*,홈페이지,HMPG_TXT,홈페이지,STRING,TRIM,
+food_general_file,*,X좌표,UTMK_X_NUM,좌표 X (UTM-K),FLOAT64,FLOAT(3),EPSG:5179 로 추정. 변환하지 않음
+food_general_file,*,Y좌표,UTMK_Y_NUM,좌표 Y (UTM-K),FLOAT64,FLOAT(3),EPSG:5179 로 추정. 변환하지 않음
+food_general_file,*,법정동코드,LDONG_CD,법정동코드,STRING,CODE,10자리. API 판에는 없는 컬럼
+clinic,*,OPNSFTEAMCODE,LGOV_CD,개방자치단체코드,STRING,CODE,구청 코드 7자리
+clinic,*,MGTNO,LCNS_KEY,관리번호,STRING,TRIM,업소 식별자
+clinic,*,APVPERMYMD,LCNS_DTM,인허가일자,DATE,DATE(%Y-%m-%d),원천 값 끝에 공백이 붙어 있음
+clinic,*,APVCANCELYMD,LCNS_CNCL_DTM,인허가취소일자,DATE,DATE(%Y-%m-%d),
+clinic,*,TRDSTATEGBN,TRD_STATE_CD,영업상태코드,STRING,CODE(2),"01 영업, 03 폐업 등"
+clinic,*,TRDSTATENM,TRD_STATE_NM,영업상태명,STRING,NAME,
+clinic,*,DTLSTATEGBN,DTL_TRD_STATE_CD,상세영업상태코드,STRING,CODE(2),
+clinic,*,DTLSTATENM,DTL_TRD_STATE_NM,상세영업상태명,STRING,NAME,
+clinic,*,DCBYMD,CLSBIZ_DTM,폐업일자,DATE,DATE(%Y-%m-%d),
+clinic,*,CLGSTDT,SUSP_BGN_DTM,휴업시작일자,DATE,DATE(%Y-%m-%d),
+clinic,*,CLGENDDT,SUSP_END_DTM,휴업종료일자,DATE,DATE(%Y-%m-%d),
+clinic,*,SITETEL,SITE_TEL,소재지전화번호,STRING,TEL,
+clinic,*,SITEPOSTNO,SITE_ZIP_CD,소재지우편번호,STRING,CODE,옛 6자리 체계 (123-456)
+clinic,*,SITEWHLADDR,JIBUN_ADDR,지번주소,STRING,TEXT,
+clinic,*,RDNWHLADDR,ROAD_ADDR,도로명주소,STRING,TEXT,
+clinic,*,RDNPOSTNO,ROAD_ZIP_CD,도로명우편번호,STRING,CODE(5),
+clinic,*,BPLCNM,BPLC_NM,사업장명,STRING,NAME,
+clinic,*,LASTMODTS,LAST_MDFCN_DTM,최종수정시점,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+clinic,*,UPDATEGBN,UPD_SE_CD,데이터갱신구분,STRING,CODE,"I 신규, U 수정"
+clinic,*,UPDATEDT,UPD_DTM,데이터갱신일시,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+clinic,*,UPTAENM,UPTAE_NM,업태구분명,STRING,NAME,
+clinic,*,X,TM_X_NUM,좌표 X (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+clinic,*,Y,TM_Y_NUM,좌표 Y (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+clinic,*,METRORGASSRNM,INST_TYPE_NM,의료기관종별명,STRING,NAME,
+clinic,*,METRPNUM,MED_PRSN_NUM,의료인수,INT64,INT,
+clinic,*,HSTRMNUM,INPT_ROOM_NUM,입원실수,INT64,INT,
+clinic,*,SICBNUM,BED_TOT_NUM,병상수,INT64,INT,
+clinic,*,TOTAR,TOT_AREA_NUM,총면적(㎡),FLOAT64,FLOAT(2),0E-9 같은 지수 표기 있음
+clinic,*,MEDEXTRITEMSCN,DGSBJT_CD_TXT,진료과목코드 목록,STRING,TEXT,공백으로 구분된 원문
+clinic,*,MEDEXTRITEMSCNNM,DGSBJT_NM_TXT,진료과목명 목록,STRING,TEXT,쉼표로 구분된 원문
+pharmacy,*,OPNSFTEAMCODE,LGOV_CD,개방자치단체코드,STRING,CODE,구청 코드 7자리
+pharmacy,*,MGTNO,LCNS_KEY,관리번호,STRING,TRIM,업소 식별자
+pharmacy,*,APVPERMYMD,LCNS_DTM,인허가일자,DATE,DATE(%Y-%m-%d),원천 값 끝에 공백이 붙어 있음
+pharmacy,*,APVCANCELYMD,LCNS_CNCL_DTM,인허가취소일자,DATE,DATE(%Y-%m-%d),
+pharmacy,*,TRDSTATEGBN,TRD_STATE_CD,영업상태코드,STRING,CODE(2),"01 영업, 03 폐업 등"
+pharmacy,*,TRDSTATENM,TRD_STATE_NM,영업상태명,STRING,NAME,
+pharmacy,*,DTLSTATEGBN,DTL_TRD_STATE_CD,상세영업상태코드,STRING,CODE(2),
+pharmacy,*,DTLSTATENM,DTL_TRD_STATE_NM,상세영업상태명,STRING,NAME,
+pharmacy,*,DCBYMD,CLSBIZ_DTM,폐업일자,DATE,DATE(%Y-%m-%d),
+pharmacy,*,CLGSTDT,SUSP_BGN_DTM,휴업시작일자,DATE,DATE(%Y-%m-%d),
+pharmacy,*,CLGENDDT,SUSP_END_DTM,휴업종료일자,DATE,DATE(%Y-%m-%d),
+pharmacy,*,SITETEL,SITE_TEL,소재지전화번호,STRING,TEL,
+pharmacy,*,SITEPOSTNO,SITE_ZIP_CD,소재지우편번호,STRING,CODE,옛 6자리 체계 (123-456)
+pharmacy,*,SITEWHLADDR,JIBUN_ADDR,지번주소,STRING,TEXT,
+pharmacy,*,RDNWHLADDR,ROAD_ADDR,도로명주소,STRING,TEXT,
+pharmacy,*,RDNPOSTNO,ROAD_ZIP_CD,도로명우편번호,STRING,CODE(5),
+pharmacy,*,BPLCNM,BPLC_NM,사업장명,STRING,NAME,
+pharmacy,*,LASTMODTS,LAST_MDFCN_DTM,최종수정시점,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+pharmacy,*,UPDATEGBN,UPD_SE_CD,데이터갱신구분,STRING,CODE,"I 신규, U 수정"
+pharmacy,*,UPDATEDT,UPD_DTM,데이터갱신일시,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+pharmacy,*,X,TM_X_NUM,좌표 X (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+pharmacy,*,Y,TM_Y_NUM,좌표 Y (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+pharmacy,*,PHARMTRDAR,PHARM_AREA_NUM,약국영업면적(㎡),FLOAT64,FLOAT(2),
+pharmacy,*,ASGNYMD,ASGN_DTM,지정일자,DATE,DATE(%Y-%m-%d),
+beauty,*,OPNSFTEAMCODE,LGOV_CD,개방자치단체코드,STRING,CODE,구청 코드 7자리
+beauty,*,MGTNO,LCNS_KEY,관리번호,STRING,TRIM,업소 식별자
+beauty,*,APVPERMYMD,LCNS_DTM,인허가일자,DATE,DATE(%Y-%m-%d),원천 값 끝에 공백이 붙어 있음
+beauty,*,TRDSTATEGBN,TRD_STATE_CD,영업상태코드,STRING,CODE(2),"01 영업, 03 폐업 등"
+beauty,*,TRDSTATENM,TRD_STATE_NM,영업상태명,STRING,NAME,
+beauty,*,DTLSTATEGBN,DTL_TRD_STATE_CD,상세영업상태코드,STRING,CODE(2),
+beauty,*,DTLSTATENM,DTL_TRD_STATE_NM,상세영업상태명,STRING,NAME,
+beauty,*,DCBYMD,CLSBIZ_DTM,폐업일자,DATE,DATE(%Y-%m-%d),
+beauty,*,SITETEL,SITE_TEL,소재지전화번호,STRING,TEL,
+beauty,*,SITEAREA,SITE_AREA_NUM,소재지면적(㎡),FLOAT64,FLOAT(2),쉼표 포함 값 있음
+beauty,*,SITEPOSTNO,SITE_ZIP_CD,소재지우편번호,STRING,CODE,옛 6자리 체계 (123-456)
+beauty,*,SITEWHLADDR,JIBUN_ADDR,지번주소,STRING,TEXT,
+beauty,*,RDNWHLADDR,ROAD_ADDR,도로명주소,STRING,TEXT,
+beauty,*,RDNPOSTNO,ROAD_ZIP_CD,도로명우편번호,STRING,CODE(5),
+beauty,*,BPLCNM,BPLC_NM,사업장명,STRING,NAME,
+beauty,*,LASTMODTS,LAST_MDFCN_DTM,최종수정시점,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+beauty,*,UPDATEGBN,UPD_SE_CD,데이터갱신구분,STRING,CODE,"I 신규, U 수정"
+beauty,*,UPDATEDT,UPD_DTM,데이터갱신일시,DATETIME,DATETIME(%Y-%m-%d %H:%M:%S),
+beauty,*,UPTAENM,UPTAE_NM,업태구분명,STRING,NAME,
+beauty,*,X,TM_X_NUM,좌표 X (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+beauty,*,Y,TM_Y_NUM,좌표 Y (TM),FLOAT64,FLOAT(3),EPSG:5174 로 안내됨. 변환하지 않음
+beauty,*,SNTUPTAENM,SNT_UPTAE_NM,위생업태명,STRING,NAME,
+beauty,*,BDNGJISGFLRCNT,BLDG_GRND_FLR_NUM,건물지상층수,INT64,INT,
+beauty,*,BDNGUNDERFLRCNT,BLDG_UNDGR_FLR_NUM,건물지하층수,INT64,INT,
+beauty,*,USEJISGSTFLR,USE_GRND_BGN_FLR_NUM,사용시작지상층,INT64,INT,
+beauty,*,USEJISGENDFLR,USE_GRND_END_FLR_NUM,사용끝지상층,INT64,INT,
+beauty,*,USEUNDERSTFLR,USE_UNDGR_BGN_FLR_NUM,사용시작지하층,INT64,INT,
+beauty,*,USEUNDERENDFLR,USE_UNDGR_END_FLR_NUM,사용끝지하층,INT64,INT,
+beauty,*,CHAIRCNT,CHAIR_NUM,의자수,INT64,INT,
+beauty,*,CNDPERMNTWHY,CND_PRMSN_RSN_TXT,조건부허가신고사유,STRING,TEXT,
+beauty,*,CNDPERMSTYMD,CND_PRMSN_BGN_DTM,조건부허가시작일자,DATE,DATE(%Y-%m-%d),
+beauty,*,CNDPERMENDYMD,CND_PRMSN_END_DTM,조건부허가종료일자,DATE,DATE(%Y-%m-%d),
+beauty,*,BDNGOWNSENM,BLDG_OWN_SE_NM,건물소유구분명,STRING,NAME,
+beauty,*,WMEIPCNT,FEMALE_EMP_NUM,여성종사자수,INT64,INT,
+beauty,*,MANEIPCNT,MALE_EMP_NUM,남성종사자수,INT64,INT,
+beauty,*,ABEDCNT,BED_NUM,침대수,INT64,INT,
+beauty,*,MULTUSNUPSOYN,MULTI_USE_YN,다중이용업소여부,BOOL,YN(Y;N),
