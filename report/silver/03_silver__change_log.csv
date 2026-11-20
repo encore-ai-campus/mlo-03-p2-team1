@@ -337,3 +337,13 @@ apt_trade,G2,키7_해제제외_겹치는행,12798,"서울, issue_list SAME_DEAL"
 apt_trade,G1,CNCL_YN,77802,"행 유지, 골드 가격·거래 수에서 제외"
 apt_trade,이슈,LDONG_NOT_CURRENT,20,
 apt_trade,이슈,SAME_DEAL,12798,
+apt_rent,LDONG_SRC_CD,시군구_동명,8001132,
+apt_rent,LDONG_SRC_CD_서울,시군구_동명,3107551,SGG_CD 앞 2자리 11
+apt_rent,G3,서울_전월세,3107551,
+apt_rent,G3,서울_전세,2011084,"MTHLY_RENT_AMT_NUM = 0, 골드에서 구분"
+apt_rent,G3,서울_월세,1096467,
+apt_rent,G3,서울_보증금0,2777,"보증금 없는 월세, 값 유지"
+apt_rent,G3,서울_CNTRCT_SE_NM_있음,1289466,"신규/갱신, 2021년 이후만 값 있음"
+apt_rent,동일조건,키7_겹치는행,870708,"82개 시군구 전체, 행 목록 없음"
+apt_rent,동일조건,키7_겹치는행_서울,294250,동·호 정보가 없어 정상 계약일 수 있음
+apt_rent,G4,CNTRCT_BGN_DTM_변환실패,24246,"02 STD_ERR_TXT, NULL 유지"

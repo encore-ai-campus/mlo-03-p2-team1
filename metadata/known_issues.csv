@@ -27,3 +27,5 @@ KI25,D3,*,JIBUN_ADDR,서울 밖 주소 (2017 이후 영업 기준),22,"주소 �
 KI26,G5,apt_trade,LDONG_CD,서울 매매 LDONG_CD 가 현행 법정동 코드표에 없음 (신당동 13·사당동 5·도봉동 2),20,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패 + LDONG_NOT_CURRENT
 KI27,G2,apt_trade,SAME_DEAL_YN,서울 매매 동일 조건 거래 (해제 제외 키 7개),12798,02 전체 (서울),SAME_DEAL_YN + SAME_DEAL
 KI28,G1,apt_trade,CNCL_YN,서울 매매 계약 해제 (행 유지),17661,02 전체 (서울),골드 가격·거래 수에서 제외
+KI29,G5,apt_rent,LDONG_CD,서울 전월세 법정동 부여 실패 (SGG_CD + UMD_NM),0,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패
+KI30,G4,apt_rent,CNTRCT_BGN_DTM,계약 시작일 변환 실패 (02 STD_ERR_TXT),24246,02 전체,NULL 유지

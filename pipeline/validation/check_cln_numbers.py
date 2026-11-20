@@ -76,7 +76,9 @@ def measure(row) -> int:
         return int((d03[ds]["LDONG_SRC_CD"] == "실패_전출주소").sum())
     if ref in ("E5", "E6"):
         return int(d03[ds]["OUT_SCOPE_YN"].sum())
-    if ref in ("G1", "G2", "G5"):     # 실거래가 매매
+    if ref == "G4":                   # 실거래가 전월세 02 변환 실패 (change_log)
+        return int(clog(ds, "G4", "CNTRCT_BGN_DTM_변환실패") or 0)
+    if ref in ("G1", "G2", "G5"):     # 실거래가 매매·전월세
         col03 = {"G1": "CNCL_YN", "G2": "SAME_DEAL_YN", "G5": "LDONG_SRC_CD"}[ref]
         t = pd.read_parquet(SILVER / ds / f"03_silver__{ds}.parquet", columns=["SGG_CD", col03])
         t = t[t["SGG_CD"].str.startswith("11")]

@@ -20,6 +20,7 @@ NEW_COLUMNS = [   # 03 이 붙이는 컬럼 (순서 고정)
     "ABNRM_LCNS_DTM_YN", "OUT_SEOUL_ADDR_YN", "OUT_SCOPE_YN",
 ]
 TRADE_NEW_COLUMNS = ["LDONG_SRC_CD", "SAME_DEAL_YN"]   # 실거래가 매매 03 이 붙이는 컬럼 (LDONG_CD 는 02 컬럼을 고침) [G2]·[G5]
+RENT_NEW_COLUMNS = ["LDONG_CD", "LDONG_SRC_CD"]        # 실거래가 전월세 03 이 붙이는 컬럼 (02 에 LDONG_CD 없음) [G5]
 TRADE_SAME_DEAL_KEY = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT"]
 CODE_COLUMNS = ["ANLS_TRD_STATE_CD", "TRD_STATE_SRC_CD", "CLSBIZ_SRC_CD", "LCNS_SRC_CD", "LDONG_SRC_CD",
                 "ANLS_INDUTY_CD", "INDUTY_RULE_CD", "REPL_TYPE_CD"]
@@ -120,10 +121,19 @@ def check_meta(m: Meta) -> list[str]:
 # 실거래가 매매 [G2]·[G5]
 # ──────────────────────────────────────────────────────────────
 def sgg_umd_lookup(ldong: pd.DataFrame) -> dict[tuple[str, str], str]:
-    """현행(폐지 아님) 법정동 (시군구 코드 5자리, 마지막 이름) → 10자리 코드. 같은 키가 둘 이상이면 넣지 않는다."""
+    """현행(폐지 아님) 법정동 (시군구 코드 5자리, 시군구 아래 이름) → 10자리 코드.
+    시군구 아래 이름은 '신당동', '강화읍 갑곳리'처럼 시군구 행 이름을 뺀 나머지다 (실거래가 UMD_NM 형식).
+    리 단위는 마지막 이름('갑곳리')만으로도 찾되, 같은 시군구에 같은 키가 둘 이상이면 넣지 않는다."""
+    sgg_rows = ldong[(ldong["LDONG_CD"].str[5:] == "00000") & (ldong["LDONG_CD"].str[2:5] != "000")]
+    sgg_nm = (sgg_rows.sort_values("ABL_YN")
+              .assign(SGG=lambda x: x["LDONG_CD"].str[:5]).drop_duplicates("SGG").set_index("SGG")["LDONG_NM"])
     cur = ldong[~ldong["ABL_YN"].astype(bool) & (ldong["LDONG_CD"].str[5:] != "00000")]
-    keys = pd.DataFrame({"SGG": cur["LDONG_CD"].str[:5], "UMD": cur["LDONG_NM"].str.split().str[-1], "CD": cur["LDONG_CD"]})
-    keys = keys.drop_duplicates(["SGG", "UMD"], keep=False)
+    sgg = cur["LDONG_CD"].str[:5]
+    prefix = sgg.map(sgg_nm).fillna("")
+    rest = [n[len(p):].strip() if p and n.startswith(p) else n.split(maxsplit=2)[-1] for n, p in zip(cur["LDONG_NM"], prefix)]
+    keys = pd.concat([pd.DataFrame({"SGG": sgg, "UMD": rest, "CD": cur["LDONG_CD"]}),
+                      pd.DataFrame({"SGG": sgg, "UMD": cur["LDONG_NM"].str.split().str[-1], "CD": cur["LDONG_CD"]})])
+    keys = keys.drop_duplicates().drop_duplicates(["SGG", "UMD"], keep=False)
     return dict(zip(zip(keys["SGG"], keys["UMD"]), keys["CD"]))
 
 

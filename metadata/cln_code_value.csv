@@ -62,4 +62,4 @@ ISSUE_CD,AMBIG_LINK,F0 후보 여럿·동률로 연결 안 함,4장 issue_list
 ISSUE_CD,MULTI_TENANT,F2 대형 건물(같은 지번 레코드 다수)이라 교체 연결 안 함,4장 issue_list
 ISSUE_CD,TIME_CONFLICT,F0 ② 개업일 순서 위반,4장 issue_list
 ISSUE_CD,SAME_DEAL,G2 매매 동일 조건 거래 묶음,4장 issue_list
-ISSUE_CD,LDONG_NOT_CURRENT,G5 실거래가 LDONG_CD 가 현행 법정동 코드표에 없음 (원래 값 → 03 결과),4장 issue_list
+ISSUE_CD,LDONG_NOT_CURRENT,G5 실거래가 법정동을 현행 코드표에서 찾지 못함 (원래 값 → 03 결과),4장 issue_list
