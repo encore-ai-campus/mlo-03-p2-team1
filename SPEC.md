@@ -82,7 +82,9 @@ mlo-03-p2-team1/
 ├── INTENT.md              # 프로젝트 기획 의도 및 방향성
 ├── SPEC.md                # 기술 스택·인프라 및 시스템 상세 명세 (본 문서)
 ├── data/                  # 단계별 로컬 데이터 스토리지 (실제 데이터는 .gitignore 제외)
-│   ├── source/            # 수집 원천 파일(CSV/ZIP/XML) 및 Watch 폴더 인입 경로
+│   ├── source/            # 읽기 전용 수집 원천 파일(CSV/ZIP/XML)
+│   ├── watch/             # Bronze PostgreSQL로 적재할 실거래 CSV 인입
+│   ├── processed/         # Bronze PostgreSQL 적재가 끝난 CSV 보관
 │   ├── bronze/            # 1차 적재 Parquet (원천 행 수·값 보존 + 추적 컬럼)
 │   ├── silver/            # 2차·3차 표준화·정제 Parquet
 │   ├── gold/              # 4차 스타 스키마 집계 Parquet
