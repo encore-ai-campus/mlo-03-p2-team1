@@ -58,5 +58,6 @@ ISSUE_CD,OUT_SEOUL_COORD,C6 서울 범위 밖 TM 좌표,4장 issue_list
 ISSUE_CD,ADDR_MISMATCH,D1 지번·도로명 법정동 불일치,4장 issue_list
 ISSUE_CD,ABNRM_UPTAE,E2 원천 업종에 맞지 않는 업태,4장 issue_list
 ISSUE_CD,AMBIG_LINK,F0 후보 여럿·동률로 연결 안 함,4장 issue_list
+ISSUE_CD,MULTI_TENANT,F2 대형 건물(같은 지번 레코드 다수)이라 교체 연결 안 함,4장 issue_list
 ISSUE_CD,TIME_CONFLICT,F0 ② 개업일 순서 위반,4장 issue_list
 ISSUE_CD,SAME_DEAL,G2 매매 동일 조건 거래 묶음,4장 issue_list

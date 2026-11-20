@@ -25,6 +25,7 @@ STAGES = {
     "00": "source",
     "01": "bronze",
     "02": "silver",
+    "03": "silver",   # 03 정제: 02 silver 를 읽어 같은 silver 폴더에 03_ 파일로 쓴다
 }
 
 

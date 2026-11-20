@@ -1,0 +1,7 @@
+﻿dataset,silver02_file,silver03_file,rows_02,dup_removed,rows_03_written,rows_03_parquet,row_check,columns_count,file_sha256,status,cond_fail_txt,cond_ok
+food_general,data/silver/food_general/02_silver__food_general__20261118.parquet,data/silver/food_general/03_silver__food_general.parquet,540008,0,540008,540008,True,60,bd6cef3a8cc872078a1539e6a63fb74f163cb471e8335b84cdcb6f980ca7fd62,unchanged,,True
+food_rest,data/silver/food_rest/02_silver__food_rest__20261118.parquet,data/silver/food_rest/03_silver__food_rest.parquet,148778,323,148455,148455,True,58,509b215e2b2849286775be7d5769167625ee1b06f4f57dffbe2cc3a80ab74115,unchanged,,True
+clinic,data/silver/clinic/02_silver__clinic__20261119.parquet,data/silver/clinic/03_silver__clinic.parquet,37791,0,37791,37791,True,49,9101da9b689c231ba7d8f99daab535c9be451bf881ffe97370183710a0f9842e,unchanged,,True
+pharmacy,data/silver/pharmacy/02_silver__pharmacy__20261119.parquet,data/silver/pharmacy/03_silver__pharmacy.parquet,22500,0,22500,22500,True,43,0b3f1d218b689ef0748f831769c75e2de057c9db6d6fa1befa3dc9a0694d9c2f,unchanged,,True
+beauty,data/silver/beauty/02_silver__beauty__20261119.parquet,data/silver/beauty/03_silver__beauty.parquet,100349,0,100349,100349,True,56,3a96399d97759e94587b4d6ba58aa4efe68678f149bf21b3fedfd84886198b29,unchanged,,True
+apt_trade,data/silver/apt_trade/02_silver__apt_trade.parquet,,4265480,0,0,0,True,0,,issue_list만,,True

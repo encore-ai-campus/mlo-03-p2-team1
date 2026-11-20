@@ -1,5 +1,6 @@
 ﻿param,dataset,value,unit,description
 REPL_WINDOW_DAYS,*,7,일,F1·F2 재등록·교체: B 인허가일이 A 분석용 폐업일 ±N일
+MULTI_TENANT_MIN_RECORDS,*,50,건,F2 교체: 같은 JIBUN_ADDR 레코드가 이 수 이상인 대형 건물(복합상가·백화점·역사)의 미확정 후보는 AMBIG_LINK 대신 MULTI_TENANT 로 기록. 확정 연결은 바꾸지 않음
 COLLECT_DT,food_general,2026-11-18,DATE,수집일. 미래 날짜 판정 기준 (C5)
 COLLECT_DT,food_rest,2026-11-18,DATE,수집일
 COLLECT_DT,clinic,2026-11-19,DATE,수집일
