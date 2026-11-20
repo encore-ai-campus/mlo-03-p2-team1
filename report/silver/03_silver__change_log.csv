@@ -335,6 +335,9 @@ apt_trade,G2,키6_겹치는행,35863,"서울, 해제 포함"
 apt_trade,G2,SAME_DEAL_YN,37756,82개 시군구 전체
 apt_trade,G2,키7_해제제외_겹치는행,12798,"서울, issue_list SAME_DEAL"
 apt_trade,G1,CNCL_YN,77802,"행 유지, 골드 가격·거래 수에서 제외"
+apt_trade,G6,서울_단가기준미만,124,"값 유지, issue_list ABNRM_UNIT_AMT"
+apt_trade,G6,서울_단가기준미만_2017이후,0,
+apt_trade,이슈,ABNRM_UNIT_AMT,124,
 apt_trade,이슈,LDONG_NOT_CURRENT,20,
 apt_trade,이슈,SAME_DEAL,12798,
 apt_rent,LDONG_SRC_CD,시군구_동명,8001132,
@@ -347,3 +350,31 @@ apt_rent,G3,서울_CNTRCT_SE_NM_있음,1289466,"신규/갱신, 2021년 이후만
 apt_rent,동일조건,키7_겹치는행,870708,"82개 시군구 전체, 행 목록 없음"
 apt_rent,동일조건,키7_겹치는행_서울,294250,동·호 정보가 없어 정상 계약일 수 있음
 apt_rent,G4,CNTRCT_BGN_DTM_변환실패,24246,"02 STD_ERR_TXT, NULL 유지"
+hira_inst,H0,1.병원정보서비스(2026.9.),79899,03 에 합친 02 파일
+hira_inst,H0,2.약국정보서비스(2026.9.),25850,03 에 합친 02 파일
+hira_inst,H1,SGG_CD_실패,8,도로명 주소가 옛 시도 이름
+hira_inst,H1,SGG_CD_실패_서울,0,
+hira_inst,LDONG_SRC_CD,도로명,578,
+hira_inst,LDONG_SRC_CD,시군구_동명,104878,
+hira_inst,LDONG_SRC_CD,실패,293,
+hira_inst,LDONG_SRC_CD_서울,도로명,11,HIRA_SIDO_NM = 서울
+hira_inst,LDONG_SRC_CD_서울,시군구_동명,25834,HIRA_SIDO_NM = 서울
+hira_inst,H2,보건소·보건지소·조산원,1549,"전국, 값 유지"
+hira_inst,H2,개설일_1950이전,28,"전국, 값 유지"
+hira_inst,서울_기관종류,병원,231,
+hira_inst,서울_기관종류,보건소,25,
+hira_inst,서울_기관종류,보건지소,11,
+hira_inst,서울_기관종류,상급종합,14,
+hira_inst,서울_기관종류,약국,5913,
+hira_inst,서울_기관종류,요양병원,101,
+hira_inst,서울_기관종류,의원,10728,
+hira_inst,서울_기관종류,정신병원,13,
+hira_inst,서울_기관종류,조산원,3,
+hira_inst,서울_기관종류,종합병원,45,
+hira_inst,서울_기관종류,치과병원,59,
+hira_inst,서울_기관종류,치과의원,4889,
+hira_inst,서울_기관종류,한방병원,92,
+hira_inst,서울_기관종류,한의원,3721,
+hira_inst,이슈,ABNRM_ESTB,8,
+hira_inst,이슈,ADDR_MISMATCH,12,
+hira_inst,이슈,OUT_SCOPE_INST,39,

@@ -29,3 +29,7 @@ KI27,G2,apt_trade,SAME_DEAL_YN,서울 매매 동일 조건 거래 (해제 제외
 KI28,G1,apt_trade,CNCL_YN,서울 매매 계약 해제 (행 유지),17661,02 전체 (서울),골드 가격·거래 수에서 제외
 KI29,G5,apt_rent,LDONG_CD,서울 전월세 법정동 부여 실패 (SGG_CD + UMD_NM),0,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패
 KI30,G4,apt_rent,CNTRCT_BGN_DTM,계약 시작일 변환 실패 (02 STD_ERR_TXT),24246,02 전체,NULL 유지
+KI31,G6,apt_trade,DEAL_AMT_NUM,서울 매매 ㎡당 100만 원 미만 (모두 2017년 이전),124,02 전체 (서울),ABNRM_UNIT_AMT
+KI32,H1,hira_inst,LDONG_CD,서울 심평원 병원·약국 법정동 부여 실패,0,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패
+KI33,H2,hira_inst,INST_TYPE_NM,서울 보건소·보건지소·조산원,39,02 전체 (서울),OUT_SCOPE_INST
+KI34,H2,hira_inst,ESTB_DTM,서울 개설일 1950년 이전,8,02 전체 (서울),ABNRM_ESTB

@@ -14,12 +14,12 @@ LCNS_SRC_CD,이전_앞레코드종료일,,F3
 LDONG_SRC_CD,원본코드,"일반음식점 CSV(food_general_file)의 LDONG_CD, 실거래가 원본 LDONG_CD (현행 코드표에 있음)",D1;D2;D3;D4;G5
 LDONG_SRC_CD,지번,,D1;D2;D3;D4
 LDONG_SRC_CD,지번_정규화,,D1;D2;D3;D4
-LDONG_SRC_CD,도로명,,D1;D2;D3;D4
-LDONG_SRC_CD,도로명_정규화,,D1;D2;D3;D4
-LDONG_SRC_CD,시군구_동명,실거래가: 원본 LDONG_CD 가 현행 코드표에 없어 SGG_CD + UMD_NM 으로 다시 찾음,G5
+LDONG_SRC_CD,도로명,,D1;D2;D3;D4;H1
+LDONG_SRC_CD,도로명_정규화,,D1;D2;D3;D4;H1
+LDONG_SRC_CD,시군구_동명,"SGG_CD + UMD_NM 으로 찾음 (실거래가 재조회·전월세, 심평원)",G5;H1
 LDONG_SRC_CD,실패_전출주소,,D1;D2;D3;D4
 LDONG_SRC_CD,실패_서울밖,,D1;D2;D3;D4
-LDONG_SRC_CD,실패,,D1;D2;D3;D4
+LDONG_SRC_CD,실패,,D1;D2;D3;D4;G5;H1
 ANLS_INDUTY_CD,의원,,E
 ANLS_INDUTY_CD,치과의원,,E
 ANLS_INDUTY_CD,한의원,,E
@@ -56,10 +56,13 @@ ISSUE_CD,INVALID_CLSBIZ,C5 없는 날짜 (02 STD_ERR_TXT),4장 issue_list
 ISSUE_CD,PLACEHOLDER_TEL,C6 자리표시 전화번호,4장 issue_list
 ISSUE_CD,ZERO_AREA,C6 면적 0,4장 issue_list
 ISSUE_CD,OUT_SEOUL_COORD,C6 서울 범위 밖 TM 좌표,4장 issue_list
-ISSUE_CD,ADDR_MISMATCH,D1 지번·도로명 법정동 불일치,4장 issue_list
+ISSUE_CD,ADDR_MISMATCH,D1 지번·도로명 법정동 불일치 (심평원 H1: 동명·도로명),4장 issue_list
 ISSUE_CD,ABNRM_UPTAE,E2 원천 업종에 맞지 않는 업태,4장 issue_list
 ISSUE_CD,AMBIG_LINK,F0 후보 여럿·동률로 연결 안 함,4장 issue_list
 ISSUE_CD,MULTI_TENANT,F2 대형 건물(같은 지번 레코드 다수)이라 교체 연결 안 함,4장 issue_list
 ISSUE_CD,TIME_CONFLICT,F0 ② 개업일 순서 위반,4장 issue_list
 ISSUE_CD,SAME_DEAL,G2 매매 동일 조건 거래 묶음,4장 issue_list
 ISSUE_CD,LDONG_NOT_CURRENT,G5 실거래가 법정동을 현행 코드표에서 찾지 못함 (원래 값 → 03 결과),4장 issue_list
+ISSUE_CD,ABNRM_UNIT_AMT,G6 매매 ㎡당 금액이 ABNRM_UNIT_AMT_MIN 미만 (서울),4장 issue_list
+ISSUE_CD,OUT_SCOPE_INST,H2 심평원 보건소·보건지소·조산원 (서울),4장 issue_list
+ISSUE_CD,ABNRM_ESTB,H2 심평원 개설일이 ABNRM_LCNS_BEFORE_DT 이전 (서울),4장 issue_list

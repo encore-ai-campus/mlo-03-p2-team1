@@ -148,6 +148,16 @@ lk2 = R.sgg_umd_lookup(ld2)
 check("G5 읍면+리 전체 이름 / 리 이름만 (유일할 때만)",
       (lk2.get(("28710", "강화읍 갑곳리")), lk2.get(("28710", "갑곳리")), lk2.get(("28710", "선원면 창리")), lk2.get(("28710", "창리"))),
       ("2871025021", "2871025021", "2871031021", None))
+# [H1] 심평원: 도로명 주소의 정식 시군구 이름(가장 긴 이름 우선) → SGG_CD, UMD_NM → 도로명 괄호 동명 → 정규화 → 실패
+ld3 = pd.DataFrame({"LDONG_CD": ["4111000000", "4111500000", "4111510100", "1171000000", "1171010900"],
+                    "LDONG_NM": ["경기도 수원시", "경기도 수원시 팔달구", "경기도 수원시 팔달구 매산로3가", "서울특별시 송파구",
+                                 "서울특별시 송파구 방이동"], "ABL_YN": [False] * 5})
+addr = pd.Series(["경기도 수원시 팔달구 고화로 1, (매산로3가)", "서울특별시 송파구 오금로 1 (방이1동)", "광주광역시 동구 1 (계림동)"])
+sgg = R.sgg_by_addr(addr, ld3)
+check("H1 도로명 주소 → 법정 시군구 (가장 긴 이름, 옛 시도 이름은 실패)", nn(sgg), ["41115", "11710", None])
+code, src, _ = R.hira_ldong(sgg, pd.Series(["매산로3가", None, "계림동"]), addr, R.sgg_umd_lookup(ld3))
+check("H1 동명 / 괄호 동명 정규화 / 시군구 실패", (nn(code), list(src)),
+      (["4111510100", "1171010900", None], ["시군구_동명", "도로명_정규화", "실패"]))
 # [G2] 동일 조건 거래: 해제 행은 묶음에서 빼고, 키 7개가 같은 해제 아닌 행만 묶음
 k = dict(APT_KEY="A1", DEAL_DTM=pd.Timestamp("2024-01-05"), DEAL_AMT_NUM=1e9, EXCL_AREA_NUM=84.9, FLR_NUM=10, APT_DONG_TXT=None)
 deals = pd.DataFrame([dict(k, LDONG_CD="1111010100", CNCL_YN=False), dict(k, LDONG_CD="1111010100", CNCL_YN=False),

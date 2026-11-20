@@ -76,6 +76,11 @@ def measure(row) -> int:
         return int((d03[ds]["LDONG_SRC_CD"] == "실패_전출주소").sum())
     if ref in ("E5", "E6"):
         return int(d03[ds]["OUT_SCOPE_YN"].sum())
+    if ref in ("G6", "H2"):           # issue_list 만 남기는 항목
+        return n_issue(row.handling, ds)
+    if ref == "H1":                   # 심평원 서울 법정동 실패
+        t = pd.read_parquet(SILVER / ds / f"03_silver__{ds}.parquet", columns=["HIRA_SIDO_NM", "LDONG_SRC_CD"])
+        return int(((t["HIRA_SIDO_NM"] == "서울") & (t["LDONG_SRC_CD"] == "실패")).sum())
     if ref == "G4":                   # 실거래가 전월세 02 변환 실패 (change_log)
         return int(clog(ds, "G4", "CNTRCT_BGN_DTM_변환실패") or 0)
     if ref in ("G1", "G2", "G5"):     # 실거래가 매매·전월세
