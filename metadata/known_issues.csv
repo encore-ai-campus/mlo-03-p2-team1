@@ -33,3 +33,6 @@ KI31,G6,apt_trade,DEAL_AMT_NUM,서울 매매 ㎡당 100만 원 미만 (모두 20
 KI32,H1,hira_inst,LDONG_CD,서울 심평원 병원·약국 법정동 부여 실패,0,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패
 KI33,H2,hira_inst,INST_TYPE_NM,서울 보건소·보건지소·조산원,39,02 전체 (서울),OUT_SCOPE_INST
 KI34,H2,hira_inst,ESTB_DTM,서울 개설일 1950년 이전,8,02 전체 (서울),ABNRM_ESTB
+KI35,S1,store_info,LDONG_CD,서울 상가정보 법정동 실패,0,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패
+KI36,S1,store_info,LDONG_CD,현행 코드표에 없는 법정동 (서울 밖 폐지 코드),2471,02 전체,LDONG_NOT_CURRENT
+KI37,S2,store_info,FLR_NUM,층 변환 실패 (02 STD_ERR_TXT),14984,02 전체,NULL 유지

@@ -81,13 +81,17 @@ def measure(row) -> int:
     if ref == "H1":                   # 심평원 서울 법정동 실패
         t = pd.read_parquet(SILVER / ds / f"03_silver__{ds}.parquet", columns=["HIRA_SIDO_NM", "LDONG_SRC_CD"])
         return int(((t["HIRA_SIDO_NM"] == "서울") & (t["LDONG_SRC_CD"] == "실패")).sum())
+    if ref == "S1" and row.handling == "LDONG_NOT_CURRENT":
+        return n_issue(row.handling, ds)
+    if ref == "S2":                   # 상가정보 02 층 변환 실패 (change_log)
+        return int(clog(ds, "S2", "FLR_NUM_변환실패") or 0)
     if ref == "G4":                   # 실거래가 전월세 02 변환 실패 (change_log)
         return int(clog(ds, "G4", "CNTRCT_BGN_DTM_변환실패") or 0)
-    if ref in ("G1", "G2", "G5"):     # 실거래가 매매·전월세
-        col03 = {"G1": "CNCL_YN", "G2": "SAME_DEAL_YN", "G5": "LDONG_SRC_CD"}[ref]
+    if ref in ("G1", "G2", "G5", "S1"):  # 실거래가 매매·전월세, 상가정보 (서울)
+        col03 = {"G1": "CNCL_YN", "G2": "SAME_DEAL_YN", "G5": "LDONG_SRC_CD", "S1": "LDONG_SRC_CD"}[ref]
         t = pd.read_parquet(SILVER / ds / f"03_silver__{ds}.parquet", columns=["SGG_CD", col03])
         t = t[t["SGG_CD"].str.startswith("11")]
-        return int((t[col03] == "실패").sum()) if ref == "G5" else int(t[col03].fillna(False).astype(bool).sum())
+        return int((t[col03] == "실패").sum()) if ref in ("G5", "S1") else int(t[col03].fillna(False).astype(bool).sum())
     if ref == "D3":
         return sum(int(clog(d, "D3", "서울밖_2017이후영업") or 0) for d in DS)
     raise KeyError(row.issue_id)
