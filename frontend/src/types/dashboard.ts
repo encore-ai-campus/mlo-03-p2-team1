@@ -66,6 +66,8 @@ export interface YearSummaryMetrics {
 export interface ProjectedRegionGeometry {
   regionCode: string;
   shapes: THREE.Shape[];
+  districtName?: string;
+  districtCenter3D?: [number, number];
   center3D: [number, number]; // [x, z] in world space
   boundsRadius: number;
 }

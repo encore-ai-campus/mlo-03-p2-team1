@@ -1,3 +1,4 @@
+import { LiveRegionDetail, type LiveRegionDetailProps } from './LiveRegionDetail';
 import { useMemo } from 'react';
 import { ArrowDownRight, ArrowUpRight, Crosshair, MapPin, X } from 'lucide-react';
 import {
@@ -148,7 +149,11 @@ function GrowthBarRow({
   );
 }
 
-export function RightDetailCard() {
+export function RightDetailCard({ live }: { live?: LiveRegionDetailProps }) {
+  return live ? <LiveRegionDetail {...live} /> : <DemoRegionDetail />;
+}
+
+function DemoRegionDetail() {
   const selectedYear = useDashboardStore((s) => s.selectedYear);
   const selectedRegionCode = useDashboardStore((s) => s.selectedRegionCode);
   const hoveredRegionCode = useDashboardStore((s) => s.hoveredRegionCode);

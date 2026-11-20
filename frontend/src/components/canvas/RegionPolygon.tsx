@@ -157,9 +157,10 @@ function buildMergedTerrain(geometries: ProjectedRegionGeometry[]): MergedTerrai
 
 interface RegionPolygonsLayerProps {
   geometries: ProjectedRegionGeometry[];
+  live: boolean;
 }
 
-export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
+export function RegionPolygonsLayer({ geometries, live }: RegionPolygonsLayerProps) {
   const merged = useMemo(() => buildMergedTerrain(geometries), [geometries]);
 
   const animRef = useRef({
@@ -224,17 +225,21 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
     for (let i = 0; i < merged.count; i++) {
       const geo = geometries[i];
       const record = yearMap[geo.regionCode];
-      if (!record) continue;
+      if (!record && !live) continue;
 
       const isTop10 = top10Set.has(geo.regionCode);
       const isSelected = state.selectedRegionCode === geo.regionCode;
       const isHovered = state.hoveredRegionCode === geo.regionCode;
-      const dimmed = state.spotlightMode && !isTop10 && !isSelected;
+      const dimmed = !live && state.spotlightMode && !isTop10 && !isSelected;
 
-      const metricValue = state.comparisonMode ? record.growthDelta : record.actualGrowth;
-
-      getTerrainColor(metricValue, state.comparisonMode, _baseColor);
-      getTerrainEmissive(metricValue, state.comparisonMode, _baseEmissive);
+      if (live) {
+        _baseColor.set('#23364c');
+        _baseEmissive.copy(_dimEmissive);
+      } else {
+        const metricValue = (state.comparisonMode ? record?.growthDelta : record?.actualGrowth) ?? 0;
+        getTerrainColor(metricValue, state.comparisonMode, _baseColor);
+        getTerrainEmissive(metricValue, state.comparisonMode, _baseEmissive);
+      }
 
       if (dimmed) {
         _targetColor.copy(_dimColor);

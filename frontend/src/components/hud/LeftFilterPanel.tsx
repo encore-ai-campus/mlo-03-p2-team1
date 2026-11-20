@@ -21,7 +21,7 @@ const FACILITY_ICONS: Record<FacilityKey, typeof Briefcase> = {
 
 const FACILITY_ORDER: FacilityKey[] = ['jobs', 'subway', 'school', 'commercial', 'hospital'];
 
-export function LeftFilterPanel() {
+export function LeftFilterPanel({ live = false }: { live?: boolean }) {
   const spotlightMode = useDashboardStore((s) => s.spotlightMode);
   const comparisonMode = useDashboardStore((s) => s.comparisonMode);
   const activeFacilities = useDashboardStore((s) => s.activeFacilities);
@@ -40,6 +40,8 @@ export function LeftFilterPanel() {
         <button
           type="button"
           onClick={toggleSpotlightMode}
+          disabled={live}
+          title={live ? '국면 분석 데이터 준비 중' : undefined}
           className={`flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition ${
             spotlightMode
               ? 'border-rose-400/50 bg-rose-500/15 text-rose-100 shadow-[0_0_20px_-6px_rgba(244,63,94,0.45)]'
@@ -59,7 +61,7 @@ export function LeftFilterPanel() {
                   spotlightMode ? 'bg-rose-500/30 text-rose-200' : 'bg-slate-800 text-slate-400'
                 }`}
               >
-                {spotlightMode ? 'ON' : 'OFF'}
+                {live ? '—' : spotlightMode ? 'ON' : 'OFF'}
               </span>
             </div>
             <p className="mt-0.5 text-[10px] leading-relaxed text-slate-400">
@@ -71,6 +73,8 @@ export function LeftFilterPanel() {
         <button
           type="button"
           onClick={toggleComparisonMode}
+          disabled={live}
+          title={live ? '비교 레이어 준비 중' : undefined}
           className={`flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition ${
             comparisonMode
               ? 'border-cyan-400/50 bg-cyan-500/15 text-cyan-100 shadow-[0_0_20px_-6px_rgba(34,211,238,0.4)]'
@@ -90,7 +94,7 @@ export function LeftFilterPanel() {
                   comparisonMode ? 'bg-cyan-500/30 text-cyan-200' : 'bg-slate-800 text-slate-400'
                 }`}
               >
-                {comparisonMode ? 'DELTA' : 'OFF'}
+                {live ? '—' : comparisonMode ? 'DELTA' : 'OFF'}
               </span>
             </div>
             <p className="mt-0.5 text-[10px] leading-relaxed text-slate-400">
@@ -107,7 +111,7 @@ export function LeftFilterPanel() {
             5대 입지 영향력 레이어
           </span>
           <span className="font-mono text-[10px] text-slate-500">
-            {Object.values(activeFacilities).filter(Boolean).length}/5 활성
+            {live ? '자료 준비 중' : `${Object.values(activeFacilities).filter(Boolean).length}/5 활성`}
           </span>
         </div>
 
@@ -115,12 +119,13 @@ export function LeftFilterPanel() {
           {FACILITY_ORDER.map((key) => {
             const meta = FACILITY_META[key];
             const Icon = FACILITY_ICONS[key];
-            const active = activeFacilities[key];
+            const active = !live && activeFacilities[key];
             return (
               <button
                 key={key}
                 type="button"
                 onClick={() => toggleFacility(key)}
+                disabled={live}
                 className={`flex w-full items-center justify-between rounded-xl border px-2.5 py-2 text-left transition ${
                   active
                     ? 'border-slate-600/80 bg-slate-800/70 text-slate-100'
@@ -172,6 +177,12 @@ export function LeftFilterPanel() {
         <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
           3D 시각화 범례
         </div>
+        {live ? (
+          <div className="flex items-center gap-2 text-[10px] text-slate-300">
+            <span className="h-2.5 w-2.5 rounded-full border-2 border-cyan-400 shadow-[0_0_8px_#22d3ee]" />
+            <span>실거래·인허가 또는 예측을 조회할 수 있는 자치구</span>
+          </div>
+        ) : <>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-[10px] text-slate-300">
             <span>지형 온도 ({comparisonMode ? '2021 대비' : '실제 상승률'})</span>
@@ -198,6 +209,7 @@ export function LeftFilterPanel() {
             <span>-Y 하강 막대: 과대 예측 (지형 하부 투과)</span>
           </div>
         </div>
+        </>}
       </div>
     </aside>
   );

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { OrbitControls } from '@react-three/drei';
+import { Html, OrbitControls } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import type { LiveRegion } from '../hud/useLiveMarket';
 import { useDashboardStore } from '../../store/useDashboardStore';
 import type { ProjectedRegionGeometry } from '../../types/dashboard';
 import { loadKoreaGeometries } from '../../utils/koreaGeo';
@@ -205,7 +206,12 @@ function CameraRig({
   );
 }
 
-export function KoreaMapScene() {
+export function KoreaMapScene({
+  liveDistricts, onDistrictsReady,
+}: {
+  liveDistricts?: Map<string, LiveRegion[]>;
+  onDistrictsReady: (districts: Map<string, string>) => void;
+}) {
   const [geometries, setGeometries] = useState<ProjectedRegionGeometry[]>([]);
   const forceFallbackGeo = useDashboardStore((s) => s.forceFallbackGeo);
   const ecoMode = useDashboardStore((s) => s.ecoMode);
@@ -224,16 +230,25 @@ export function KoreaMapScene() {
     };
   }, [forceFallbackGeo, setGeoStatus]);
 
+  const live = liveDistricts !== undefined;
   const centerMap = useMemo(() => {
     const map = new Map<string, [number, number]>();
     for (const g of geometries) {
-      map.set(g.regionCode, g.center3D);
+      map.set(g.regionCode, live && g.districtCenter3D ? g.districtCenter3D : g.center3D);
     }
     return map;
-  }, [geometries]);
+  }, [geometries, live]);
+
+  useEffect(() => {
+    const districts = new Map<string, string>();
+    for (const geometry of geometries) {
+      if (geometry.districtName) districts.set(geometry.regionCode, geometry.districtName);
+    }
+    onDistrictsReady(districts);
+  }, [geometries, onDistrictsReady]);
 
   return (
-    <div className="fixed inset-0 w-screen h-screen bg-[#050811]">
+    <div aria-label="3D 지도" className="fixed inset-0 w-screen h-screen bg-[#050811]">
       <Canvas
         frameloop="demand"
         camera={{ position: [0, 26, 25], fov: 42, near: 0.1, far: 180 }}
@@ -253,9 +268,44 @@ export function KoreaMapScene() {
 
         {geometries.length > 0 && (
           <group>
-            <RegionPolygonsLayer geometries={geometries} />
-            <ErrorBarsLayer geometries={geometries} />
-            <FacilityEffects centerMap={centerMap} />
+            <RegionPolygonsLayer geometries={geometries} live={liveDistricts !== undefined} />
+            {liveDistricts ? (
+              geometries.map(({ districtName, regionCode, districtCenter3D }) => {
+                if (!districtName || !districtCenter3D) return null;
+                const regions = liveDistricts.get(districtName) ?? [];
+                const visible = regions.some((region) =>
+                  region.pricePerSqmWon !== null || region.predictedRise !== null ||
+                  region.licenseMetrics.some((item) => item.activeCount > 0 || item.openCount > 0 || item.closeCount > 0)
+                );
+                if (!visible) return null;
+                return (
+                  <group key={regionCode} position={[districtCenter3D[0], 0.4, districtCenter3D[1]]}>
+                    <mesh>
+                      <cylinderGeometry args={[0.085, 0.095, 0.8, 10]} />
+                      <meshBasicMaterial color="#22d3ee" />
+                    </mesh>
+                    <Html center position={[0, 0.55, 0]} zIndexRange={[9, 1]}>
+                      <button
+                        type="button"
+                        aria-label={`${districtName} 지도에서 선택`}
+                        className="whitespace-nowrap rounded border border-cyan-400/60 bg-slate-950/90 px-1.5 py-0.5 text-xs text-cyan-100 focus-visible:outline focus-visible:outline-cyan-300"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          useDashboardStore.getState().setSelectedRegionCode(regionCode);
+                        }}
+                      >
+                        {districtName}
+                      </button>
+                    </Html>
+                  </group>
+                );
+              })
+            ) : (
+              <>
+                <ErrorBarsLayer geometries={geometries} />
+                <FacilityEffects centerMap={centerMap} />
+              </>
+            )}
           </group>
         )}
 

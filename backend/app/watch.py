@@ -1,6 +1,8 @@
 import asyncio
 import csv
 import logging
+import os
+import subprocess
 from contextlib import asynccontextmanager
 from pathlib import Path
 from threading import Event
@@ -10,6 +12,7 @@ from fastapi import FastAPI
 from psycopg.types.json import Jsonb
 
 from . import db
+from .pipeline import feed
 
 ROOT = Path(__file__).resolve().parents[2]
 WATCH_DIR = ROOT / "data" / "watch"
@@ -79,26 +82,32 @@ def scan(watch_dir: Path = WATCH_DIR) -> None:
         logger.info("Loaded %s (%d rows) and moved it to processed", path.name, row_count)
 
 
-def poll(stop: Event) -> None:
+def poll(stop: Event, pipeline_mode: bool) -> None:
     while not stop.is_set():
         try:
-            scan(WATCH_DIR)
-        except OSError:
-            logger.exception("Could not scan %s", WATCH_DIR)
+            if pipeline_mode:
+                logger.info("apt_trade pipeline status=%s", feed.scan())
+            else:
+                scan(WATCH_DIR)
+        except (OSError, ValueError, subprocess.CalledProcessError, psycopg.Error):
+            logger.exception("Watch scan failed")
         stop.wait(POLL_SECONDS)
 
 
 @asynccontextmanager
 async def watch_lifespan(_app: FastAPI):
-    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    handler = logging.FileHandler(LOG_PATH, encoding="utf-8")
+    pipeline_mode = os.getenv("APT_PIPELINE_WATCH") == "1"
+    log_path = feed.WORKSPACE / "report" / "watch.log" if pipeline_mode else LOG_PATH
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    handler = logging.FileHandler(log_path, encoding="utf-8")
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
     previous_level = logger.level
     logger.setLevel(logging.INFO)
     logger.addHandler(handler)
     stop = Event()
-    logger.info("Watching %s every %d seconds", WATCH_DIR, POLL_SECONDS)
-    task = asyncio.create_task(asyncio.to_thread(poll, stop))
+    target = "apt_trade API completion markers" if pipeline_mode else WATCH_DIR
+    logger.info("Watching %s every %d seconds", target, POLL_SECONDS)
+    task = asyncio.create_task(asyncio.to_thread(poll, stop, pipeline_mode))
     try:
         yield
     finally:

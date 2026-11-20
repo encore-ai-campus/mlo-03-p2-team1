@@ -295,9 +295,15 @@ export async function loadKoreaGeometries(forceFallback = false): Promise<{
         continue;
       }
 
+      const districtName = group[0].properties?.code?.startsWith('11') ? group[0].properties?.name : undefined;
+      const center = districtName
+        ? new THREE.Box2().setFromPoints(shapes.flatMap((shape) => shape.getPoints())).getCenter(new THREE.Vector2())
+        : null;
       output.push({
         regionCode: meta.regionCode,
         shapes,
+        districtName,
+        districtCenter3D: center ? [center.x, -center.y] : undefined,
         center3D: [cx, cz],
         boundsRadius: 0.5,
       });
