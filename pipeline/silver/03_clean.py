@@ -270,7 +270,7 @@ def clean_license(dataset: str, meta: R.Meta, table: dict, log: Log) -> tuple[di
     d = pd.DataFrame({
         "LCNS_KEY": df["LCNS_KEY"], "NAME_KEY": R.name_key(df["BPLC_NM"]), "LCNS_DTM": df["LCNS_DTM"], "END": end,
         "LGOV_CD": df["LGOV_CD"], "TEL": R.valid_tel(df["SITE_TEL"], meta), "LDONG_CD": df["LDONG_CD"], "BUNJI": bunji,
-        "JIBUN_KEY": df["JIBUN_ADDR"].str.replace(r"\s+", " ", regex=True).str.strip(),
+        "JIBUN_KEY": R.jibun_key(df["JIBUN_ADDR"]),
     })
     links = R.find_links(d, int(meta.p("REPL_WINDOW_DAYS")), int(meta.p("MULTI_TENANT_MIN_RECORDS")))
     df["ANLS_LCNS_DTM"] = links.anls_lcns

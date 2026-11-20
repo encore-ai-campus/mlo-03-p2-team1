@@ -179,6 +179,21 @@ def map_state(df: pd.DataFrame, m: Meta) -> tuple[pd.DataFrame, pd.DataFrame]:
 SEOUL_PREFIX = re.compile(r"^\s*서울(?:특별시|시)?\s*(\S+구)\s+(.*)$")
 OTHER_SIDO = re.compile(r"^\s*(부산|대구|인천|광주|대전|울산|세종|경기|강원|충청|충북|충남|전라|전북|전남|경상|경북|경남|제주)")
 BUNJI = re.compile(r"^\s*(산\s*)?(\d+)(?:\s*-\s*(\d+))?")
+# 옛 지번 표기 'N번지 M호'의 M은 부번이다 (의원·약국 2020년 전 레코드). 'N-M'으로 맞춘 뒤 비교한다.
+# '820번지 9호 501호'처럼 뒤에 오는 호수는 건드리지 않는다.
+BUNJI_HO = re.compile(r"(\d+)\s*번지\s*(\d+)\s*호")
+BUNJI_ONLY = re.compile(r"(\d+)\s*번지")
+
+
+def normalize_bunji_text(text: str) -> str:
+    """'1690번지 1호' → '1690-1', '103번지' → '103'. 그 밖의 글자는 그대로."""
+    return BUNJI_ONLY.sub(r"\1", BUNJI_HO.sub(r"\1-\2", text))
+
+
+def jibun_key(addr: pd.Series) -> pd.Series:
+    """교체 판정용 지번주소 키 [F2]: 공백을 하나로, 번지 표기를 'N-M'으로 맞춘다."""
+    s = addr.str.replace(r"\s+", " ", regex=True).str.strip()
+    return s.str.replace(BUNJI_HO, r"\1-\2", regex=True).str.replace(BUNJI_ONLY, r"\1", regex=True)
 
 
 def ldong_lookup(ldong: pd.DataFrame) -> dict[tuple[str, str], str]:
@@ -216,7 +231,7 @@ def parse_jibun(addr: str | None, table: dict) -> tuple[str | None, str | None, 
     code, used, norm = _find_dong(gu, token, table)
     if code is None:
         return gu, None, False, None
-    bm = BUNJI.match(rest[len(used):])
+    bm = BUNJI.match(normalize_bunji_text(rest[len(used):]))
     bunji = None
     if bm and int(bm.group(2)) > 0:
         bunji = ("산" if bm.group(1) else "") + str(int(bm.group(2)))
