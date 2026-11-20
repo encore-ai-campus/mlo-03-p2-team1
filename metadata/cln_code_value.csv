@@ -66,3 +66,7 @@ ISSUE_CD,LDONG_NOT_CURRENT,G5·S1 실거래가·상가정보 법정동을 현행
 ISSUE_CD,ABNRM_UNIT_AMT,G6 매매 ㎡당 금액이 ABNRM_UNIT_AMT_MIN 미만 (서울),4장 issue_list
 ISSUE_CD,OUT_SCOPE_INST,H2 심평원 보건소·보건지소·조산원 (서울),4장 issue_list
 ISSUE_CD,ABNRM_ESTB,H2 심평원 개설일이 ABNRM_LCNS_BEFORE_DT 이전 (서울),4장 issue_list
+LDONG_SE_CD,시도,법정동 코드 뒤 8자리가 0,L1
+LDONG_SE_CD,시군구,법정동 코드 뒤 5자리가 0 (시 아래 일반구 포함),L1
+LDONG_SE_CD,읍면동,법정동 코드 뒤 2자리가 0,L1
+LDONG_SE_CD,리,법정동 코드 뒤 2자리가 0이 아님,L1
