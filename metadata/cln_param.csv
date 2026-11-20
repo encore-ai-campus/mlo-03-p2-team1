@@ -9,7 +9,8 @@ COLLECT_DT,beauty,2026-11-19,DATE,수집일
 ANLS_BGN_DT,*,2017-01-01,DATE,분석 시작 (2017Q1)
 ANLS_END_DT,*,2026-09-30,DATE,"분석 종료 (2026Q3, 실거래가 마지막 월). 모든 COLLECT_DT 보다 앞이어야 함"
 ABNRM_LCNS_BEFORE_DT,*,1950-01-01,DATE,이 날짜 이전 인허가일 → ABNRM_LCNS_DTM_YN (C5)
-SEOUL_SGG_PREFIX,apt_trade;apt_rent,11,,골드 서울 필터: SGG_CD 앞 2자리 (A3). 03은 쓰지 않음
+SEOUL_SGG_PREFIX,apt_trade;apt_rent;store_info;ldong_code,11,,골드 서울 필터: SGG_CD 앞 2자리 (A3). 03은 행을 거르지 않고 서울 건수 기록에만 씀
+STORE_SIDO_FILE_CNT,store_info,16,개,S0 상가정보 02 시도별 파일 수. 다르면 03 실패 (파일 누락 방지)
 ABNRM_UNIT_AMT_MIN,apt_trade,1000000,원/㎡,G6 매매 단가 이상값 기준. 이 값 미만이면 issue_list ABNRM_UNIT_AMT (값 유지)
 SEOUL_TM_X_MIN,*,179000,m,"서울 TM X 범위 (C6 OUT_SEOUL_COORD). 02 실측 서울 주소 업소 180,451~216,077"
 SEOUL_TM_X_MAX,*,219000,m,

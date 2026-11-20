@@ -521,9 +521,12 @@ def clean_hira(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[
     files = hira02()
     tables = [pq.read_table(f) for f in files]
     schema02 = tables[0].schema
+    for f, t in zip(files[1:], tables[1:]):      # 병원 스키마 기준으로 합치므로, 약국에만 있는 컬럼은 빠진다 → 쓰기 전에 중단
+        if extra := [c for c in t.schema.names if c not in schema02.names]:
+            raise ValueError(f"H0: {f.name} 에만 있는 컬럼 {extra} (병원 스키마 기준으로 합치면 빠짐)")
+    problems: list[str] = []
     df = pd.concat([t.to_pandas(date_as_object=False) for t in tables], ignore_index=True)[schema02.names]
     rows02 = sum(t.num_rows for t in tables)
-    problems: list[str] = []
     for f, t in zip(files, tables):
         log.add("H0", f.name.split("__")[-1].replace(".parquet", ""), t.num_rows, "03 에 합친 02 파일")
     if df["MED_INST_KEY"].duplicated().any():
@@ -592,11 +595,15 @@ def clean_store(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list
     층 변환 실패(FLR_NUM)는 02 STD_ERR_TXT 에 있으므로 건수만 [S2]."""
     ds = "store_info"
     files = store02()
+    if len(files) != (n_expect := int(meta.p("STORE_SIDO_FILE_CNT", ds))):
+        raise FileNotFoundError(f"store_info: 02 시도별 파일이 {len(files)}개 ({n_expect}개여야 함). 02 단계를 먼저 실행하세요")
     tables = [pq.read_table(f) for f in files]
     problems: list[str] = []
     schema02 = tables[0].schema
-    if any(not t.schema.equals(schema02) for t in tables[1:]):
-        problems.append("S0: 시도별 02 파일의 스키마가 다름")
+    for f, t in zip(files[1:], tables[1:]):      # concat_tables 는 스키마가 다르면 이유 없이 실패하므로 먼저 알린다
+        if not t.schema.equals(schema02):
+            diff = sorted(set(t.schema.names) ^ set(schema02.names)) or "컬럼 타입·순서"
+            raise ValueError(f"S0: {f.name} 의 스키마가 {files[0].name} 과 다름 ({diff})")
     table = pa.concat_tables(tables)
     rows02 = sum(t.num_rows for t in tables)
     for f, t in zip(files, tables):
@@ -604,7 +611,7 @@ def clean_store(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list
     df = table.select(["STORE_KEY", "SGG_CD", "LDONG_CD", "LDONG_NM", "STD_ERR_TXT"]).to_pandas()
     if df["STORE_KEY"].duplicated().any():
         problems.append("S0: 시도별 파일을 합친 뒤 STORE_KEY 중복")
-    seoul = df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", "apt_trade"))
+    seoul = df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", ds))
 
     # [S1] 법정동: 현행 코드면 그대로, 아니면 SGG_CD + LDONG_NM 재조회, 못 찾으면 NULL
     current = set(ldong.loc[~ldong["ABL_YN"].astype(bool), "LDONG_CD"])
@@ -666,7 +673,7 @@ def clean_ldong(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list
         problems.append("L0: 10자리가 아닌 LDONG_CD")
     h = R.ldong_hierarchy(df)
     df = pd.concat([df, h], axis=1)
-    seoul = df["SIDO_CD"] == meta.p("SEOUL_SGG_PREFIX", "apt_trade")
+    seoul = df["SIDO_CD"] == meta.p("SEOUL_SGG_PREFIX", ds)
     cur = ~df["ABL_YN"].astype(bool)
 
     for se in ["시도", "시군구", "읍면동", "리"]:
