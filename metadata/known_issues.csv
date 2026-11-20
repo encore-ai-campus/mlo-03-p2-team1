@@ -23,4 +23,4 @@ KI21,C6,*,SITE_TEL,02-0000-0000 (인허가 5종 합계),8191,02 전체,PLACEHOLD
 KI22,D4,clinic,JIBUN_ADDR,전출 의원 주소가 새 주소로 갱신 (LGOV_CD 구 ≠ 주소 구),10,bronze 점검,실패_전출주소
 KI23,E5,clinic,UPTAE_NM,보건소·보건지소·조산원,50,02 전체,대상외 + OUT_SCOPE_YN
 KI24,E6,beauty,UPTAE_NM,일반이용업,2,02 전체,대상외 + OUT_SCOPE_YN
-KI25,D3,*,JIBUN_ADDR,서울 밖 주소 (2017 이후 영업 기준),28,"bronze 점검, 업종별 4~14",실패_서울밖 + OUT_SEOUL_ADDR_YN
+KI25,D3,*,JIBUN_ADDR,서울 밖 주소 (2017 이후 영업 기준),22,"주소 기준 24 − 전출 의원 2 ([D4] 실패_전출주소), 전체 기간 업종별 1~14",실패_서울밖 + OUT_SEOUL_ADDR_YN
