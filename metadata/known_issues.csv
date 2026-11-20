@@ -24,3 +24,6 @@ KI22,D4,clinic,JIBUN_ADDR,전출 의원 주소가 새 주소로 갱신 (LGOV_CD 
 KI23,E5,clinic,UPTAE_NM,보건소·보건지소·조산원,50,02 전체,대상외 + OUT_SCOPE_YN
 KI24,E6,beauty,UPTAE_NM,일반이용업,2,02 전체,대상외 + OUT_SCOPE_YN
 KI25,D3,*,JIBUN_ADDR,서울 밖 주소 (2017 이후 영업 기준),22,"주소 기준 24 − 전출 의원 2 ([D4] 실패_전출주소), 전체 기간 업종별 1~14",실패_서울밖 + OUT_SEOUL_ADDR_YN
+KI26,G5,apt_trade,LDONG_CD,서울 매매 LDONG_CD 가 현행 법정동 코드표에 없음 (신당동 13·사당동 5·도봉동 2),20,02 전체 (서울),LDONG_CD NULL + LDONG_SRC_CD 실패 + LDONG_NOT_CURRENT
+KI27,G2,apt_trade,SAME_DEAL_YN,서울 매매 동일 조건 거래 (해제 제외 키 7개),12798,02 전체 (서울),SAME_DEAL_YN + SAME_DEAL
+KI28,G1,apt_trade,CNCL_YN,서울 매매 계약 해제 (행 유지),17661,02 전체 (서울),골드 가격·거래 수에서 제외

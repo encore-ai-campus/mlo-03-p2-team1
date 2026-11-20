@@ -129,6 +129,23 @@ r = links([("A", "약국", "2019-07-01", "2019-07-03", "3000000", None, "L1", "1
            ("B", "약국", "2019-06-30", None, "3000000", None, "L1", "1", "x")])
 check("F0 시간 조건 → TIME_CONFLICT", (r.repl_pre.notna().sum(), [i["issue_cd"] for i in r.issues]), (0, ["TIME_CONFLICT"]))
 
+# [G5] 실거래가 법정동: 현행 코드 유지 / SGG_CD + UMD_NM 재조회 / 실패면 NULL
+ld = pd.DataFrame({"LDONG_CD": ["1114016200", "1120004900", "1162010100", "4113510100", "4113710100"],
+                   "LDONG_NM": ["서울특별시 중구 신당동", "서울특별시 성동구 신당동", "서울특별시 관악구 봉천동",
+                                "경기도 성남시 분당구 정자동", "경기도 성남시 수정구 정자동"],
+                   "ABL_YN": [False, True, False, False, False]})
+tr = pd.DataFrame({"LDONG_CD": ["1114016200", "1162099900", "1120016200"], "SGG_CD": ["11140", "11620", "11200"],
+                   "UMD_NM": ["신당동", "봉천동", "신당동"]})
+code, src = R.trade_ldong(tr, set(ld.loc[~ld["ABL_YN"], "LDONG_CD"]), R.sgg_umd_lookup(ld))
+check("G5 현행 코드 유지 / 재조회 / 폐지 동명은 실패(NULL)", (nn(code), list(src)),
+      (["1114016200", "1162010100", None], ["원본코드", "시군구_동명", "실패"]))
+check("G5 폐지 코드는 재조회 표에 없음", ("11200", "신당동") in R.sgg_umd_lookup(ld), False)
+# [G2] 동일 조건 거래: 해제 행은 묶음에서 빼고, 키 7개가 같은 해제 아닌 행만 묶음
+k = dict(APT_KEY="A1", DEAL_DTM=pd.Timestamp("2024-01-05"), DEAL_AMT_NUM=1e9, EXCL_AREA_NUM=84.9, FLR_NUM=10, APT_DONG_TXT=None)
+deals = pd.DataFrame([dict(k, LDONG_CD="1111010100", CNCL_YN=False), dict(k, LDONG_CD="1111010100", CNCL_YN=False),
+                      dict(k, LDONG_CD="1111010100", CNCL_YN=True), dict(k, LDONG_CD="1111010200", CNCL_YN=False)])
+check("G2 동일 조건 묶음 (해제·다른 동 제외)", list(R.same_deal(deals).notna()), [True, True, False, False])
+
 # 완료 조건 6 검사 함수
 bad = pd.DataFrame({"LCNS_KEY": ["A", "B"], "MOVE_PRE_KEY": [None, "B"], "REPL_PRE_KEY": [None, None],
                     "ANLS_LCNS_DTM": pd.to_datetime(["2020-01-01", "2020-01-01"])})

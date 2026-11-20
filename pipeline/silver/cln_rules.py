@@ -19,6 +19,8 @@ NEW_COLUMNS = [   # 03 이 붙이는 컬럼 (순서 고정)
     "LDONG_CD", "LDONG_SRC_CD", "ANLS_INDUTY_CD", "INDUTY_RULE_CD", "MOVE_PRE_KEY", "REPL_PRE_KEY", "REPL_TYPE_CD",
     "ABNRM_LCNS_DTM_YN", "OUT_SEOUL_ADDR_YN", "OUT_SCOPE_YN",
 ]
+TRADE_NEW_COLUMNS = ["LDONG_SRC_CD", "SAME_DEAL_YN"]   # 실거래가 매매 03 이 붙이는 컬럼 (LDONG_CD 는 02 컬럼을 고침) [G2]·[G5]
+TRADE_SAME_DEAL_KEY = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT"]
 CODE_COLUMNS = ["ANLS_TRD_STATE_CD", "TRD_STATE_SRC_CD", "CLSBIZ_SRC_CD", "LCNS_SRC_CD", "LDONG_SRC_CD",
                 "ANLS_INDUTY_CD", "INDUTY_RULE_CD", "REPL_TYPE_CD"]
 
@@ -76,7 +78,7 @@ def load_meta(metadata_dir: Path) -> Meta:
 def check_meta(m: Meta) -> list[str]:
     """03 실행 전 metadata 검사. 문제 목록 (비면 통과)."""
     problems = []
-    for col in NEW_COLUMNS:
+    for col in NEW_COLUMNS + TRADE_NEW_COLUMNS:
         missing = [w for w in col.split("_") if w not in m.words]
         if missing:
             problems.append(f"std_word.csv 에 없는 단어 {missing} (컬럼 {col})")
@@ -108,10 +110,40 @@ def check_meta(m: Meta) -> list[str]:
             m.p(name)
     except KeyError as exc:
         problems.append(str(exc))
-    flags_made = [c for c in NEW_COLUMNS if c.endswith("_YN")]
+    flags_made = [c for c in NEW_COLUMNS + TRADE_NEW_COLUMNS if c.endswith("_YN")]
     if bad := set(flags_made) - set(m.flag["flag"]):
         problems.append(f"cln_flag.csv 에 없는 플래그 {sorted(bad)}")
     return problems
+
+
+# ──────────────────────────────────────────────────────────────
+# 실거래가 매매 [G2]·[G5]
+# ──────────────────────────────────────────────────────────────
+def sgg_umd_lookup(ldong: pd.DataFrame) -> dict[tuple[str, str], str]:
+    """현행(폐지 아님) 법정동 (시군구 코드 5자리, 마지막 이름) → 10자리 코드. 같은 키가 둘 이상이면 넣지 않는다."""
+    cur = ldong[~ldong["ABL_YN"].astype(bool) & (ldong["LDONG_CD"].str[5:] != "00000")]
+    keys = pd.DataFrame({"SGG": cur["LDONG_CD"].str[:5], "UMD": cur["LDONG_NM"].str.split().str[-1], "CD": cur["LDONG_CD"]})
+    keys = keys.drop_duplicates(["SGG", "UMD"], keep=False)
+    return dict(zip(zip(keys["SGG"], keys["UMD"]), keys["CD"]))
+
+
+def trade_ldong(df: pd.DataFrame, current: set[str], lookup: dict) -> tuple[pd.Series, pd.Series]:
+    """[G5] 실거래가 LDONG_CD 를 현행 법정동 코드표에 맞춘다. (03 LDONG_CD, LDONG_SRC_CD).
+    현행 코드면 그대로(원본코드), 아니면 SGG_CD + UMD_NM 으로 다시 찾고(시군구_동명), 못 찾으면 NULL(실패).
+    서울 필터는 하지 않는다 (82개 시군구 모두 같은 규칙)."""
+    ok = df["LDONG_CD"].isin(current)
+    found = pd.Series([lookup.get((g, u)) for g, u in zip(df["SGG_CD"], df["UMD_NM"])], index=df.index)
+    code = df["LDONG_CD"].where(ok, found)
+    src = pd.Series(np.select([ok, found.notna()], ["원본코드", "시군구_동명"], "실패"), index=df.index)
+    return code, src
+
+
+def same_deal(df: pd.DataFrame) -> pd.Series:
+    """[G2] 해제 아닌 매매 중 키 7개가 같은 묶음 번호 (묶음에 안 들면 NA). 묶음 번호는 키 정렬 순서."""
+    live = df[~df["CNCL_YN"].fillna(False).astype(bool)]
+    dup = live[live.duplicated(TRADE_SAME_DEAL_KEY, keep=False)]
+    grp = dup.groupby(TRADE_SAME_DEAL_KEY, dropna=False, sort=True).ngroup() + 1
+    return grp.reindex(df.index).astype("Int64")
 
 
 # ──────────────────────────────────────────────────────────────

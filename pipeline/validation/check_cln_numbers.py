@@ -76,6 +76,11 @@ def measure(row) -> int:
         return int((d03[ds]["LDONG_SRC_CD"] == "실패_전출주소").sum())
     if ref in ("E5", "E6"):
         return int(d03[ds]["OUT_SCOPE_YN"].sum())
+    if ref in ("G1", "G2", "G5"):     # 실거래가 매매
+        col03 = {"G1": "CNCL_YN", "G2": "SAME_DEAL_YN", "G5": "LDONG_SRC_CD"}[ref]
+        t = pd.read_parquet(SILVER / ds / f"03_silver__{ds}.parquet", columns=["SGG_CD", col03])
+        t = t[t["SGG_CD"].str.startswith("11")]
+        return int((t[col03] == "실패").sum()) if ref == "G5" else int(t[col03].fillna(False).astype(bool).sum())
     if ref == "D3":
         return sum(int(clog(d, "D3", "서울밖_2017이후영업") or 0) for d in DS)
     raise KeyError(row.issue_id)
