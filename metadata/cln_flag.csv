@@ -3,4 +3,4 @@ ABNRM_LCNS_DTM_YN,이상 인허가일 여부,food_general;food_rest;clinic;pharm
 OUT_SEOUL_ADDR_YN,서울 밖 주소 여부,food_general;food_rest;clinic;pharmacy;beauty,03,주소가 서울이 아님 (LDONG_SRC_CD = 실패_서울밖 과 같아야 함),동제외_구포함,동제외_구포함,동제외_구포함,해당없음,D3
 OUT_SCOPE_YN,대상 외 업태 여부,clinic;beauty,03,"보건소·보건지소·조산원, 일반이용업 (ANLS_INDUTY_CD = 대상외 와 같아야 함)",제외,제외,제외,해당없음,E5;E6
 CNCL_YN,계약 해제 여부,apt_trade,02,"실거래 계약 해제 (02 표준화에서 생성, 03은 컬럼을 만들지 않음)",해당없음,해당없음,해당없음,제외,G1
-SAME_DEAL_YN,동일 조건 거래 여부,apt_trade,03,"해제(CNCL_YN) 아닌 매매 중 키 7개(LDONG_CD·APT_KEY·DEAL_DTM·DEAL_AMT_NUM·EXCL_AREA_NUM·FLR_NUM·APT_DONG_TXT)가 같은 묶음에 속함. 골드 처리는 오후 논의에서 확정",해당없음,해당없음,해당없음,미정,G2
+SAME_DEAL_YN,동일 조건 거래 여부,apt_trade,03,"해제(CNCL_YN) 아닌 매매 중 키 7개(LDONG_CD·APT_KEY·DEAL_DTM·DEAL_AMT_NUM·EXCL_AREA_NUM·FLR_NUM·APT_DONG_TXT)가 같은 묶음에 속함. 골드는 묶음당 1건만 남김 (SRC_FILE_NM·SRC_ROW_NUM 가장 앞 행), 결정 2026-11-20",해당없음,해당없음,해당없음,묶음당1건,G2
