@@ -1,7 +1,7 @@
 """[03] Silver 정제: data/silver/{ds}/02_*.parquet → data/silver/{ds}/03_silver__{ds}.parquet
 
 사용법
-  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가(issue_list 만)
+  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매
   python pipeline/silver/03_clean.py --dataset pharmacy    # 일부만 (기록의 다른 데이터셋 행은 유지)
   python pipeline/silver/03_clean.py --check               # metadata 검사만 (파일을 쓰지 않음)
 
@@ -9,7 +9,8 @@
 - 원본 컬럼은 덮어쓰지 않는다. 판단한 값은 분석용 컬럼 + 출처 컬럼으로 붙인다.
 - 행을 지우는 것은 관리번호 중복 [C3] 뿐이다.
 - 일반음식점 03 파일은 하나 (API 본체 + CSV 의 LDONG_CD·UTMK 보완) [A1]. food_general_file 03 파일은 만들지 않는다.
-- 실거래가는 03 파일을 만들지 않고 동일 조건 거래 묶음만 issue_list 에 남긴다 [G2].
+- 실거래가 매매는 행을 모두 유지(해제 포함)하고, LDONG_CD 를 현행 법정동 코드표에 맞추며(못 찾으면 NULL, SGG_CD 유지) [G5],
+  동일 조건 거래를 SAME_DEAL_YN 플래그로 둔다(묶음 목록은 서울만 issue_list) [G2]. 서울 필터는 골드에서 [A3].
 
 기록 (report/silver/)
   03_silver__manifest.csv   : 파일별 행 수(02 → 03), 중복 제거, 완료 조건 결과, 재실행 상태
@@ -44,7 +45,7 @@ ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade"]
 
 NEW_TYPES = {
     "ANLS_CLSBIZ_DTM": pa.date32(), "ANLS_LCNS_DTM": pa.date32(),
-    "ABNRM_LCNS_DTM_YN": pa.bool_(), "OUT_SEOUL_ADDR_YN": pa.bool_(), "OUT_SCOPE_YN": pa.bool_(),
+    "ABNRM_LCNS_DTM_YN": pa.bool_(), "OUT_SEOUL_ADDR_YN": pa.bool_(), "OUT_SCOPE_YN": pa.bool_(), "SAME_DEAL_YN": pa.bool_(),
     "UTMK_X_NUM": pa.float64(), "UTMK_Y_NUM": pa.float64(),
 }
 
@@ -332,10 +333,11 @@ def clean_license(dataset: str, meta: R.Meta, table: dict, log: Log) -> tuple[di
     }, problems
 
 
-def write_parquet(df: pd.DataFrame, schema02: pa.Schema, out: Path) -> tuple[str, str, int]:
+def write_parquet(df: pd.DataFrame, schema02: pa.Schema, out: Path, new_columns: list[str] | None = None) -> tuple[str, str, int]:
     """02 컬럼 순서·타입 유지 + 새 컬럼. 내용이 같으면 기존 파일을 그대로 둔다."""
-    base = [f for f in schema02 if f.name in df.columns]
-    extra = [c for c in ["UTMK_X_NUM", "UTMK_Y_NUM"] if c in df.columns] + R.NEW_COLUMNS
+    new_columns = R.NEW_COLUMNS if new_columns is None else new_columns
+    base = [f for f in schema02 if f.name in df.columns and f.name not in new_columns]
+    extra = [c for c in ["UTMK_X_NUM", "UTMK_Y_NUM"] if c in df.columns] + new_columns
     fields = base + [pa.field(c, NEW_TYPES.get(c, pa.string())) for c in extra]
     arrays = []
     for f in fields:
@@ -343,7 +345,10 @@ def write_parquet(df: pd.DataFrame, schema02: pa.Schema, out: Path) -> tuple[str
         if pa.types.is_date32(f.type) or pa.types.is_timestamp(f.type):
             arr = pa.Array.from_pandas(pd.to_datetime(s)).cast(f.type, safe=False)
         elif pa.types.is_string(f.type):
-            arr = pa.array([None if pd.isna(v) else str(v) for v in s], type=pa.string())
+            try:      # 값이 모두 문자열·결측이면 바로 변환 (실거래가 수백만 행)
+                arr = pa.array(s, type=pa.string(), from_pandas=True)
+            except (pa.ArrowTypeError, pa.ArrowInvalid):
+                arr = pa.array([None if pd.isna(v) else str(v) for v in s], type=pa.string())
         else:
             arr = pa.Array.from_pandas(s, type=f.type)
         arrays.append(arr)
@@ -356,29 +361,63 @@ def write_parquet(df: pd.DataFrame, schema02: pa.Schema, out: Path) -> tuple[str
 
 
 # ──────────────────────────────────────────────────────────────
-# 실거래가 [G2]
+# 실거래가 매매 [G1]·[G2]·[G5]
 # ──────────────────────────────────────────────────────────────
-def same_deal(log: Log, meta: R.Meta) -> dict:
-    src = silver02("apt_trade")
-    cols = ["SGG_CD", "LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT",
-            "CNCL_YN", "SRC_FILE_NM", "SRC_ROW_NUM"]
-    df = pd.read_parquet(src, columns=cols)
+def clean_trade(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[str]]:
+    """실거래가 매매 03: 행은 그대로(해제 포함), LDONG_CD 를 현행 코드표에 맞추고 [G5], 동일 조건 거래 플래그 [G2]."""
+    ds = "apt_trade"
+    src = silver02(ds)
+    df, schema02 = read02(src)
     rows02 = len(df)
-    seoul = df[df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", "apt_trade"))]
-    key = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM"]
-    log.add("G2", "서울_매매", len(seoul))
-    log.add("G2", "키6_겹치는행", int(seoul.duplicated(key, keep=False).sum()))
-    s = seoul[~seoul["CNCL_YN"].fillna(False)]
-    key7 = key + ["APT_DONG_TXT"]
-    dup = s[s.duplicated(key7, keep=False)].copy()
-    dup["GRP"] = dup.groupby(key7, dropna=False, sort=True).ngroup() + 1
-    log.add("G2", "키7_해제제외_겹치는행", len(dup), "issue_list SAME_DEAL")
-    log.issue("SAME_DEAL", dup["SRC_FILE_NM"].str.split("/").str[-1] + ":" + dup["SRC_ROW_NUM"].astype(str), "묶음",
-              "묶음 " + dup["GRP"].astype(str))
-    print(f"[03] apt_trade: 서울 동일 조건 거래 {len(dup):,}행 → issue_list (03 파일 없음)")
-    return {"dataset": "apt_trade", "silver02_file": relative(src), "silver03_file": "", "rows_02": rows02,
-            "dup_removed": 0, "rows_03_written": 0, "rows_03_parquet": 0, "row_check": True, "columns_count": 0,
-            "file_sha256": "", "status": "issue_list만"}
+    problems: list[str] = []
+    seoul = df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", ds))
+    rec_key = df["SRC_FILE_NM"].str.split("/").str[-1] + ":" + df["SRC_ROW_NUM"].astype(str)
+
+    # [G5] 법정동: 현행 코드 → 그대로 / 아니면 SGG_CD + UMD_NM / 못 찾으면 NULL (구 코드 SGG_CD 는 남음)
+    current = set(ldong.loc[~ldong["ABL_YN"].astype(bool), "LDONG_CD"])
+    code, ldsrc = R.trade_ldong(df, current, R.sgg_umd_lookup(ldong))
+    changed = df["LDONG_CD"].ne(code) | code.isna()
+    log.counts("LDONG_SRC_CD", ldsrc)
+    log.counts("LDONG_SRC_CD_서울", ldsrc[seoul], "SGG_CD 앞 2자리 11")
+    log.issue("LDONG_NOT_CURRENT", rec_key[changed], "LDONG_CD",
+              df.loc[changed, "LDONG_CD"] + " → " + code[changed].fillna("(NULL)") + " / " + ldsrc[changed]
+              + " / SGG_CD " + df.loc[changed, "SGG_CD"] + " UMD_NM " + df.loc[changed, "UMD_NM"].fillna(""))
+    df["LDONG_CD"] = code
+    df["LDONG_SRC_CD"] = ldsrc
+
+    # [G2] 동일 조건 거래: 플래그는 82개 시군구 전체, 묶음 목록(issue_list)은 기존대로 서울만
+    grp = R.same_deal(df)
+    df["SAME_DEAL_YN"] = grp.notna()
+    key6 = R.TRADE_SAME_DEAL_KEY[:-1]
+    log.add("G2", "서울_매매", int(seoul.sum()))
+    log.add("G2", "키6_겹치는행", int(df[seoul].duplicated(key6, keep=False).sum()), "서울, 해제 포함")
+    log.add("G2", "SAME_DEAL_YN", int(df["SAME_DEAL_YN"].sum()), "82개 시군구 전체")
+    log.add("G2", "키7_해제제외_겹치는행", int(df.loc[seoul, "SAME_DEAL_YN"].sum()), "서울, issue_list SAME_DEAL")
+    s_grp = grp[seoul].dropna()
+    s_grp = (s_grp.rank(method="dense").astype(int))            # 서울 안에서 묶음 번호 1부터
+    log.issue("SAME_DEAL", rec_key[s_grp.index], "묶음", "묶음 " + s_grp.astype(str))
+    log.add("G1", "CNCL_YN", int(df["CNCL_YN"].fillna(False).astype(bool).sum()), "행 유지, 골드 가격·거래 수에서 제외")
+
+    # 검사: 조건 3 (코드표), [G5] 결과 형식
+    if bad := set(ldsrc) - meta.codes("LDONG_SRC_CD"):
+        problems.append(f"조건3: 코드표에 없는 LDONG_SRC_CD {sorted(bad)}")
+    if (code.notna() & ~code.isin(current)).any():
+        problems.append("G5: 현행 코드표에 없는 LDONG_CD 가 남음")
+    if not (code.isna() == (ldsrc == "실패")).all():
+        problems.append("G5: LDONG_CD NULL 과 LDONG_SRC_CD = 실패 가 일치하지 않음")
+    if df["SGG_CD"].isna().any():
+        problems.append("G5: SGG_CD 가 빈 행이 있음")
+
+    out = SILVER_DIR / ds / f"03_silver__{ds}.parquet"
+    status, sha, rows_parquet = write_parquet(df, schema02, out, R.TRADE_NEW_COLUMNS)
+    row_ok = rows02 == len(df) == rows_parquet
+    if not row_ok:
+        problems.append(f"조건2: 행 수 02 {rows02} / 03 {rows_parquet}")
+    print(f"[03] {ds}: {rows02:,}행 → {relative(out)} ({status}) | LDONG 고침 {int(changed.sum())}행, "
+          f"SAME_DEAL_YN {int(df['SAME_DEAL_YN'].sum()):,}행")
+    return {"dataset": ds, "silver02_file": relative(src), "silver03_file": relative(out), "rows_02": rows02,
+            "dup_removed": 0, "rows_03_written": len(df), "rows_03_parquet": rows_parquet, "row_check": row_ok,
+            "columns_count": len(df.columns), "file_sha256": sha, "status": status}, problems
 
 
 # ──────────────────────────────────────────────────────────────
@@ -419,7 +458,7 @@ def main() -> int:
     for ds in datasets:
         log = Log(ds)
         if ds == "apt_trade":
-            rec, probs = same_deal(log, meta), []
+            rec, probs = clean_trade(meta, ldong, log)
         else:
             rec, probs = clean_license(ds, meta, table, log)
         records.append(rec)

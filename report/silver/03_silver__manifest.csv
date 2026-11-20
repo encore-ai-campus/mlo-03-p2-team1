@@ -4,4 +4,4 @@ food_rest,data/silver/food_rest/02_silver__food_rest__20261118.parquet,data/silv
 clinic,data/silver/clinic/02_silver__clinic__20261119.parquet,data/silver/clinic/03_silver__clinic.parquet,37791,0,37791,37791,True,49,1eda3e6e0b91cffded402dc09fec3e212e79c6fc92ed9e8e87a2b6c6a918669a,unchanged,,True
 pharmacy,data/silver/pharmacy/02_silver__pharmacy__20261119.parquet,data/silver/pharmacy/03_silver__pharmacy.parquet,22500,0,22500,22500,True,43,62e1ef17fe9c97b05d6f1b102135e09943fb346869c0653343936416006642e6,unchanged,,True
 beauty,data/silver/beauty/02_silver__beauty__20261119.parquet,data/silver/beauty/03_silver__beauty.parquet,100349,0,100349,100349,True,56,3a96399d97759e94587b4d6ba58aa4efe68678f149bf21b3fedfd84886198b29,unchanged,,True
-apt_trade,data/silver/apt_trade/02_silver__apt_trade.parquet,,4265480,0,0,0,True,0,,issue_list만,,True
+apt_trade,data/silver/apt_trade/02_silver__apt_trade.parquet,data/silver/apt_trade/03_silver__apt_trade.parquet,4265480,0,4265480,4265480,True,36,cd474f125f39797c50eef2abae707f92c8b9830cac7172d3da77954a3f9aa7f7,unchanged,,True

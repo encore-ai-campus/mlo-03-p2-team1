@@ -326,7 +326,14 @@ beauty,이슈,OUT_SEOUL_COORD,3,
 beauty,이슈,PLACEHOLDER_TEL,835,
 beauty,이슈,TIME_CONFLICT,16,
 beauty,이슈,ZERO_AREA,3913,
+apt_trade,LDONG_SRC_CD,실패,20,
+apt_trade,LDONG_SRC_CD,원본코드,4265460,
+apt_trade,LDONG_SRC_CD_서울,실패,20,SGG_CD 앞 2자리 11
+apt_trade,LDONG_SRC_CD_서울,원본코드,1443108,SGG_CD 앞 2자리 11
 apt_trade,G2,서울_매매,1443128,
-apt_trade,G2,키6_겹치는행,35863,
-apt_trade,G2,키7_해제제외_겹치는행,12798,issue_list SAME_DEAL
+apt_trade,G2,키6_겹치는행,35863,"서울, 해제 포함"
+apt_trade,G2,SAME_DEAL_YN,37756,82개 시군구 전체
+apt_trade,G2,키7_해제제외_겹치는행,12798,"서울, issue_list SAME_DEAL"
+apt_trade,G1,CNCL_YN,77802,"행 유지, 골드 가격·거래 수에서 제외"
+apt_trade,이슈,LDONG_NOT_CURRENT,20,
 apt_trade,이슈,SAME_DEAL,12798,
