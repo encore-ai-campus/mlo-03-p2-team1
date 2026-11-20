@@ -83,7 +83,7 @@ mlo-03-p2-team1/
 ├── SPEC.md                # 기술 스택·인프라 및 시스템 상세 명세 (본 문서)
 ├── data/                  # 단계별 로컬 데이터 스토리지 (실제 데이터는 .gitignore 제외)
 │   ├── source/            # 읽기 전용 수집 원천 파일(CSV/ZIP/XML)
-│   ├── watch/             # 파일→DB 적재 검증용 CSV 인입
+│   ├── watch/             # 신규 파일 인입 (현재 CSV 적재 검증용)
 │   ├── processed/         # DB 적재 처리 완료 CSV 보관
 │   ├── bronze/            # 1차 적재 Parquet (원천 행 수·값 보존 + 추적 컬럼)
 │   ├── silver/            # 2차·3차 표준화·정제 Parquet
