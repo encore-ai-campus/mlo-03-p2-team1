@@ -6,6 +6,7 @@ FastAPI로 PostgreSQL 데이터를 대시보드에 제공한다. SQL은 psycopg�
 backend/app/
 ├── main.py                # FastAPI 앱과 라우터 등록
 ├── db.py                  # PostgreSQL 연결
+├── watch.py               # CSV 감지 및 DB 적재 기능 검증
 └── features/
     ├── dashboard/         # 대시보드 조회 기능의 구성과 구현 위치
     └── health/            # DB 상태 확인 API와 테스트
@@ -26,9 +27,7 @@ python -m uvicorn backend.app.main:app --reload
 
 ## 워치 폴더
 
-> 아래 실행 안내는 별도 구현 PR이 병합된 뒤 적용됩니다.
-
-루트 `.env`가 Bronze PostgreSQL DB를 가리키도록 설정한 뒤, 저장소 루트에서 FastAPI 서버를 실행한다.
+워치 폴더는 파일 감지부터 DB 적재까지의 동작을 검증하는 데 사용한다. 검증에는 `public.bronze_file`과 `public.apt_trade` 테이블이 있는 PostgreSQL을 사용한다. 루트 `.env`에 해당 DB 연결을 설정한 뒤, 저장소 루트에서 FastAPI 서버를 실행한다.
 
 ```powershell
 python -m uvicorn backend.app.main:app --workers 1
