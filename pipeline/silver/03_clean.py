@@ -1,7 +1,7 @@
 """[03] Silver 정제: data/silver/{ds}/02_*.parquet → data/silver/{ds}/03_silver__{ds}.parquet
 
 사용법
-  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세 + 심평원
+  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세 + 심평원 + 상가정보
   python pipeline/silver/03_clean.py --dataset pharmacy    # 일부만 (기록의 다른 데이터셋 행은 유지)
   python pipeline/silver/03_clean.py --check               # metadata 검사만 (파일을 쓰지 않음)
 
@@ -14,6 +14,8 @@
 - 실거래가 전월세는 02 컬럼을 그대로 두고 LDONG_CD·LDONG_SRC_CD 만 붙인다 (SGG_CD + UMD_NM) [G5]. 동일 조건 거래는 건수만.
 - 심평원은 02 파일 12개 중 병원정보·약국정보만 기관 파일 하나로 합치고(상세 10개는 02 에 둠) [H0],
   도로명 주소로 법정 시군구 SGG_CD, UMD_NM·도로명 괄호 동명으로 LDONG_CD 를 붙인다 [H1].
+- 상가정보는 시도별 02 파일 16개를 하나로 합치고(전국 유지) [S0], 현행 코드표에 없는 LDONG_CD 만
+  SGG_CD + LDONG_NM 으로 다시 찾거나 NULL 로 둔다 [S1].
 
 기록 (report/silver/)
   03_silver__manifest.csv   : 파일별 행 수(02 → 03), 중복 제거, 완료 조건 결과, 재실행 상태
@@ -44,7 +46,7 @@ IDX = "03"
 REPORT_SILVER_DIR = REPORT_DIR / "silver"
 ROW_GROUP = 100_000
 COMPRESSION = "snappy"
-ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent", "hira_inst"]
+ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent", "hira_inst", "store_info"]
 
 NEW_TYPES = {
     "ANLS_CLSBIZ_DTM": pa.date32(), "ANLS_LCNS_DTM": pa.date32(),
@@ -64,6 +66,8 @@ def hira02() -> list[Path]:
 def silver02(dataset: str) -> Path:
     if dataset == "hira_inst":
         return hira02()[0]
+    if dataset == "store_info":
+        return store02()[0]
     files = sorted((SILVER_DIR / dataset).glob("02_silver__*.parquet"))
     if len(files) != 1:
         raise FileNotFoundError(f"{dataset}: 02 silver 파일이 {len(files)}개 (1개여야 함). 02 단계를 먼저 실행하세요")
@@ -570,6 +574,81 @@ def clean_hira(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[
             "rows_02": rows02, "dup_removed": 0, "rows_03_written": len(df), "rows_03_parquet": rows_parquet,
             "row_check": row_ok, "columns_count": len(df.columns), "file_sha256": sha, "status": status}, problems
 
+# ──────────────────────────────────────────────────────────────
+# 상가(상권)정보 [S0]·[S1]·[S2]
+# ──────────────────────────────────────────────────────────────
+def store02() -> list[Path]:
+    """상가정보 02 시도별 파일 (파일 이름 순) [S0]."""
+    files = sorted((SILVER_DIR / "store_info").glob("02_silver__store_info__*.parquet"))
+    if not files:
+        raise FileNotFoundError("store_info: 02 silver 파일이 없음. 02 단계를 먼저 실행하세요")
+    return files
+
+
+def clean_store(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[str]]:
+    """상가정보 03: 시도별 02 파일을 하나로 합침 (전국 유지, 02 컬럼 그대로) [S0].
+    LDONG_CD 가 현행 코드표에 없으면 SGG_CD + LDONG_NM 으로 다시 찾고, 못 찾으면 NULL (SGG_CD 유지) [S1].
+    층 변환 실패(FLR_NUM)는 02 STD_ERR_TXT 에 있으므로 건수만 [S2]."""
+    ds = "store_info"
+    files = store02()
+    tables = [pq.read_table(f) for f in files]
+    problems: list[str] = []
+    schema02 = tables[0].schema
+    if any(not t.schema.equals(schema02) for t in tables[1:]):
+        problems.append("S0: 시도별 02 파일의 스키마가 다름")
+    table = pa.concat_tables(tables)
+    rows02 = sum(t.num_rows for t in tables)
+    for f, t in zip(files, tables):
+        log.add("S0", f.name.split("__")[-1].replace(".parquet", ""), t.num_rows, "03 에 합친 02 파일")
+    df = table.select(["STORE_KEY", "SGG_CD", "LDONG_CD", "LDONG_NM", "STD_ERR_TXT"]).to_pandas()
+    if df["STORE_KEY"].duplicated().any():
+        problems.append("S0: 시도별 파일을 합친 뒤 STORE_KEY 중복")
+    seoul = df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", "apt_trade"))
+
+    # [S1] 법정동: 현행 코드면 그대로, 아니면 SGG_CD + LDONG_NM 재조회, 못 찾으면 NULL
+    current = set(ldong.loc[~ldong["ABL_YN"].astype(bool), "LDONG_CD"])
+    code, src = R.trade_ldong(df.rename(columns={"LDONG_NM": "UMD_NM"}), current, R.sgg_umd_lookup(ldong))
+    changed = code.ne(df["LDONG_CD"]).fillna(True) & df["LDONG_CD"].notna()
+    log.counts("LDONG_SRC_CD", src)
+    log.counts("LDONG_SRC_CD_서울", src[seoul], "SGG_CD 앞 2자리 11")
+    log.add("S1", "SGG_CD_LDONG_CD앞5자리_다름", int((df["SGG_CD"] != df["LDONG_CD"].str[:5]).sum()), "값 유지 (원천 그대로)")
+    log.add("S1", "SGG_CD_LDONG_CD앞5자리_다름_서울", int((seoul & (df["SGG_CD"] != df["LDONG_CD"].str[:5])).sum()))
+    log.issue("LDONG_NOT_CURRENT", df.loc[changed, "STORE_KEY"], "LDONG_CD",
+              df.loc[changed, "LDONG_CD"] + " → " + code[changed].fillna("(NULL)") + " / " + src[changed]
+              + " / SGG_CD " + df.loc[changed, "SGG_CD"] + " LDONG_NM " + df.loc[changed, "LDONG_NM"].fillna(""))
+
+    # [S2] 02 에서 넘어온 층 변환 실패 (NULL 유지)
+    flr_fail = df["STD_ERR_TXT"].fillna("").str.contains("FLR_NUM")
+    log.add("S2", "FLR_NUM_변환실패", int(flr_fail.sum()), "02 STD_ERR_TXT, NULL 유지 (원문 FLR_INFO_TXT)")
+    log.add("S2", "FLR_NUM_변환실패_서울", int((seoul & flr_fail).sum()))
+    log.add("S0", "서울_업소", int(seoul.sum()), "SGG_CD 앞 2자리 11, 골드에서 거름")
+
+    fail = src == "실패"
+    if bad := set(src) - meta.codes("LDONG_SRC_CD"):
+        problems.append(f"조건3: 코드표에 없는 LDONG_SRC_CD {sorted(bad)}")
+    if (code.notna() & ~code.isin(current)).any():
+        problems.append("S1: 현행 코드표에 없는 LDONG_CD 가 남음")
+    if not (code.isna() == fail).all():
+        problems.append("S1: LDONG_CD NULL 과 LDONG_SRC_CD = 실패 가 일치하지 않음")
+    if df["SGG_CD"].isna().any():
+        problems.append("S1: SGG_CD 가 빈 행이 있음")
+
+    i = table.schema.get_field_index("LDONG_CD")
+    table = table.set_column(i, table.schema.field(i), pa.array(code, type=pa.string(), from_pandas=True))
+    for c in R.STORE_NEW_COLUMNS:
+        table = table.append_column(pa.field(c, pa.string()), pa.array(src, type=pa.string(), from_pandas=True))
+    out = SILVER_DIR / ds / f"03_silver__{ds}.parquet"
+    temp = out.with_name(out.name + ".tmp")
+    pq.write_table(table, temp, compression=COMPRESSION, row_group_size=ROW_GROUP)
+    status, sha = replace_if_changed(temp, out)
+    row_ok = rows02 == table.num_rows
+    if not row_ok:
+        problems.append(f"조건2: 행 수 02 {rows02} / 03 {table.num_rows}")
+    print(f"[03] {ds}: {len(files)}개 파일 {rows02:,}행 → {relative(out)} ({status}) | 법정동 실패 {int(fail.sum())}행")
+    return {"dataset": ds, "silver02_file": ";".join(relative(f) for f in files), "silver03_file": relative(out),
+            "rows_02": rows02, "dup_removed": 0, "rows_03_written": table.num_rows, "rows_03_parquet": table.num_rows,
+            "row_check": row_ok, "columns_count": table.num_columns, "file_sha256": sha, "status": status}, problems
+
 
 # ──────────────────────────────────────────────────────────────
 # 실행
@@ -614,6 +693,8 @@ def main() -> int:
             rec, probs = clean_rent(meta, ldong, log)
         elif ds == "hira_inst":
             rec, probs = clean_hira(meta, ldong, log)
+        elif ds == "store_info":
+            rec, probs = clean_store(meta, ldong, log)
         else:
             rec, probs = clean_license(ds, meta, table, log)
         records.append(rec)

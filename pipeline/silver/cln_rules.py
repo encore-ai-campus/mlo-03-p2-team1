@@ -22,6 +22,7 @@ NEW_COLUMNS = [   # 03 이 붙이는 컬럼 (순서 고정)
 TRADE_NEW_COLUMNS = ["LDONG_SRC_CD", "SAME_DEAL_YN"]   # 실거래가 매매 03 이 붙이는 컬럼 (LDONG_CD 는 02 컬럼을 고침) [G2]·[G5]
 RENT_NEW_COLUMNS = ["LDONG_CD", "LDONG_SRC_CD"]        # 실거래가 전월세 03 이 붙이는 컬럼 (02 에 LDONG_CD 없음) [G5]
 HIRA_NEW_COLUMNS = ["SGG_CD", "LDONG_CD", "LDONG_SRC_CD"]  # 심평원 03 이 붙이는 컬럼 (법정 시군구·법정동) [H1]
+STORE_NEW_COLUMNS = ["LDONG_SRC_CD"]                       # 상가정보 03 이 붙이는 컬럼 (LDONG_CD 는 02 컬럼을 현행 코드로 덮어씀) [S1]
 HIRA_FILES = ["1.", "2."]                                   # 심평원 03 에 넣는 02 파일 (병원정보, 약국정보) [H0]
 TRADE_SAME_DEAL_KEY = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT"]
 CODE_COLUMNS = ["ANLS_TRD_STATE_CD", "TRD_STATE_SRC_CD", "CLSBIZ_SRC_CD", "LCNS_SRC_CD", "LDONG_SRC_CD",
