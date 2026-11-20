@@ -10,9 +10,3 @@
 - Treat files in `data/source/` as read-only inputs verified by SHA-256 hashes.
 - Define standardization, cleaning, and validation rules in `metadata/*.csv`, and write execution results to `report/`.
 - Produce deterministic outputs (`status=unchanged` when rerun on identical inputs).
-
-## Verification
-Run the check matching the modified area from the repository root:
-- **Pipeline rules:** `python pipeline/validation/check_std_rules.py`
-- **Silver preflight:** `python pipeline/silver/02_normalize.py --check`
-- **Backend tests:** `python -m pytest backend`
