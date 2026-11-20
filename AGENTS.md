@@ -8,5 +8,6 @@
 ## Invariants
 - Keep raw and generated datasets local under `data/` and load secrets exclusively from `.env`.
 - Treat files in `data/source/` as read-only inputs verified by SHA-256 hashes.
-- Define standardization, cleaning, and validation rules in `metadata/*.csv`, and write execution results to `report/`.
+- Define standardization, cleaning, and validation rules in `metadata/*.csv`, and write data pipeline execution results to `report/`.
+- Use `docs/evidence/` when repository work needs verification evidence, such as smoke-test logs or screenshots. Saving evidence is optional.
 - Produce deterministic outputs (`status=unchanged` when rerun on identical inputs).
