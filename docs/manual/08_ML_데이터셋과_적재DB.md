@@ -1,7 +1,7 @@
 # 08. ML 데이터셋과 적재 DB 선택
 
 > **이 문서의 출처**
-> - `docs/설계서_초안.md` — ML 데이터셋 (L689–754), 적재 DB 선택: PostgreSQL vs MariaDB (L756–847)
+> - `../archive/설계서_초안.md` — ML 데이터셋 (L689–754), 적재 DB 선택: PostgreSQL vs MariaDB (L756–847)
 > - `/INTENT.md` — 4장 AI Ready & 학습 모델 의도 (L40–45), 5장 자동 피딩 (L49–67)
 > - `/plan.md` — 4. AI Ready · 모델 (L63–69)
 >
