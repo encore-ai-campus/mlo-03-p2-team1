@@ -66,6 +66,9 @@
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,PC카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,낚시카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,방탈출카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,PCCAFE,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,카페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,까페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes_rule,편의점_브랜드,,E1 편의점 브랜드 상호는 카페C 제외
 70,classify,나머지,food_general,*,all,,일반음식점,E4-7
 70,classify,나머지,food_rest,*,all,,기타,E4-7

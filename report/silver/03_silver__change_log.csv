@@ -23,21 +23,21 @@ food_general,D1,2017이후영업_지번만_성공률,0.9999,
 food_general,D1,2017이후영업_성공률,1.0000,
 food_general,D3,서울밖_2017이후영업,11,
 food_general,업종_ANLS_INDUTY_CD,기타,110,
-food_general,업종_ANLS_INDUTY_CD,일반음식점,519867,
-food_general,업종_ANLS_INDUTY_CD,카페,19937,
+food_general,업종_ANLS_INDUTY_CD,일반음식점,519926,
+food_general,업종_ANLS_INDUTY_CD,카페,19878,
 food_general,업종_ANLS_INDUTY_CD,편의점,94,
-food_general,업종_INDUTY_RULE_CD,나머지,519487,
+food_general,업종_INDUTY_RULE_CD,나머지,519546,
 food_general,업종_INDUTY_RULE_CD,업태예외_라이브카페,380,
 food_general,업종_INDUTY_RULE_CD,업태예외_전통찻집,823,
 food_general,업종_INDUTY_RULE_CD,카페B,7819,
-food_general,업종_INDUTY_RULE_CD,카페C,11295,
+food_general,업종_INDUTY_RULE_CD,카페C,11236,
 food_general,업종_INDUTY_RULE_CD,키즈카페,110,
 food_general,업종_INDUTY_RULE_CD,편의점_브랜드,94,
 food_general,카페_상가정보대조,카페B,0.466,현재 영업 중 1211곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_general,카페_상가정보대조,카페C,0.696,현재 영업 중 4619곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_general,카페_상가정보대조,나머지,0.266,현재 영업 중 113880곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_general,카페_키워드,카페,5110,유스카페(한시적)(23) / 푸드카페(14) / 농업회사법인 카페인신현리 주식회사(12) / 야심떡카페(10) / 카페테리아(8)
-food_general,카페_키워드,까페,350,까페동향(9) / 김밥까페(4) / 까페 루아(3) / 궁까페(2) / 까페테리아(2)
+food_general,카페_상가정보대조,카페C,0.697,현재 영업 중 4597곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_상가정보대조,나머지,0.266,현재 영업 중 113902곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_키워드,카페,5053,유스카페(한시적)(23) / 푸드카페(14) / 농업회사법인 카페인신현리 주식회사(12) / 야심떡카페(10) / 김밥카페(8)
+food_general,카페_키워드,까페,348,까페동향(9) / 김밥까페(4) / 까페 루아(3) / 궁까페(2) / 명동사주까페(2)
 food_general,카페_키워드,커피,5288,(주)커피빈코리아(한시적)(20) / 커피나무(12) / 커피하우스(9) / 메쉬커피(7) / (주)커피빈코리아삼성봉은사거리점(한시적)(7)
 food_general,카페_키워드,CAFE,206,모찌당(수제과일모찌cafe)(5) / 투유(TOU) CAFE(2) / CAFE 아카시아(ACACIA)(2) / 요요미Gcafe(2) / cafe 미소콩(2)
 food_general,카페_키워드,CAFFE,10,caffe&츄러스(5) / Caffe Bookmark(1) / 오라카이 청계산 호텔 illy caffe(1) / The Caffe R(1) / 이레(Caffe Library)(1)
@@ -99,23 +99,23 @@ food_rest,D1,2017이후영업_실패,46,
 food_rest,D1,2017이후영업_지번만_성공률,0.9983,
 food_rest,D1,2017이후영업_성공률,0.9995,
 food_rest,D3,서울밖_2017이후영업,7,
-food_rest,업종_ANLS_INDUTY_CD,기타,69945,
-food_rest,업종_ANLS_INDUTY_CD,카페,62461,
+food_rest,업종_ANLS_INDUTY_CD,기타,70040,
+food_rest,업종_ANLS_INDUTY_CD,카페,62366,
 food_rest,업종_ANLS_INDUTY_CD,편의점,16049,
-food_rest,업종_INDUTY_RULE_CD,나머지,62229,
+food_rest,업종_INDUTY_RULE_CD,나머지,62324,
 food_rest,업종_INDUTY_RULE_CD,카페A,58990,
-food_rest,업종_INDUTY_RULE_CD,카페C,3471,
+food_rest,업종_INDUTY_RULE_CD,카페C,3376,
 food_rest,업종_INDUTY_RULE_CD,키즈카페,173,
 food_rest,업종_INDUTY_RULE_CD,특수입지,7543,
 food_rest,업종_INDUTY_RULE_CD,편의점_브랜드,2684,
 food_rest,업종_INDUTY_RULE_CD,편의점_업태,13365,
 food_rest,카페_상가정보대조,카페A,0.715,현재 영업 중 15789곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_rest,카페_상가정보대조,카페C,0.693,현재 영업 중 1011곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_rest,카페_상가정보대조,나머지,0.460,현재 영업 중 11779곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_rest,카페_키워드,카페,1690,카페아모제(18) / 오시오카페(13) / 카페제이(11) / 카페테리아(8) / 카페큐브(한시적)(8)
-food_rest,카페_키워드,까페,126,분식까페(3) / 까페죤(2) / 까페아모제(2) / 까페라떼(1) / (주)아모제 까페아모제(1)
+food_rest,카페_상가정보대조,카페C,0.705,현재 영업 중 970곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_rest,카페_상가정보대조,나머지,0.460,현재 영업 중 11820곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_rest,카페_키워드,카페,1645,카페아모제(18) / 오시오카페(13) / 카페제이(11) / 카페큐브(한시적)(8) / 카페인(7)
+food_rest,카페_키워드,까페,125,분식까페(3) / 까페죤(2) / 까페아모제(2) / 까페라떼(1) / (주)아모제 까페아모제(1)
 food_rest,카페_키워드,커피,1437,커피크루(한시적)(19) / 커피언스(한시적)(13) / 커피크루(12) / 이디야커피(7) / 빈스빈스커피(한시적)(7)
-food_rest,카페_키워드,CAFE,121,에이플 PC CAFE(4) / 레벨업 PC CAFE(4) / 이모네 떡볶이 Cafe(2) / 긱스타 PC CAFE(2) / 가상의점cafe(2)
+food_rest,카페_키워드,CAFE,72,이모네 떡볶이 Cafe(2) / 가상의점cafe(2) / 석봉토스트cafe(2) / (주)루왁코리아 대학로점 Cafe Luwak(1) / 해오름예술극장 담 cafe(1)
 food_rest,카페_키워드,CAFFE,1,caffe winter kingdom 겨울왕국(1)
 food_rest,카페_키워드,COFFEE,30,check coffee(2) / COMPOSE COFFEE 대학로점(1) / 3X Large Coffee(1) / coffee 아일랜드(1) / 이레Coffee(1)
 food_rest,카페_키워드,로스터,20,히떼 로스터리(2) / 고종의뜰굼터/더듀얼로스터즈(2) / 가비 로스터리 프로젝트(Gabi Roastery Project)(1) / 크럼블로스터스(1) / 브루 앤 웨이브 로스터스 인더스트리얼(1)
