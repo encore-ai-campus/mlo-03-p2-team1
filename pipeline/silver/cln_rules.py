@@ -21,6 +21,8 @@ NEW_COLUMNS = [   # 03 이 붙이는 컬럼 (순서 고정)
 ]
 TRADE_NEW_COLUMNS = ["LDONG_SRC_CD", "SAME_DEAL_YN"]   # 실거래가 매매 03 이 붙이는 컬럼 (LDONG_CD 는 02 컬럼을 고침) [G2]·[G5]
 RENT_NEW_COLUMNS = ["LDONG_CD", "LDONG_SRC_CD"]        # 실거래가 전월세 03 이 붙이는 컬럼 (02 에 LDONG_CD 없음) [G5]
+HIRA_NEW_COLUMNS = ["SGG_CD", "LDONG_CD", "LDONG_SRC_CD"]  # 심평원 03 이 붙이는 컬럼 (법정 시군구·법정동) [H1]
+HIRA_FILES = ["1.", "2."]                                   # 심평원 03 에 넣는 02 파일 (병원정보, 약국정보) [H0]
 TRADE_SAME_DEAL_KEY = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT"]
 CODE_COLUMNS = ["ANLS_TRD_STATE_CD", "TRD_STATE_SRC_CD", "CLSBIZ_SRC_CD", "LCNS_SRC_CD", "LDONG_SRC_CD",
                 "ANLS_INDUTY_CD", "INDUTY_RULE_CD", "REPL_TYPE_CD"]
@@ -79,7 +81,7 @@ def load_meta(metadata_dir: Path) -> Meta:
 def check_meta(m: Meta) -> list[str]:
     """03 실행 전 metadata 검사. 문제 목록 (비면 통과)."""
     problems = []
-    for col in NEW_COLUMNS + TRADE_NEW_COLUMNS:
+    for col in NEW_COLUMNS + TRADE_NEW_COLUMNS + HIRA_NEW_COLUMNS:
         missing = [w for w in col.split("_") if w not in m.words]
         if missing:
             problems.append(f"std_word.csv 에 없는 단어 {missing} (컬럼 {col})")
@@ -154,6 +156,48 @@ def same_deal(df: pd.DataFrame) -> pd.Series:
     dup = live[live.duplicated(TRADE_SAME_DEAL_KEY, keep=False)]
     grp = dup.groupby(TRADE_SAME_DEAL_KEY, dropna=False, sort=True).ngroup() + 1
     return grp.reindex(df.index).astype("Int64")
+
+
+# ──────────────────────────────────────────────────────────────
+# 심평원 병의원·약국 [H1]
+# ──────────────────────────────────────────────────────────────
+def sgg_by_addr(addrs: pd.Series, ldong: pd.DataFrame) -> pd.Series:
+    """도로명 주소 앞부분 = 현행 시군구 행 이름('경기도 수원시 팔달구')이면 그 시군구 코드 5자리. 가장 긴 이름이 우선.
+    심평원 HIRA_SIDO_NM·HIRA_SGG_NM 은 약칭('경기', '수원팔달구')이라 코드표와 바로 맞지 않는다."""
+    cur = ldong[~ldong["ABL_YN"].astype(bool) & (ldong["LDONG_CD"].str[5:] == "00000") & (ldong["LDONG_CD"].str[2:5] != "000")]
+    names = sorted(zip(cur["LDONG_NM"], cur["LDONG_CD"].str[:5]), key=lambda x: -len(x[0]))
+
+    def one(addr):
+        if not isinstance(addr, str):
+            return None
+        return next((c for n, c in names if addr.startswith(n + " ")), None)
+
+    uniq = addrs.dropna().unique()
+    return addrs.map(dict(zip(uniq, (one(a) for a in uniq))))
+
+
+def road_dong(addr) -> str | None:
+    """도로명 주소 끝 괄호의 첫 동명 '(당정동)', '(매산로3가, 101동)' → '당정동'. 없으면 None."""
+    groups = re.findall(r"\(([^()]*)\)", addr) if isinstance(addr, str) else []
+    token = groups[-1].split(",")[0].strip() if groups else ""
+    return token or None
+
+
+def hira_ldong(sgg: pd.Series, umd: pd.Series, addr: pd.Series, lookup: dict) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """[H1] (LDONG_CD, LDONG_SRC_CD, 도로명 괄호로 찾은 코드). 순서: SGG_CD + UMD_NM(시군구_동명) → 도로명 괄호 동명(도로명)
+    → 괄호 동명 정규화(도로명_정규화, 방이1동 → 방이동) → 실패(NULL)."""
+    def get(s, name, norm=False):
+        if not isinstance(s, str) or not isinstance(name, str):
+            return None
+        return lookup.get((s, normalize_dong(name) if norm else name))
+    by_umd = pd.Series([get(s, u) for s, u in zip(sgg, umd)], index=sgg.index, dtype=object)
+    dong = addr.map(road_dong)
+    by_road = pd.Series([get(s, d) for s, d in zip(sgg, dong)], index=sgg.index, dtype=object)
+    by_norm = pd.Series([get(s, d, True) for s, d in zip(sgg, dong)], index=sgg.index, dtype=object)
+    code = by_umd.fillna(by_road).fillna(by_norm)
+    src = pd.Series(np.select([by_umd.notna(), by_road.notna(), by_norm.notna()], ["시군구_동명", "도로명", "도로명_정규화"], "실패"),
+                    index=sgg.index)
+    return code, src, by_road.fillna(by_norm)
 
 
 # ──────────────────────────────────────────────────────────────

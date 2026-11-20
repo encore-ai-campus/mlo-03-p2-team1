@@ -1,7 +1,7 @@
 """[03] Silver 정제: data/silver/{ds}/02_*.parquet → data/silver/{ds}/03_silver__{ds}.parquet
 
 사용법
-  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세
+  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세 + 심평원
   python pipeline/silver/03_clean.py --dataset pharmacy    # 일부만 (기록의 다른 데이터셋 행은 유지)
   python pipeline/silver/03_clean.py --check               # metadata 검사만 (파일을 쓰지 않음)
 
@@ -12,6 +12,8 @@
 - 실거래가 매매는 행을 모두 유지(해제 포함)하고, LDONG_CD 를 현행 법정동 코드표에 맞추며(못 찾으면 NULL, SGG_CD 유지) [G5],
   동일 조건 거래를 SAME_DEAL_YN 플래그로 둔다(묶음 목록은 서울만 issue_list) [G2]. 서울 필터는 골드에서 [A3].
 - 실거래가 전월세는 02 컬럼을 그대로 두고 LDONG_CD·LDONG_SRC_CD 만 붙인다 (SGG_CD + UMD_NM) [G5]. 동일 조건 거래는 건수만.
+- 심평원은 02 파일 12개 중 병원정보·약국정보만 기관 파일 하나로 합치고(상세 10개는 02 에 둠) [H0],
+  도로명 주소로 법정 시군구 SGG_CD, UMD_NM·도로명 괄호 동명으로 LDONG_CD 를 붙인다 [H1].
 
 기록 (report/silver/)
   03_silver__manifest.csv   : 파일별 행 수(02 → 03), 중복 제거, 완료 조건 결과, 재실행 상태
@@ -42,7 +44,7 @@ IDX = "03"
 REPORT_SILVER_DIR = REPORT_DIR / "silver"
 ROW_GROUP = 100_000
 COMPRESSION = "snappy"
-ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent"]
+ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent", "hira_inst"]
 
 NEW_TYPES = {
     "ANLS_CLSBIZ_DTM": pa.date32(), "ANLS_LCNS_DTM": pa.date32(),
@@ -51,7 +53,17 @@ NEW_TYPES = {
 }
 
 
+def hira02() -> list[Path]:
+    """심평원 02 파일 12개 중 03 에 넣는 병원정보·약국정보 [H0]."""
+    files = [f for pre in R.HIRA_FILES for f in sorted((SILVER_DIR / "hira_inst").glob(f"02_silver__hira_inst__{pre}*.parquet"))]
+    if len(files) != len(R.HIRA_FILES):
+        raise FileNotFoundError(f"hira_inst: 병원정보·약국정보 02 파일이 {len(files)}개 (2개여야 함). 02 단계를 먼저 실행하세요")
+    return files
+
+
 def silver02(dataset: str) -> Path:
+    if dataset == "hira_inst":
+        return hira02()[0]
     files = sorted((SILVER_DIR / dataset).glob("02_silver__*.parquet"))
     if len(files) != 1:
         raise FileNotFoundError(f"{dataset}: 02 silver 파일이 {len(files)}개 (1개여야 함). 02 단계를 먼저 실행하세요")
@@ -399,6 +411,15 @@ def clean_trade(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list
     log.issue("SAME_DEAL", rec_key[s_grp.index], "묶음", "묶음 " + s_grp.astype(str))
     log.add("G1", "CNCL_YN", int(df["CNCL_YN"].fillna(False).astype(bool).sum()), "행 유지, 골드 가격·거래 수에서 제외")
 
+    # [G6] 단가 이상값: ㎡당 금액이 기준 미만 (값 유지, 플래그 없음). 서울만 issue_list
+    unit = df["DEAL_AMT_NUM"] / df["EXCL_AREA_NUM"]
+    low = seoul & (unit < float(meta.p("ABNRM_UNIT_AMT_MIN", ds)))
+    log.add("G6", "서울_단가기준미만", int(low.sum()), "값 유지, issue_list ABNRM_UNIT_AMT")
+    log.add("G6", "서울_단가기준미만_2017이후", int((low & (df["DEAL_DTM"] >= pd.Timestamp(meta.p("ANLS_BGN_DT")))).sum()))
+    log.issue("ABNRM_UNIT_AMT", rec_key[low], "DEAL_AMT_NUM/EXCL_AREA_NUM",
+              unit[low].round(0).astype("int64").astype(str) + "원/㎡ (" + df.loc[low, "DEAL_AMT_NUM"].astype("int64").astype(str)
+              + "원 / " + df.loc[low, "EXCL_AREA_NUM"].astype(str) + "㎡)")
+
     # 검사: 조건 3 (코드표), [G5] 결과 형식
     if bad := set(ldsrc) - meta.codes("LDONG_SRC_CD"):
         problems.append(f"조건3: 코드표에 없는 LDONG_SRC_CD {sorted(bad)}")
@@ -486,6 +507,71 @@ def clean_rent(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[
 
 
 # ──────────────────────────────────────────────────────────────
+# 심평원 병의원·약국 [H0]·[H1]·[H2]
+# ──────────────────────────────────────────────────────────────
+def clean_hira(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[str]]:
+    """심평원 03: 병원정보 + 약국정보를 기관 파일 하나로 합침 [H0] (약국 행의 의사 수 컬럼은 NULL).
+    전국 유지. 법정 시군구 SGG_CD 와 법정동 LDONG_CD 를 붙인다 [H1]. 보건소 등·이상 개설일은 issue_list 만 (서울) [H2]."""
+    ds = "hira_inst"
+    files = hira02()
+    tables = [pq.read_table(f) for f in files]
+    schema02 = tables[0].schema
+    df = pd.concat([t.to_pandas(date_as_object=False) for t in tables], ignore_index=True)[schema02.names]
+    rows02 = sum(t.num_rows for t in tables)
+    problems: list[str] = []
+    for f, t in zip(files, tables):
+        log.add("H0", f.name.split("__")[-1].replace(".parquet", ""), t.num_rows, "03 에 합친 02 파일")
+    if df["MED_INST_KEY"].duplicated().any():
+        problems.append("H0: 병원·약국 합친 뒤 MED_INST_KEY 중복")
+
+    # [H1] 시군구: 도로명 주소의 정식 이름 / 법정동: UMD_NM → 도로명 괄호 동명 → 정규화 → 실패(NULL)
+    df["SGG_CD"] = R.sgg_by_addr(df["ROAD_ADDR"], ldong)
+    code, ldsrc, by_road = R.hira_ldong(df["SGG_CD"], df["UMD_NM"], df["ROAD_ADDR"], R.sgg_umd_lookup(ldong))
+    df["LDONG_CD"], df["LDONG_SRC_CD"] = code, ldsrc
+    seoul = df["HIRA_SIDO_NM"] == "서울"
+    log.add("H1", "SGG_CD_실패", int(df["SGG_CD"].isna().sum()), "도로명 주소가 옛 시도 이름")
+    log.add("H1", "SGG_CD_실패_서울", int(df.loc[seoul, "SGG_CD"].isna().sum()))
+    log.counts("LDONG_SRC_CD", ldsrc)
+    log.counts("LDONG_SRC_CD_서울", ldsrc[seoul], "HIRA_SIDO_NM = 서울")
+    mismatch = seoul & code.notna() & by_road.notna() & (code != by_road)
+    log.issue("ADDR_MISMATCH", df.loc[mismatch, "MED_INST_KEY"], "LDONG_CD",
+              "동명 " + code[mismatch] + " / 도로명 " + by_road[mismatch])
+
+    # [H2] 집계 영향 없는 품질 정보 (서울만 issue_list, 전국은 건수)
+    out_scope = df["INST_TYPE_NM"].isin(["보건소", "보건지소", "조산원"])
+    abnrm = df["ESTB_DTM"] < pd.Timestamp(meta.p("ABNRM_LCNS_BEFORE_DT"))
+    log.add("H2", "보건소·보건지소·조산원", int(out_scope.sum()), "전국, 값 유지")
+    log.add("H2", "개설일_1950이전", int(abnrm.sum()), "전국, 값 유지")
+    log.issue("OUT_SCOPE_INST", df.loc[seoul & out_scope, "MED_INST_KEY"], "INST_TYPE_NM", df.loc[seoul & out_scope, "INST_TYPE_NM"])
+    log.issue("ABNRM_ESTB", df.loc[seoul & abnrm, "MED_INST_KEY"], "ESTB_DTM",
+              pd.to_datetime(df.loc[seoul & abnrm, "ESTB_DTM"]).dt.strftime("%Y-%m-%d"))
+    log.counts("서울_기관종류", df.loc[seoul, "INST_TYPE_NM"])
+
+    if bad := set(ldsrc) - meta.codes("LDONG_SRC_CD"):
+        problems.append(f"조건3: 코드표에 없는 LDONG_SRC_CD {sorted(bad)}")
+    current = set(ldong.loc[~ldong["ABL_YN"].astype(bool), "LDONG_CD"])
+    if (code.notna() & ~code.isin(current)).any():
+        problems.append("H1: 현행 코드표에 없는 LDONG_CD 가 남음")
+    if not (code.isna() == (ldsrc == "실패")).all():
+        problems.append("H1: LDONG_CD NULL 과 LDONG_SRC_CD = 실패 가 일치하지 않음")
+    if (code.notna() & (code.str[:5] != df["SGG_CD"])).any():
+        problems.append("H1: LDONG_CD 앞 5자리 ≠ SGG_CD")
+    if df.loc[seoul, "SGG_CD"].isna().any() or (seoul & ~df["SGG_CD"].fillna("").str.startswith("11")).any():
+        problems.append("H1: 서울 기관의 SGG_CD 가 비었거나 11 로 시작하지 않음")
+
+    out = SILVER_DIR / ds / f"03_silver__{ds}.parquet"
+    status, sha, rows_parquet = write_parquet(df, schema02, out, R.HIRA_NEW_COLUMNS)
+    row_ok = rows02 == len(df) == rows_parquet
+    if not row_ok:
+        problems.append(f"조건2: 행 수 02 {rows02} / 03 {rows_parquet}")
+    print(f"[03] {ds}: 02 {len(files)}개 {rows02:,}행 → {relative(out)} ({status}) | 법정동 실패 {int(code.isna().sum())} "
+          f"(서울 {int((seoul & code.isna()).sum())})")
+    return {"dataset": ds, "silver02_file": ";".join(relative(f) for f in files), "silver03_file": relative(out),
+            "rows_02": rows02, "dup_removed": 0, "rows_03_written": len(df), "rows_03_parquet": rows_parquet,
+            "row_check": row_ok, "columns_count": len(df.columns), "file_sha256": sha, "status": status}, problems
+
+
+# ──────────────────────────────────────────────────────────────
 # 실행
 # ──────────────────────────────────────────────────────────────
 def snapshot02() -> dict[str, str]:
@@ -526,6 +612,8 @@ def main() -> int:
             rec, probs = clean_trade(meta, ldong, log)
         elif ds == "apt_rent":
             rec, probs = clean_rent(meta, ldong, log)
+        elif ds == "hira_inst":
+            rec, probs = clean_hira(meta, ldong, log)
         else:
             rec, probs = clean_license(ds, meta, table, log)
         records.append(rec)
