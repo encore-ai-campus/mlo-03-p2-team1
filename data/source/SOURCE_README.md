@@ -2,7 +2,7 @@
 
 - 갱신 시각: 2026-11-19T14:55:29+09:00 (`python 00_collect.py inventory`)
 - 이 폴더의 원천 파일은 수정·이동·덮어쓰기 하지 않는다. 모든 파일은 읽기 전용 속성이다.
-- 출처와 수집 방법: 프로젝트 루트의 `data_collecting.md`
+- 출처와 수집 방법: `docs/archive/data_collecting.md` · 출처 정의: `metadata/src_source.csv`
 - 전체 파일 수: 40458 / 전체 크기: 10.0 GB
 - 전체 데이터 행 수(ROW): 17,378,236
 - 전체 목록과 SHA-256 전체 값: `Source/_source_manifest.csv`

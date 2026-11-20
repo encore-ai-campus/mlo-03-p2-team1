@@ -1,8 +1,8 @@
 # 05. Silver 표준화 (02 단계: Bronze → Silver)
 
 > **이 문서의 출처**
-> - `docs/silver_표준화.md` — 1~9장 (L1–233)
-> - `docs/설계서_초안.md` — 표준용어 정의서: 접미사·사전 파일·표준단어·표준도메인·표준용어(컬럼) (L30–145), 데이터 사전과 변경 내역 (L574–579), 검증 결과 표 (L644–669)
+> - `../archive/silver_표준화.md` — 1~9장 (L1–233)
+> - `../archive/설계서_초안.md` — 표준용어 정의서: 접미사·사전 파일·표준단어·표준도메인·표준용어(컬럼) (L30–145), 데이터 사전과 변경 내역 (L574–579), 검증 결과 표 (L644–669)
 >
 > 두 문서에 같은 표(접미사, 변환 규칙, 실행 결과)가 있어 하나로 합쳤습니다.
 >
@@ -72,7 +72,7 @@ report/silver/                    ← 실행 기록 (git 에 올림)
 
 - silver 모든 행에 `SRC_FILE_NM` + `SRC_ROW_NUM`(원천 위치)과 `STD_ERR_TXT`(변환 실패 컬럼)를 둡니다.
 - `data/` 아래는 `.gitignore`로 데이터 파일이 올라가지 않습니다. 그래서 다른 팀원이 볼 실행 기록은 `report/silver/`에 둡니다.
-- 사람이 읽는 설명과 사전 변경 이력은 원래 `docs/silver_표준화.md`에 둡니다(변경 이력은 `10_진행현황_체크리스트와_미결사항.md`에도 모음).
+- 사람이 읽는 설명과 사전 변경 이력은 원래 `../archive/silver_표준화.md`에 둡니다(변경 이력은 `10_진행현황_체크리스트와_미결사항.md`에도 모음).
 
 ---
 
@@ -103,7 +103,7 @@ DEAL _ AMT _ NUM          TRD _ STATE _ CD         MED _ INST _ TEL
 
 - 원천 필드명은 Bronze에만 남기고, Silver부터는 표준용어만 사용
 - 한글 용어명은 행정안전부 공공데이터 공통표준용어를 기준으로 하고, 영문 약어는 이 프로젝트의 규칙
-- 이름·타입·규칙을 바꿀 때는 코드가 아니라 `metadata/std_term.csv`를 고치고, `python pipeline/silver/02_normalize.py --check`로 검사한 뒤 `docs/silver_표준화.md`의 "변경 이력"에 한 줄을 남김
+- 이름·타입·규칙을 바꿀 때는 코드가 아니라 `metadata/std_term.csv`를 고치고, `python pipeline/silver/02_normalize.py --check`로 검사한 뒤 `../archive/silver_표준화.md`의 "변경 이력"에 한 줄을 남김
 
 **검사기(`--check`)가 자동으로 확인하는 것**
 - 이름이 영문 대문자·숫자·`_` 형식인가
@@ -301,7 +301,7 @@ python pipeline/silver/02_normalize.py --dataset apt_trade apt_rent   # 일부�
 2. 새 단어가 필요하면 `std_word.csv`에 먼저 한 줄 추가합니다.
 3. `python pipeline/silver/02_normalize.py --check`로 검사합니다. 틀리면 몇 번째 줄이 왜 틀렸는지 알려 줍니다.
 4. 해당 데이터셋만 다시 실행합니다: `--dataset 데이터셋이름`
-5. `docs/silver_표준화.md`의 "변경 이력"에 한 줄을 남깁니다.
+5. `../archive/silver_표준화.md`의 "변경 이력"에 한 줄을 남깁니다.
 
 ### `std_term.csv` 한 줄 읽는 법
 
