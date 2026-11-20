@@ -140,6 +140,14 @@ code, src = R.trade_ldong(tr, set(ld.loc[~ld["ABL_YN"], "LDONG_CD"]), R.sgg_umd_
 check("G5 현행 코드 유지 / 재조회 / 폐지 동명은 실패(NULL)", (nn(code), list(src)),
       (["1114016200", "1162010100", None], ["원본코드", "시군구_동명", "실패"]))
 check("G5 폐지 코드는 재조회 표에 없음", ("11200", "신당동") in R.sgg_umd_lookup(ld), False)
+# [G5] 읍면 + 리 이름 (전월세 UMD_NM 형식 '강화읍 갑곳리'), 시군구 안에 같은 리 이름이 둘이면 마지막 이름만으로는 찾지 않음
+ld2 = pd.DataFrame({"LDONG_CD": ["2871000000", "2871025021", "2871031021", "2871032021"],
+                    "LDONG_NM": ["인천광역시 강화군", "인천광역시 강화군 강화읍 갑곳리", "인천광역시 강화군 선원면 창리",
+                                 "인천광역시 강화군 불은면 창리"], "ABL_YN": [False, False, False, False]})
+lk2 = R.sgg_umd_lookup(ld2)
+check("G5 읍면+리 전체 이름 / 리 이름만 (유일할 때만)",
+      (lk2.get(("28710", "강화읍 갑곳리")), lk2.get(("28710", "갑곳리")), lk2.get(("28710", "선원면 창리")), lk2.get(("28710", "창리"))),
+      ("2871025021", "2871025021", "2871031021", None))
 # [G2] 동일 조건 거래: 해제 행은 묶음에서 빼고, 키 7개가 같은 해제 아닌 행만 묶음
 k = dict(APT_KEY="A1", DEAL_DTM=pd.Timestamp("2024-01-05"), DEAL_AMT_NUM=1e9, EXCL_AREA_NUM=84.9, FLR_NUM=10, APT_DONG_TXT=None)
 deals = pd.DataFrame([dict(k, LDONG_CD="1111010100", CNCL_YN=False), dict(k, LDONG_CD="1111010100", CNCL_YN=False),

@@ -1,7 +1,7 @@
 """[03] Silver 정제: data/silver/{ds}/02_*.parquet → data/silver/{ds}/03_silver__{ds}.parquet
 
 사용법
-  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매
+  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세
   python pipeline/silver/03_clean.py --dataset pharmacy    # 일부만 (기록의 다른 데이터셋 행은 유지)
   python pipeline/silver/03_clean.py --check               # metadata 검사만 (파일을 쓰지 않음)
 
@@ -11,6 +11,7 @@
 - 일반음식점 03 파일은 하나 (API 본체 + CSV 의 LDONG_CD·UTMK 보완) [A1]. food_general_file 03 파일은 만들지 않는다.
 - 실거래가 매매는 행을 모두 유지(해제 포함)하고, LDONG_CD 를 현행 법정동 코드표에 맞추며(못 찾으면 NULL, SGG_CD 유지) [G5],
   동일 조건 거래를 SAME_DEAL_YN 플래그로 둔다(묶음 목록은 서울만 issue_list) [G2]. 서울 필터는 골드에서 [A3].
+- 실거래가 전월세는 02 컬럼을 그대로 두고 LDONG_CD·LDONG_SRC_CD 만 붙인다 (SGG_CD + UMD_NM) [G5]. 동일 조건 거래는 건수만.
 
 기록 (report/silver/)
   03_silver__manifest.csv   : 파일별 행 수(02 → 03), 중복 제거, 완료 조건 결과, 재실행 상태
@@ -41,7 +42,7 @@ IDX = "03"
 REPORT_SILVER_DIR = REPORT_DIR / "silver"
 ROW_GROUP = 100_000
 COMPRESSION = "snappy"
-ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade"]
+ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent"]
 
 NEW_TYPES = {
     "ANLS_CLSBIZ_DTM": pa.date32(), "ANLS_LCNS_DTM": pa.date32(),
@@ -421,6 +422,70 @@ def clean_trade(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list
 
 
 # ──────────────────────────────────────────────────────────────
+# 실거래가 전월세 [G3]·[G4]·[G5]
+# ──────────────────────────────────────────────────────────────
+def clean_rent(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[str]]:
+    """실거래가 전월세 03: 02 컬럼은 그대로(행 수 800만이라 Arrow 테이블에 새 컬럼만 붙임), LDONG_CD 를 SGG_CD + UMD_NM 으로 부여 [G5].
+    동일 조건 거래는 행 목록 없이 change_log 건수만 남긴다 (결정 2026-11-20). 전세·월세 구분은 골드에서 [G3]."""
+    ds = "apt_rent"
+    src = silver02(ds)
+    table = pq.read_table(src)
+    rows02 = table.num_rows
+    problems: list[str] = []
+    df = table.select(["SGG_CD", "UMD_NM", "APT_KEY", "DEAL_DTM", "EXCL_AREA_NUM", "FLR_NUM", "DPST_AMT_NUM",
+                       "MTHLY_RENT_AMT_NUM", "CNTRCT_SE_NM", "STD_ERR_TXT", "SRC_FILE_NM", "SRC_ROW_NUM"]).to_pandas()
+    seoul = df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", ds))
+
+    # [G5] 법정동: 02 에 LDONG_CD 가 없으므로 모두 SGG_CD + UMD_NM 으로 찾는다. 못 찾으면 NULL (SGG_CD 는 남음)
+    current = set(ldong.loc[~ldong["ABL_YN"].astype(bool), "LDONG_CD"])
+    combos = df[["SGG_CD", "UMD_NM"]].drop_duplicates()
+    code_c, src_c = R.trade_ldong(combos.assign(LDONG_CD=None), current, R.sgg_umd_lookup(ldong))
+    combos = combos.assign(LDONG_CD=code_c.values, LDONG_SRC_CD=src_c.values)
+    m = df[["SGG_CD", "UMD_NM"]].merge(combos, on=["SGG_CD", "UMD_NM"], how="left")
+    df["LDONG_CD"], df["LDONG_SRC_CD"] = m["LDONG_CD"].values, m["LDONG_SRC_CD"].values
+    log.counts("LDONG_SRC_CD", df["LDONG_SRC_CD"])
+    log.counts("LDONG_SRC_CD_서울", df.loc[seoul, "LDONG_SRC_CD"], "SGG_CD 앞 2자리 11")
+    fail = df["LDONG_SRC_CD"] == "실패"
+    log.issue("LDONG_NOT_CURRENT", df.loc[fail, "SRC_FILE_NM"].str.split("/").str[-1] + ":" + df.loc[fail, "SRC_ROW_NUM"].astype(str),
+              "LDONG_CD", "(없음) → (NULL) / 실패 / SGG_CD " + df.loc[fail, "SGG_CD"] + " UMD_NM " + df.loc[fail, "UMD_NM"].fillna(""))
+
+    # 건수만 기록 (행·컬럼은 그대로)
+    key = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "EXCL_AREA_NUM", "FLR_NUM", "DPST_AMT_NUM", "MTHLY_RENT_AMT_NUM"]
+    log.add("G3", "서울_전월세", int(seoul.sum()))
+    log.add("G3", "서울_전세", int((seoul & (df["MTHLY_RENT_AMT_NUM"] == 0)).sum()), "MTHLY_RENT_AMT_NUM = 0, 골드에서 구분")
+    log.add("G3", "서울_월세", int((seoul & (df["MTHLY_RENT_AMT_NUM"] > 0)).sum()))
+    log.add("G3", "서울_보증금0", int((seoul & (df["DPST_AMT_NUM"] == 0)).sum()), "보증금 없는 월세, 값 유지")
+    log.add("G3", "서울_CNTRCT_SE_NM_있음", int((seoul & df["CNTRCT_SE_NM"].notna()).sum()), "신규/갱신, 2021년 이후만 값 있음")
+    log.add("동일조건", "키7_겹치는행", int(df.duplicated(key, keep=False).sum()), "82개 시군구 전체, 행 목록 없음")
+    log.add("동일조건", "키7_겹치는행_서울", int(df[seoul].duplicated(key, keep=False).sum()), "동·호 정보가 없어 정상 계약일 수 있음")
+    log.add("G4", "CNTRCT_BGN_DTM_변환실패", int(df["STD_ERR_TXT"].fillna("").str.contains("CNTRCT_BGN_DTM").sum()), "02 STD_ERR_TXT, NULL 유지")
+
+    if bad := set(df["LDONG_SRC_CD"]) - meta.codes("LDONG_SRC_CD"):
+        problems.append(f"조건3: 코드표에 없는 LDONG_SRC_CD {sorted(bad)}")
+    if (df["LDONG_CD"].notna() & ~df["LDONG_CD"].isin(current)).any():
+        problems.append("G5: 현행 코드표에 없는 LDONG_CD 가 남음")
+    if not (df["LDONG_CD"].isna() == fail).all():
+        problems.append("G5: LDONG_CD NULL 과 LDONG_SRC_CD = 실패 가 일치하지 않음")
+    if df["SGG_CD"].isna().any():
+        problems.append("G5: SGG_CD 가 빈 행이 있음")
+
+    for c in R.RENT_NEW_COLUMNS:
+        table = table.append_column(pa.field(c, pa.string()), pa.array(df[c], type=pa.string(), from_pandas=True))
+    out = SILVER_DIR / ds / f"03_silver__{ds}.parquet"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    temp = out.with_name(out.name + ".tmp")
+    pq.write_table(table, temp, compression=COMPRESSION, row_group_size=ROW_GROUP)
+    status, sha = replace_if_changed(temp, out)
+    row_ok = rows02 == table.num_rows
+    if not row_ok:
+        problems.append(f"조건2: 행 수 02 {rows02} / 03 {table.num_rows}")
+    print(f"[03] {ds}: {rows02:,}행 → {relative(out)} ({status}) | 법정동 실패 {int(fail.sum())}행")
+    return {"dataset": ds, "silver02_file": relative(src), "silver03_file": relative(out), "rows_02": rows02,
+            "dup_removed": 0, "rows_03_written": table.num_rows, "rows_03_parquet": table.num_rows, "row_check": row_ok,
+            "columns_count": table.num_columns, "file_sha256": sha, "status": status}, problems
+
+
+# ──────────────────────────────────────────────────────────────
 # 실행
 # ──────────────────────────────────────────────────────────────
 def snapshot02() -> dict[str, str]:
@@ -459,6 +524,8 @@ def main() -> int:
         log = Log(ds)
         if ds == "apt_trade":
             rec, probs = clean_trade(meta, ldong, log)
+        elif ds == "apt_rent":
+            rec, probs = clean_rent(meta, ldong, log)
         else:
             rec, probs = clean_license(ds, meta, table, log)
         records.append(rec)
