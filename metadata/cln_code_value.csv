@@ -1,0 +1,63 @@
+﻿code_column,code_value,meaning,rule_ref
+ANLS_TRD_STATE_CD,영업,분석 기간에 영업 중으로 셈 (휴업 포함),C1
+ANLS_TRD_STATE_CD,폐업,분석용 폐업일에 종료,C1
+TRD_STATE_SRC_CD,원본매핑,,C1
+TRD_STATE_SRC_CD,휴업_영업간주,,C1
+TRD_STATE_SRC_CD,직권폐업,,C1
+TRD_STATE_SRC_CD,전출_폐업,,C1
+CLSBIZ_SRC_CD,원본,CLSBIZ_DTM 그대로,C1;C2
+CLSBIZ_SRC_CD,최종수정일자_대용,폐업인데 CLSBIZ_DTM 없음 → LAST_MDFCN_DTM 날짜,C1;C2
+CLSBIZ_SRC_CD,최종수정일자_전출,의원 전출 → LAST_MDFCN_DTM 날짜,C1;C2
+CLSBIZ_SRC_CD,해당없음,영업 중,C1;C2
+LCNS_SRC_CD,원본,,F3
+LCNS_SRC_CD,이전_앞레코드종료일,,F3
+LDONG_SRC_CD,원본코드,일반음식점 CSV(food_general_file)의 LDONG_CD,D1;D2;D3;D4
+LDONG_SRC_CD,지번,,D1;D2;D3;D4
+LDONG_SRC_CD,지번_정규화,,D1;D2;D3;D4
+LDONG_SRC_CD,도로명,,D1;D2;D3;D4
+LDONG_SRC_CD,도로명_정규화,,D1;D2;D3;D4
+LDONG_SRC_CD,실패_전출주소,,D1;D2;D3;D4
+LDONG_SRC_CD,실패_서울밖,,D1;D2;D3;D4
+LDONG_SRC_CD,실패,,D1;D2;D3;D4
+ANLS_INDUTY_CD,의원,,E
+ANLS_INDUTY_CD,치과의원,,E
+ANLS_INDUTY_CD,한의원,,E
+ANLS_INDUTY_CD,약국,,E
+ANLS_INDUTY_CD,카페,,E
+ANLS_INDUTY_CD,일반음식점,,E
+ANLS_INDUTY_CD,편의점,,E
+ANLS_INDUTY_CD,기타,,E
+ANLS_INDUTY_CD,미용_헤어,,E
+ANLS_INDUTY_CD,미용_피부,,E
+ANLS_INDUTY_CD,미용_네일,,E
+ANLS_INDUTY_CD,미용_메이크업,,E
+ANLS_INDUTY_CD,미용_기타,,E
+ANLS_INDUTY_CD,대상외,,E
+INDUTY_RULE_CD,원천업종,,E4
+INDUTY_RULE_CD,대상외_업태,,E4
+INDUTY_RULE_CD,편의점_업태,,E4
+INDUTY_RULE_CD,편의점_브랜드,,E4
+INDUTY_RULE_CD,특수입지,,E4
+INDUTY_RULE_CD,키즈카페,,E4
+INDUTY_RULE_CD,업태예외_전통찻집,,E4
+INDUTY_RULE_CD,업태예외_라이브카페,,E4
+INDUTY_RULE_CD,카페A,핵심 카페 (휴게 업태),E4
+INDUTY_RULE_CD,카페B,일반음식점 업태 까페,E4
+INDUTY_RULE_CD,카페C,상호 키워드,E4
+INDUTY_RULE_CD,나머지,,E4
+REPL_TYPE_CD,재등록,,F1;F2
+REPL_TYPE_CD,교체,,F1;F2
+ISSUE_CD,DUP_REMOVED,C3 관리번호 중복으로 제거한 행,4장 issue_list
+ISSUE_CD,BRKN_NM,C4 상호 깨진 문자,4장 issue_list
+ISSUE_CD,BRKN_ADDR,C4 주소 깨진 문자,4장 issue_list
+ISSUE_CD,FUTURE_CLSBIZ,C5 수집일 이후 폐업일,4장 issue_list
+ISSUE_CD,INVALID_CLSBIZ,C5 없는 날짜 (02 STD_ERR_TXT),4장 issue_list
+ISSUE_CD,PLACEHOLDER_TEL,C6 자리표시 전화번호,4장 issue_list
+ISSUE_CD,ZERO_AREA,C6 면적 0,4장 issue_list
+ISSUE_CD,OUT_SEOUL_COORD,C6 서울 범위 밖 TM 좌표,4장 issue_list
+ISSUE_CD,ADDR_MISMATCH,D1 지번·도로명 법정동 불일치,4장 issue_list
+ISSUE_CD,ABNRM_UPTAE,E2 원천 업종에 맞지 않는 업태,4장 issue_list
+ISSUE_CD,AMBIG_LINK,F0 후보 여럿·동률로 연결 안 함,4장 issue_list
+ISSUE_CD,MULTI_TENANT,F2 대형 건물(같은 지번 레코드 다수)이라 교체 연결 안 함,4장 issue_list
+ISSUE_CD,TIME_CONFLICT,F0 ② 개업일 순서 위반,4장 issue_list
+ISSUE_CD,SAME_DEAL,G2 매매 동일 조건 거래 묶음,4장 issue_list

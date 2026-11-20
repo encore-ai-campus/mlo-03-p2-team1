@@ -1,0 +1,88 @@
+﻿rule_seq,stage,rule_cd,dataset,match_column,match_type,match_value,ANLS_INDUTY_CD,note
+10,classify,원천업종,clinic,UPTAE_NM,eq,의원,의원,
+10,classify,원천업종,clinic,UPTAE_NM,eq,치과의원,치과의원,
+10,classify,원천업종,clinic,UPTAE_NM,eq,한의원,한의원,
+10,classify,대상외_업태,clinic,UPTAE_NM,eq,보건소,대상외,"E5, OUT_SCOPE_YN"
+10,classify,대상외_업태,clinic,UPTAE_NM,eq,보건지소,대상외,"E5, OUT_SCOPE_YN"
+10,classify,대상외_업태,clinic,UPTAE_NM,eq,조산원,대상외,"E5, OUT_SCOPE_YN"
+10,classify,원천업종,pharmacy,*,all,,약국,
+10,classify,원천업종,beauty,UPTAE_NM,eq,일반미용업,미용_헤어,
+10,classify,원천업종,beauty,UPTAE_NM,eq,피부미용업,미용_피부,
+10,classify,원천업종,beauty,UPTAE_NM,eq,네일아트업,미용_네일,
+10,classify,원천업종,beauty,UPTAE_NM,eq,메이크업업,미용_메이크업,
+10,classify,원천업종,beauty,UPTAE_NM,eq,기타,미용_기타,
+10,classify,원천업종,beauty,UPTAE_NM,eq,미용업 기타,미용_기타,
+10,classify,대상외_업태,beauty,UPTAE_NM,eq,일반이용업,대상외,"E6, OUT_SCOPE_YN"
+20,classify,편의점_업태,food_rest;food_general,UPTAE_NM,eq,편의점,편의점,E3
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,GS25,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,지에스25,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains_word,CU,편의점,E3. CU 는 단어 단위로만 (CUBE 등 오탐 방지). 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,씨유,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,세븐일레븐,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,7-ELEVEN,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,7-11,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,이마트24,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,EMART24,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,미니스톱,편의점,E3. 대소문자 무시
+21,classify,편의점_브랜드,food_rest;food_general,BPLC_NM,contains,MINISTOP,편의점,E3. 대소문자 무시
+30,classify,특수입지,food_rest,UPTAE_NM,eq,백화점,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,철도역구내,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,유원지,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,푸드트럭,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,관광호텔,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,극장,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,공항,기타,E4-3
+30,classify,특수입지,food_rest,UPTAE_NM,eq,고속도로,기타,E4-3
+40,classify,키즈카페,food_rest;food_general,UPTAE_NM,eq,키즈카페,기타,E2
+50,classify,업태예외_전통찻집,food_general,UPTAE_NM,eq,전통찻집,카페,E2
+50,classify,업태예외_라이브카페,food_general,UPTAE_NM,eq,라이브카페,일반음식점,E2
+61,classify,카페A,food_rest,UPTAE_NM,eq,커피숍,카페,E1 핵심 카페
+61,classify,카페A,food_rest,UPTAE_NM,eq,다방,카페,E1 핵심 카페
+61,classify,카페A,food_rest,UPTAE_NM,eq,전통찻집,카페,E1 핵심 카페
+61,classify,카페A,food_rest,UPTAE_NM,eq,떡카페,카페,E1 핵심 카페
+62,classify,카페B,food_general,UPTAE_NM,eq,까페,카페,E1
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,카페,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,까페,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,커피,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,CAFE,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,CAFFE,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,COFFEE,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,로스터,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,로스팅,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,에스프레소,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,contains,바리스타,카페,"E1 포함 키워드. 대소문자 무시, U+FFFD 제거 후"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,키즈카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,키즈까페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,북카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,스터디카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,보드게임카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,보드카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,애견카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,강아지카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,고양이카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,만화카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,룸카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,멀티방,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,PC카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,낚시카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,방탈출카페,,"E1 제외 키워드 (상호 키워드 규칙에만). 키즈·북·스터디·보드게임·애견은 문서, 나머지는 초안 추가 → 1차 실행 키워드별 상위 상호로 검토"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,PCCAFE,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,카페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,까페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
+63,classify,카페C,food_rest;food_general,BPLC_NM,excludes_rule,편의점_브랜드,,E1 편의점 브랜드 상호는 카페C 제외
+70,classify,나머지,food_general,*,all,,일반음식점,E4-7
+70,classify,나머지,food_rest,*,all,,기타,E4-7
+90,issue,이상업태,food_rest,UPTAE_NM,eq,호프/통닭,,E2 휴게음식점 이상 업태 (각 1건)
+90,issue,이상업태,food_rest,UPTAE_NM,eq,단란주점,,E2 휴게음식점 이상 업태 (각 1건)
+90,issue,이상업태,food_rest,UPTAE_NM,eq,김밥(도시락),,E2 휴게음식점 이상 업태 (각 1건)
+90,issue,이상업태,food_rest,UPTAE_NM,eq,기타,,E2 휴게음식점 이상 업태 (각 1건)
+90,issue,이상업태,food_rest,UPTAE_NM,eq,룸살롱,,E2 휴게음식점 이상 업태 (각 1건)
+90,issue,이상업태,food_rest,UPTAE_NM,eq,한식,,E2 휴게음식점 이상 업태 (각 1건)
+90,issue,이상업태,food_general,UPTAE_NM,eq,커피숍,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,다방,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,기타 휴게음식점,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,일반조리판매,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,식품등 수입판매업,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,제과점영업,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,식품소분업,,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"
+90,issue,이상업태,food_general,UPTAE_NM,eq,(NULL),,"초안 추가: 02 실측으로 일반음식점에서도 휴게·타업종 업태 발견 (문서 E2 에 없음, 팀 확인 필요)"

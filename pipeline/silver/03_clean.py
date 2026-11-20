@@ -1,0 +1,479 @@
+"""[03] Silver 정제: data/silver/{ds}/02_*.parquet → data/silver/{ds}/03_silver__{ds}.parquet
+
+사용법
+  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가(issue_list 만)
+  python pipeline/silver/03_clean.py --dataset pharmacy    # 일부만 (기록의 다른 데이터셋 행은 유지)
+  python pipeline/silver/03_clean.py --check               # metadata 검사만 (파일을 쓰지 않음)
+
+규칙: docs/silver_정제.md (초안). 기준값: metadata/cln_*.csv. 규칙 함수: pipeline/silver/cln_rules.py
+- 원본 컬럼은 덮어쓰지 않는다. 판단한 값은 분석용 컬럼 + 출처 컬럼으로 붙인다.
+- 행을 지우는 것은 관리번호 중복 [C3] 뿐이다.
+- 일반음식점 03 파일은 하나 (API 본체 + CSV 의 LDONG_CD·UTMK 보완) [A1]. food_general_file 03 파일은 만들지 않는다.
+- 실거래가는 03 파일을 만들지 않고 동일 조건 거래 묶음만 issue_list 에 남긴다 [G2].
+
+기록 (report/silver/)
+  03_silver__manifest.csv   : 파일별 행 수(02 → 03), 중복 제거, 완료 조건 결과, 재실행 상태
+  03_silver__change_log.csv : 출처·플래그·업종·연결·이슈 건수, 연결 전후 재고, 동·구 합계 차이, 카페 키워드
+  03_silver__issue_list.csv : 컬럼으로 두지 않은 품질 정보의 레코드 목록
+완료 조건 1~8 (docs/silver_정제.md 4장) 중 하나라도 어기면 종료 코드 1.
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # pipeline/ → from common import ...
+sys.path.insert(0, str(Path(__file__).resolve().parent))       # pipeline/silver/ → import cln_rules
+
+import cln_rules as R
+from common.files import replace_if_changed, snapshot_files
+from common.paths import METADATA_DIR, REPORT_DIR, SILVER_DIR, relative, stage_file_name
+from common.report import merge_dataset_rows, now_kst, write_csv
+
+IDX = "03"
+REPORT_SILVER_DIR = REPORT_DIR / "silver"
+ROW_GROUP = 100_000
+COMPRESSION = "snappy"
+ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade"]
+
+NEW_TYPES = {
+    "ANLS_CLSBIZ_DTM": pa.date32(), "ANLS_LCNS_DTM": pa.date32(),
+    "ABNRM_LCNS_DTM_YN": pa.bool_(), "OUT_SEOUL_ADDR_YN": pa.bool_(), "OUT_SCOPE_YN": pa.bool_(),
+    "UTMK_X_NUM": pa.float64(), "UTMK_Y_NUM": pa.float64(),
+}
+
+
+def silver02(dataset: str) -> Path:
+    files = sorted((SILVER_DIR / dataset).glob("02_silver__*.parquet"))
+    if len(files) != 1:
+        raise FileNotFoundError(f"{dataset}: 02 silver 파일이 {len(files)}개 (1개여야 함). 02 단계를 먼저 실행하세요")
+    return files[0]
+
+
+def read02(path: Path) -> tuple[pd.DataFrame, pa.Schema]:
+    table = pq.read_table(path)
+    return table.to_pandas(date_as_object=False), table.schema
+
+
+class Log:
+    """change_log / issue_list 누적."""
+
+    def __init__(self, dataset: str):
+        self.dataset = dataset
+        self.rows: list[dict] = []
+        self.issues: list[pd.DataFrame] = []
+
+    def add(self, section: str, item: str, value, note: str = "") -> None:
+        self.rows.append({"dataset": self.dataset, "section": section, "item": item, "value": value, "note": note})
+
+    def counts(self, section: str, values: pd.Series, note: str = "") -> None:
+        for k, v in values.fillna("(NULL)").astype(str).value_counts().sort_index().items():
+            self.add(section, k, int(v), note)
+
+    def issue(self, code: str, rec_key: pd.Series, column: str, value: pd.Series | str) -> None:
+        if len(rec_key) == 0:
+            return
+        v = value if isinstance(value, pd.Series) else pd.Series(value, index=rec_key.index)
+        self.issues.append(pd.DataFrame({"dataset": self.dataset, "issue_cd": code, "rec_key": rec_key.astype(str).values,
+                                         "column": column, "value": v.astype(str).values}))
+
+    def issue_frame(self) -> pd.DataFrame:
+        cols = ["dataset", "issue_cd", "rec_key", "column", "value"]
+        if not self.issues:
+            return pd.DataFrame(columns=cols)
+        # 한 칸이 자리표시 규칙 여러 줄(eq + regex)에 걸려도 이슈는 한 번만
+        return pd.concat(self.issues, ignore_index=True).drop_duplicates(ignore_index=True)
+
+
+# ──────────────────────────────────────────────────────────────
+# 인허가 5종
+# ──────────────────────────────────────────────────────────────
+def dedup(df: pd.DataFrame, log: Log) -> tuple[pd.DataFrame, int]:
+    """[C3] LCNS_KEY 중복: UPD_DTM 최신, 같으면 SRC_ROW_NUM 큰 행을 남긴다."""
+    dup_mask = df["LCNS_KEY"].duplicated(keep=False)
+    log.add("행수", "중복_LCNS_KEY", int(df.loc[dup_mask, "LCNS_KEY"].nunique()))
+    log.add("행수", "중복_행", int(dup_mask.sum()))
+    if not dup_mask.any():
+        return df, 0
+    order = df.sort_values(["LCNS_KEY", "UPD_DTM", "SRC_ROW_NUM"], na_position="first")
+    keep_idx = order.drop_duplicates("LCNS_KEY", keep="last").index
+    removed = df.drop(index=keep_idx)
+    kept = df.loc[keep_idx].set_index("LCNS_KEY")
+    compare = [c for c in df.columns if c not in ("LCNS_KEY", "SRC_ROW_NUM", "SRC_FILE_NM")]
+    diff_txt = []
+    for _, row in removed.iterrows():
+        k = kept.loc[row["LCNS_KEY"]]
+        diff = [c for c in compare if not (pd.isna(row[c]) and pd.isna(k[c])) and row[c] != k[c]]
+        diff_txt.append("완전 중복" if not diff else "다른 값: " + ", ".join(diff))
+    diff_s = pd.Series(diff_txt, index=removed.index)
+    log.add("행수", "중복_완전", int((diff_s == "완전 중복").sum()))
+    log.add("행수", "중복_값다름", int((diff_s != "완전 중복").sum()))
+    log.issue("DUP_REMOVED", removed["LCNS_KEY"], "(제거된 행)",
+              "SRC_ROW_NUM " + removed["SRC_ROW_NUM"].astype(str) + " / " + diff_s)
+    out = df.loc[sorted(keep_idx)].reset_index(drop=True)
+    return out, len(removed)
+
+
+def attach_food_csv(df: pd.DataFrame, log: Log, problems: list[str]) -> pd.Series:
+    """[A1] 일반음식점 CSV 의 LDONG_CD·UTMK 를 LCNS_KEY 로 붙인다. 원본코드 후보를 돌려준다."""
+    csv, _ = read02(silver02("food_general_file"))
+    csv = csv[["LCNS_KEY", "LDONG_CD", "UTMK_X_NUM", "UTMK_Y_NUM"]]
+    same_keys = set(csv["LCNS_KEY"]) == set(df["LCNS_KEY"])
+    one_to_one = not csv["LCNS_KEY"].duplicated().any()
+    log.add("A1", "LCNS_KEY_집합_일치", same_keys)
+    log.add("A1", "CSV_LCNS_KEY_유일", one_to_one)
+    if not (same_keys and one_to_one):
+        problems.append("A1: API·CSV LCNS_KEY 가 1:1 이 아님")
+    m = df[["LCNS_KEY"]].merge(csv, on="LCNS_KEY", how="left")
+    df["UTMK_X_NUM"] = m["UTMK_X_NUM"].values
+    df["UTMK_Y_NUM"] = m["UTMK_Y_NUM"].values
+    log.add("A1", "CSV_LDONG_CD_있음", int(m["LDONG_CD"].notna().sum()))
+    return pd.Series(m["LDONG_CD"].values, index=df.index)
+
+
+def quality_issues(df: pd.DataFrame, meta: R.Meta, dataset: str, log: Log) -> None:
+    """[C4][C5][C6] 컬럼으로 두지 않는 품질 정보."""
+    key = df["LCNS_KEY"]
+    for col, code in [("BPLC_NM", "BRKN_NM"), ("JIBUN_ADDR", "BRKN_ADDR"), ("ROAD_ADDR", "BRKN_ADDR")]:
+        hit = df[col].str.contains(R.FFFD, regex=False).fillna(False)
+        log.issue(code, key[hit], col, df.loc[hit, col])
+    collect = pd.Timestamp(meta.p("COLLECT_DT", dataset))
+    future = df["CLSBIZ_DTM"] > collect
+    log.issue("FUTURE_CLSBIZ", key[future], "CLSBIZ_DTM", df.loc[future, "CLSBIZ_DTM"].dt.strftime("%Y-%m-%d"))
+    invalid = df["STD_ERR_TXT"].str.contains("CLSBIZ_DTM", regex=False).fillna(False)
+    log.issue("INVALID_CLSBIZ", key[invalid], "CLSBIZ_DTM",
+              "02 STD_ERR_TXT, " + df.loc[invalid, "SRC_FILE_NM"].str.split("/").str[-1] + ":" + df.loc[invalid, "SRC_ROW_NUM"].astype(str))
+    log.add("C5", "CLSBIZ_DTM<LCNS_DTM", int((df["CLSBIZ_DTM"] < df["LCNS_DTM"]).sum()), "검사 규칙만")
+
+    for row in meta.placeholder.itertuples():
+        if row.match_type in ("eq", "regex") and row.column in df:
+            col = df[row.column]
+            if row.match_type == "eq" and pd.api.types.is_numeric_dtype(col):
+                hit = (col == float(row.value)).fillna(False)
+            else:
+                text = col.astype("string")
+                hit = ((text == row.value) if row.match_type == "eq" else text.str.match(row.value)).fillna(False)
+            log.issue(row.issue_cd, key[hit], row.column, col[hit])
+        elif row.match_type == "range_out" and {"TM_X_NUM", "TM_Y_NUM"} <= set(df.columns):
+            x, y = df["TM_X_NUM"], df["TM_Y_NUM"]
+            hit = x.notna() & y.notna() & ~(
+                x.between(float(meta.p("SEOUL_TM_X_MIN")), float(meta.p("SEOUL_TM_X_MAX")))
+                & y.between(float(meta.p("SEOUL_TM_Y_MIN")), float(meta.p("SEOUL_TM_Y_MAX"))))
+            log.issue(row.issue_cd, key[hit], "TM_X_NUM/TM_Y_NUM",
+                      x[hit].round(1).astype(str) + "," + y[hit].round(1).astype(str))
+
+
+_STORE_CAFE: set | None = None
+
+
+def store_cafe_places() -> set:
+    """상가정보(서울) 업종 소분류 '카페' 의 (법정동, 번지) 집합 [E1] 대조용."""
+    global _STORE_CAFE
+    if _STORE_CAFE is None:
+        f = [p for p in (SILVER_DIR / "store_info").glob("02_*.parquet") if "_서울_" in p.name][0]
+        s = pd.read_parquet(f, columns=["INDUTY_SCLS_NM", "LDONG_CD", "LAND_SE_CD", "JIBUN_MAIN_NUM", "JIBUN_SUB_NUM"])
+        s = s[(s["INDUTY_SCLS_NM"] == "카페") & s["LDONG_CD"].notna() & (s["JIBUN_MAIN_NUM"] > 0)]
+        bunji = np.where(s["LAND_SE_CD"] == "2", "산", "") + s["JIBUN_MAIN_NUM"].astype(int).astype(str)
+        sub = s["JIBUN_SUB_NUM"].fillna(0).astype(int)
+        bunji = pd.Series(bunji, index=s.index).where(sub == 0, pd.Series(bunji, index=s.index) + "-" + sub.astype(str))
+        _STORE_CAFE = set(zip(s["LDONG_CD"], bunji))
+    return _STORE_CAFE
+
+
+def cafe_log(df: pd.DataFrame, bunji: pd.Series, keyword_hits: dict, log: Log) -> None:
+    """[E1] 카페 규칙 C 확인용 자동 기록: 상가정보 대조율, 키워드별 건수와 상위 상호."""
+    places = store_cafe_places()
+    open_now = (df["ANLS_TRD_STATE_CD"] == "영업") & df["ANLS_CLSBIZ_DTM"].isna() & df["LDONG_CD"].notna() & bunji.notna()
+    loc = pd.Series(list(zip(df["LDONG_CD"], bunji)), index=df.index)
+    for rule in ["카페A", "카페B", "카페C", "나머지"]:
+        sel = open_now & (df["INDUTY_RULE_CD"] == rule)
+        if sel.any():
+            rate = loc[sel].isin(places).mean()
+            log.add("카페_상가정보대조", rule, f"{rate:.3f}", f"현재 영업 중 {int(sel.sum())}곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율")
+    for kw, hit in keyword_hits.items():
+        if hit.any():
+            top = df.loc[hit, "BPLC_NM"].value_counts().head(5)
+            log.add("카페_키워드", kw, int(hit.sum()), " / ".join(f"{k}({v})" for k, v in top.items()))
+
+
+def clean_license(dataset: str, meta: R.Meta, table: dict, log: Log) -> tuple[dict, list[str]]:
+    problems: list[str] = []
+    src = silver02(dataset)
+    df, schema02 = read02(src)
+    rows02 = len(df)
+    log.add("행수", "02", rows02)
+
+    df, dup_removed = dedup(df, log)
+    orig_code = attach_food_csv(df, log, problems) if dataset == "food_general" else None
+
+    # [C1][C2]
+    state, unmapped = R.map_state(df, meta)
+    if len(unmapped):
+        problems.append(f"조건5: 매핑표에 없는 상태 조합 {unmapped.values.tolist()}")
+        return {"dataset": dataset, "silver02_file": relative(src), "rows_02": rows02}, problems
+    for c in state:
+        df[c] = state[c]
+    log.counts("상태_조합", df["TRD_STATE_NM"] + "|" + df["DTL_TRD_STATE_NM"] + "→" + df["ANLS_TRD_STATE_CD"] + "/" + df["TRD_STATE_SRC_CD"])
+    log.counts("출처_CLSBIZ_SRC_CD", df["CLSBIZ_SRC_CD"])
+    late = (df["CLSBIZ_SRC_CD"].str.startswith("최종수정일자")) & (df["ANLS_CLSBIZ_DTM"] >= pd.Timestamp(meta.p("ANLS_BGN_DT")))
+    log.add("C2", "대용폐업일_분석기간안", int(late.sum()), "개별 확인 대상 (LCNS_KEY: " + ", ".join(df.loc[late, "LCNS_KEY"].head(10)) + ")")
+
+    # [C5]
+    df["ABNRM_LCNS_DTM_YN"] = df["LCNS_DTM"] < pd.Timestamp(meta.p("ABNRM_LCNS_BEFORE_DT"))
+
+    # [D]
+    ld, mismatch = R.assign_ldong(df, table, meta, dataset, orig_code)
+    df["LDONG_CD"] = ld["LDONG_CD"]
+    df["LDONG_SRC_CD"] = ld["LDONG_SRC_CD"]
+    df["OUT_SEOUL_ADDR_YN"] = ld["OUT_SEOUL_ADDR_YN"]
+    bunji = ld["_BUNJI"]
+    log.counts("출처_LDONG_SRC_CD", df["LDONG_SRC_CD"])
+    log.issue("ADDR_MISMATCH", df.loc[mismatch, "LCNS_KEY"], "LDONG_CD",
+              "지번 " + ld.loc[mismatch, "_JIBUN_CD"] + " / 도로명 " + ld.loc[mismatch, "_ROAD_CD"])
+    if orig_code is not None:
+        both = orig_code.notna() & ld["_JIBUN_CD"].notna()
+        log.add("D1", "원본코드_지번_일치율", f"{(orig_code[both] == ld.loc[both, '_JIBUN_CD']).mean():.4f}", f"둘 다 있는 {int(both.sum())}건")
+    since = df["ANLS_CLSBIZ_DTM"].isna() | (df["ANLS_CLSBIZ_DTM"] >= pd.Timestamp(meta.p("ANLS_BGN_DT")))
+    log.add("D1", "2017이후영업_대상", int(since.sum()))
+    log.add("D1", "2017이후영업_실패", int((since & df["LDONG_SRC_CD"].str.startswith("실패")).sum()))
+    log.add("D1", "2017이후영업_지번만_성공률", f"{(since & df['LDONG_SRC_CD'].isin(['원본코드', '지번'])).sum() / since.sum():.4f}")
+    log.add("D1", "2017이후영업_성공률", f"{(since & ~df['LDONG_SRC_CD'].str.startswith('실패')).sum() / since.sum():.4f}")
+    log.add("D3", "서울밖_2017이후영업", int((since & df["OUT_SEOUL_ADDR_YN"]).sum()))
+
+    # [E]
+    if "UPTAE_NM" not in df:
+        df["UPTAE_NM"] = None
+    cls, abnrm, keyword_hits = R.classify(df, meta, dataset)
+    if dataset == "pharmacy":
+        df = df.drop(columns="UPTAE_NM")
+    df["ANLS_INDUTY_CD"] = cls["ANLS_INDUTY_CD"]
+    df["INDUTY_RULE_CD"] = cls["INDUTY_RULE_CD"]
+    df["OUT_SCOPE_YN"] = df["ANLS_INDUTY_CD"] == "대상외"
+    log.counts("업종_ANLS_INDUTY_CD", df["ANLS_INDUTY_CD"])
+    log.counts("업종_INDUTY_RULE_CD", df["INDUTY_RULE_CD"])
+    if abnrm.any():
+        log.issue("ABNRM_UPTAE", df.loc[abnrm, "LCNS_KEY"], "UPTAE_NM", df.loc[abnrm, "UPTAE_NM"].fillna("(NULL)"))
+    if dataset in ("food_general", "food_rest"):
+        cafe_log(df, bunji, keyword_hits, log)
+
+    # [C4][C5][C6]
+    quality_issues(df, meta, dataset, log)
+
+    # [F]
+    end = df["ANLS_CLSBIZ_DTM"]
+    d = pd.DataFrame({
+        "LCNS_KEY": df["LCNS_KEY"], "NAME_KEY": R.name_key(df["BPLC_NM"]), "LCNS_DTM": df["LCNS_DTM"], "END": end,
+        "LGOV_CD": df["LGOV_CD"], "TEL": R.valid_tel(df["SITE_TEL"], meta), "LDONG_CD": df["LDONG_CD"], "BUNJI": bunji,
+        "JIBUN_KEY": df["JIBUN_ADDR"].str.replace(r"\s+", " ", regex=True).str.strip(),
+    })
+    links = R.find_links(d, int(meta.p("REPL_WINDOW_DAYS")), int(meta.p("MULTI_TENANT_MIN_RECORDS")))
+    df["ANLS_LCNS_DTM"] = links.anls_lcns
+    df["LCNS_SRC_CD"] = links.lcns_src
+    df["MOVE_PRE_KEY"] = links.move_pre
+    df["REPL_PRE_KEY"] = links.repl_pre
+    df["REPL_TYPE_CD"] = links.repl_type
+    for k, v in links.stats.items():
+        log.add("연결", k, v)
+    if links.issues:
+        li = pd.DataFrame(links.issues).drop_duplicates()
+        for code, g in li.groupby("issue_cd"):
+            log.issue(code, g["rec_key"], "연결 후보", g["value"])
+
+    # 연결 전후 분기 말 재고, 동·구 합계
+    qe = R.quarter_ends(meta)
+    before = R.stock(df["LCNS_DTM"], end, qe)
+    after = R.stock(df["ANLS_LCNS_DTM"], end, qe)
+    diff = before - after
+    log.add("재고_연결전후", "2017Q1_차이", int(diff[0]), f"연결 전 {before[0]} → 후 {after[0]}")
+    log.add("재고_연결전후", f"{qe[-1].year}Q{qe[-1].quarter}_차이", int(diff[-1]), f"연결 전 {before[-1]} → 후 {after[-1]}")
+    log.add("재고_연결전후", "평균_차이", f"{diff.mean():.1f}")
+    log.add("재고_연결전후", "최대_차이", int(diff.max()))
+    in_scope = ~df["OUT_SCOPE_YN"]
+    gu_total = R.stock(df.loc[in_scope, "ANLS_LCNS_DTM"], end[in_scope], qe[-1:])[0]
+    dong_ok = in_scope & ~df["LDONG_SRC_CD"].str.startswith("실패")
+    dong_total = R.stock(df.loc[dong_ok, "ANLS_LCNS_DTM"], end[dong_ok], qe[-1:])[0]
+    log.add("재고_동구", f"{qe[-1].year}Q{qe[-1].quarter}_구합계", int(gu_total), "대상외 제외")
+    log.add("재고_동구", f"{qe[-1].year}Q{qe[-1].quarter}_동합계", int(dong_total), f"차이 {int(gu_total - dong_total)} = 법정동 실패")
+    for flag in ["ABNRM_LCNS_DTM_YN", "OUT_SEOUL_ADDR_YN", "OUT_SCOPE_YN"]:
+        log.add("플래그", flag, int(df[flag].sum()))
+
+    # 완료 조건 3·4·6
+    for col in R.CODE_COLUMNS:
+        bad = set(df[col].dropna()) - meta.codes(col)
+        if bad:
+            problems.append(f"조건3: {col} 코드표에 없는 값 {sorted(bad)}")
+    if not (df["OUT_SEOUL_ADDR_YN"] == (df["LDONG_SRC_CD"] == "실패_서울밖")).all():
+        problems.append("조건4: OUT_SEOUL_ADDR_YN ≠ (LDONG_SRC_CD = 실패_서울밖)")
+    if not (df["OUT_SCOPE_YN"] == (df["ANLS_INDUTY_CD"] == "대상외")).all():
+        problems.append("조건4: OUT_SCOPE_YN ≠ (ANLS_INDUTY_CD = 대상외)")
+    if df["ANLS_INDUTY_CD"].isna().any():
+        problems.append(f"분류 안 된 행 {int(df['ANLS_INDUTY_CD'].isna().sum())}건")
+    problems += [f"조건6: {p}" for p in R.check_links(df)]
+
+    # 쓰기
+    out = SILVER_DIR / dataset / stage_file_name(IDX, dataset)
+    status, sha, rows_written = write_parquet(df, schema02, out)
+    rows_parquet = pq.ParquetFile(out).metadata.num_rows
+    row_ok = rows_written == rows_parquet == rows02 - dup_removed
+    if not row_ok:
+        problems.append(f"조건2: 03 행 {rows_parquet} ≠ 02 행 {rows02} − 중복 {dup_removed}")
+    log.add("행수", "03", rows_parquet)
+    print(f"[03] {dataset}: 02 {rows02:,} → 03 {rows_parquet:,} (중복 제거 {dup_removed}, {status})")
+    return {
+        "dataset": dataset, "silver02_file": relative(src), "silver03_file": relative(out), "rows_02": rows02,
+        "dup_removed": dup_removed, "rows_03_written": rows_written, "rows_03_parquet": rows_parquet, "row_check": row_ok,
+        "columns_count": len(df.columns), "file_sha256": sha, "status": status,
+    }, problems
+
+
+def write_parquet(df: pd.DataFrame, schema02: pa.Schema, out: Path) -> tuple[str, str, int]:
+    """02 컬럼 순서·타입 유지 + 새 컬럼. 내용이 같으면 기존 파일을 그대로 둔다."""
+    base = [f for f in schema02 if f.name in df.columns]
+    extra = [c for c in ["UTMK_X_NUM", "UTMK_Y_NUM"] if c in df.columns] + R.NEW_COLUMNS
+    fields = base + [pa.field(c, NEW_TYPES.get(c, pa.string())) for c in extra]
+    arrays = []
+    for f in fields:
+        s = df[f.name]
+        if pa.types.is_date32(f.type) or pa.types.is_timestamp(f.type):
+            arr = pa.Array.from_pandas(pd.to_datetime(s)).cast(f.type, safe=False)
+        elif pa.types.is_string(f.type):
+            arr = pa.array([None if pd.isna(v) else str(v) for v in s], type=pa.string())
+        else:
+            arr = pa.Array.from_pandas(s, type=f.type)
+        arrays.append(arr)
+    table = pa.Table.from_arrays(arrays, schema=pa.schema(fields))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    temp = out.with_name(out.name + ".tmp")
+    pq.write_table(table, temp, compression=COMPRESSION, row_group_size=ROW_GROUP)
+    status, sha = replace_if_changed(temp, out)
+    return status, sha, table.num_rows
+
+
+# ──────────────────────────────────────────────────────────────
+# 실거래가 [G2]
+# ──────────────────────────────────────────────────────────────
+def same_deal(log: Log, meta: R.Meta) -> dict:
+    src = silver02("apt_trade")
+    cols = ["SGG_CD", "LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT",
+            "CNCL_YN", "SRC_FILE_NM", "SRC_ROW_NUM"]
+    df = pd.read_parquet(src, columns=cols)
+    rows02 = len(df)
+    seoul = df[df["SGG_CD"].str.startswith(meta.p("SEOUL_SGG_PREFIX", "apt_trade"))]
+    key = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM"]
+    log.add("G2", "서울_매매", len(seoul))
+    log.add("G2", "키6_겹치는행", int(seoul.duplicated(key, keep=False).sum()))
+    s = seoul[~seoul["CNCL_YN"].fillna(False)]
+    key7 = key + ["APT_DONG_TXT"]
+    dup = s[s.duplicated(key7, keep=False)].copy()
+    dup["GRP"] = dup.groupby(key7, dropna=False, sort=True).ngroup() + 1
+    log.add("G2", "키7_해제제외_겹치는행", len(dup), "issue_list SAME_DEAL")
+    log.issue("SAME_DEAL", dup["SRC_FILE_NM"].str.split("/").str[-1] + ":" + dup["SRC_ROW_NUM"].astype(str), "묶음",
+              "묶음 " + dup["GRP"].astype(str))
+    print(f"[03] apt_trade: 서울 동일 조건 거래 {len(dup):,}행 → issue_list (03 파일 없음)")
+    return {"dataset": "apt_trade", "silver02_file": relative(src), "silver03_file": "", "rows_02": rows02,
+            "dup_removed": 0, "rows_03_written": 0, "rows_03_parquet": 0, "row_check": True, "columns_count": 0,
+            "file_sha256": "", "status": "issue_list만"}
+
+
+# ──────────────────────────────────────────────────────────────
+# 실행
+# ──────────────────────────────────────────────────────────────
+def snapshot02() -> dict[str, str]:
+    return snapshot_files(SILVER_DIR.rglob("02_silver__*.parquet"))
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--dataset", nargs="*", choices=ALL_DATASETS, help="처리할 데이터셋 (기본: 전부)")
+    parser.add_argument("--check", action="store_true", help="metadata 검사만 하고 파일은 쓰지 않음")
+    args = parser.parse_args()
+    started = now_kst()
+    datasets = args.dataset or ALL_DATASETS
+
+    # 1. 사전 검사
+    meta = R.load_meta(METADATA_DIR)
+    problems = R.check_meta(meta)
+    try:
+        for ds in datasets + (["food_general_file"] if "food_general" in datasets else []) + ["ldong_code"]:
+            silver02(ds)
+    except FileNotFoundError as exc:
+        problems.append(str(exc))
+    if problems:
+        print("[03] 사전 검사 실패 — 아무 파일도 쓰지 않았습니다:\n  " + "\n  ".join(problems))
+        return 1
+    print(f"[03] 사전 검사 통과: cln_* 8개 파일, 데이터셋 {len(datasets)}개")
+    if args.check:
+        return 0
+
+    # 2. 정제
+    before = snapshot02()
+    ldong, _ = read02(silver02("ldong_code"))
+    table = R.ldong_lookup(ldong)
+    records, logs, fails = [], [], {}
+    for ds in datasets:
+        log = Log(ds)
+        if ds == "apt_trade":
+            rec, probs = same_deal(log, meta), []
+        else:
+            rec, probs = clean_license(ds, meta, table, log)
+        records.append(rec)
+        logs.append(log)
+        fails[ds] = probs
+    unchanged02 = snapshot02() == before
+
+    # 3. 기록
+    issue_run = pd.concat([l.issue_frame() for l in logs], ignore_index=True)
+    issue_run = issue_run.sort_values(["dataset", "issue_cd", "rec_key", "column", "value"], kind="stable").reset_index(drop=True)
+    for l in logs:
+        mine = issue_run[issue_run["dataset"] == l.dataset]
+        for code, cnt in mine["issue_cd"].value_counts().sort_index().items():
+            l.add("이슈", code, int(cnt))
+    change_run = pd.DataFrame([r for l in logs for r in l.rows])
+
+    bad_issue = set(issue_run["issue_cd"]) - meta.codes("ISSUE_CD")
+    for ds in datasets:
+        if bad_issue & set(issue_run.loc[issue_run["dataset"] == ds, "issue_cd"]):
+            fails[ds].append(f"조건3: 코드표에 없는 issue_cd {sorted(bad_issue)}")
+        if not unchanged02:
+            fails[ds].append("조건1: 02 silver 파일이 바뀜")
+    manifest_run = pd.DataFrame(records)
+    manifest_run["cond_fail_txt"] = manifest_run["dataset"].map(lambda d: " | ".join(fails[d]))
+    manifest_run["cond_ok"] = manifest_run["cond_fail_txt"] == ""
+
+    paths = {name: REPORT_SILVER_DIR / stage_file_name(IDX, name, ext="csv") for name in ["manifest", "change_log", "issue_list"]}
+    frames = {"manifest": manifest_run, "change_log": change_run, "issue_list": issue_run}
+    if args.dataset:
+        frames = {k: merge_dataset_rows(paths[k], v, datasets) for k, v in frames.items()}
+    for k, v in frames.items():
+        write_csv(paths[k], v)
+
+    # 조건 7: 써진 issue_list 건수 = change_log 이슈별 건수
+    il = pd.read_csv(paths["issue_list"], dtype=str, keep_default_na=False, encoding="utf-8-sig")
+    cl = pd.read_csv(paths["change_log"], dtype=str, keep_default_na=False, encoding="utf-8-sig")
+    a = il.groupby(["dataset", "issue_cd"]).size().astype(int).sort_index()
+    b = cl[cl["section"] == "이슈"].set_index(["dataset", "item"])["value"].astype(int).sort_index()
+    b.index.names = a.index.names
+    cond7 = all(p.exists() for p in paths.values()) and a.equals(b)
+
+    # 4. 결과
+    ok = all(not fails[d] for d in datasets) and cond7
+    unchanged = int((manifest_run["status"] == "unchanged").sum())
+    files03 = int((manifest_run["silver03_file"] != "").sum())
+    print(f"\n[03] 완료 조건: {'통과' if ok else '실패'} | 02 불변 {'예' if unchanged02 else '아니오'} "
+          f"| 기록 건수 일치 {'예' if cond7 else '아니오'} | 재실행 동일 {unchanged}/{files03} (처음 실행은 created)")
+    for d in datasets:
+        for p in fails[d]:
+            print(f"  - {d}: {p}")
+    print(f"[03] 시작 {started}, 종료 {now_kst()}")
+    print(f"[03] 결과: {', '.join(relative(p) for p in paths.values())}")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
