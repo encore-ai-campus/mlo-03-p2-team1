@@ -1,0 +1,24 @@
+2026-11-20T11:21:19.985+09:00 WATCH_START directory=data/watch-smoke-f1ogtjo5 pattern=*.csv interval_ms=100 timeout_s=10 mode=one-shot
+2026-11-20T11:21:19.986+09:00 WATCH_SCAN matching_files=0
+2026-11-20T11:21:20.094+09:00 FILE_DETECTED path=data/watch-smoke-f1ogtjo5/apt_trade.csv size_bytes=54 delivery=atomic_rename
+2026-11-20T11:21:20.095+09:00 CSV_READ encoding=utf-8 columns=['aptNm', 'dealYear', 'dealAmount'] rows=1 values=[{'aptNm': 'SMOKE_TEST_APT', 'dealYear': '2026', 'dealAmount': '12345'}]
+2026-11-20T11:21:20.124+09:00 DB_CONNECTED database=bronze role=[redacted]
+2026-11-20T11:21:20.130+09:00 SCHEMA_QUERY schema=public base_tables=23 tables=apt_rent,apt_trade,beauty,bronze_file,clinic,food_general,food_general_file,food_rest,hira_department,hira_detail,hira_equipment,hira_facility,hira_hospital,hira_meal,hira_nursing,hira_other_staff,hira_pharmacy,hira_special_treatment,hira_specialty_hospital,hira_transport,ldong_code,pharmacy,store_info
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.apt_trade._file_id type=bigint
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.apt_trade._file_row_number type=bigint
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.apt_trade.aptNm type=text
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.apt_trade.dealAmount type=text
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.apt_trade.dealYear type=text
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.bronze_file.file_id type=bigint
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.bronze_file.relative_path type=text
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.bronze_file.target_table type=text
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.bronze_file.expected_rows type=bigint
+2026-11-20T11:21:20.136+09:00 SCHEMA_COLUMN public.bronze_file.parquet_schema type=jsonb
+2026-11-20T11:21:20.138+09:00 SCHEMA_FOREIGN_KEY public.apt_trade FOREIGN KEY (_file_id) REFERENCES bronze_file(file_id)
+2026-11-20T11:21:20.140+09:00 INSERT table=public.bronze_file rows=1 file_id=-1427057918156447844 identity=explicit_test_key
+2026-11-20T11:21:20.141+09:00 INSERT table=public.apt_trade rows=1 file_id=-1427057918156447844 file_row_number=1
+2026-11-20T11:21:20.143+09:00 SELECT_VERIFY matched_csv=true rows=[('apt_trade', 1, 1, 'SMOKE_TEST_APT', '2026', '12345')]
+2026-11-20T11:21:20.144+09:00 ROLLBACK completed=true
+2026-11-20T11:21:20.157+09:00 ROLLBACK_VERIFY new_connection=true bronze_file_rows=0 apt_trade_rows=0
+2026-11-20T11:21:20.159+09:00 CLEANUP temporary_watch_directory_removed=true
+2026-11-20T11:21:20.159+09:00 RESULT passed duplicate_detection=skipped
