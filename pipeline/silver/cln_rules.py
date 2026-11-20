@@ -23,6 +23,7 @@ TRADE_NEW_COLUMNS = ["LDONG_SRC_CD", "SAME_DEAL_YN"]   # 실거래가 매매 03 
 RENT_NEW_COLUMNS = ["LDONG_CD", "LDONG_SRC_CD"]        # 실거래가 전월세 03 이 붙이는 컬럼 (02 에 LDONG_CD 없음) [G5]
 HIRA_NEW_COLUMNS = ["SGG_CD", "LDONG_CD", "LDONG_SRC_CD"]  # 심평원 03 이 붙이는 컬럼 (법정 시군구·법정동) [H1]
 STORE_NEW_COLUMNS = ["LDONG_SRC_CD"]                       # 상가정보 03 이 붙이는 컬럼 (LDONG_CD 는 02 컬럼을 현행 코드로 덮어씀) [S1]
+LDONG_NEW_COLUMNS = ["LDONG_SE_CD", "SIDO_CD", "SIDO_NM", "SGG_CD", "SGG_NM", "UMD_NM", "RI_NM"]  # 법정동코드 03 계층 컬럼 [L1]
 HIRA_FILES = ["1.", "2."]                                   # 심평원 03 에 넣는 02 파일 (병원정보, 약국정보) [H0]
 TRADE_SAME_DEAL_KEY = ["LDONG_CD", "APT_KEY", "DEAL_DTM", "DEAL_AMT_NUM", "EXCL_AREA_NUM", "FLR_NUM", "APT_DONG_TXT"]
 CODE_COLUMNS = ["ANLS_TRD_STATE_CD", "TRD_STATE_SRC_CD", "CLSBIZ_SRC_CD", "LCNS_SRC_CD", "LDONG_SRC_CD",
@@ -82,7 +83,7 @@ def load_meta(metadata_dir: Path) -> Meta:
 def check_meta(m: Meta) -> list[str]:
     """03 실행 전 metadata 검사. 문제 목록 (비면 통과)."""
     problems = []
-    for col in NEW_COLUMNS + TRADE_NEW_COLUMNS + HIRA_NEW_COLUMNS:
+    for col in NEW_COLUMNS + TRADE_NEW_COLUMNS + HIRA_NEW_COLUMNS + LDONG_NEW_COLUMNS:
         missing = [w for w in col.split("_") if w not in m.words]
         if missing:
             problems.append(f"std_word.csv 에 없는 단어 {missing} (컬럼 {col})")
@@ -118,6 +119,38 @@ def check_meta(m: Meta) -> list[str]:
     if bad := set(flags_made) - set(m.flag["flag"]):
         problems.append(f"cln_flag.csv 에 없는 플래그 {sorted(bad)}")
     return problems
+
+def ldong_hierarchy(ld: pd.DataFrame) -> pd.DataFrame:
+    """법정동 코드표에 계층 컬럼을 붙인다 [L1]. 이름은 상위 코드 행의 전체 이름을 앞에서 떼어 낸다.
+    구분: 시도(뒤 8자리 0) / 시군구(뒤 5자리 0) / 읍면동(뒤 2자리 0) / 리.
+    세종처럼 시군구 행 이름이 시도 이름과 같으면 SGG_NM 은 NULL."""
+    c, nm = ld["LDONG_CD"], ld["LDONG_NM"]
+    full = dict(zip(c, nm))
+    se = pd.Series("리", index=ld.index).mask(c.str[8:] == "00", "읍면동").mask(c.str[5:] == "00000", "시군구") \
+        .mask(c.str[2:] == "00000000", "시도")
+    sgg_full = (c.str[:5] + "00000").map(full)
+    umd_full = (c.str[:8] + "00").map(full)
+
+    def rest(name: pd.Series, head: pd.Series) -> pd.Series:
+        ok = head.notna() & (name.str.len() > head.str.len().fillna(0))
+        return pd.Series([n[len(h):].strip() if k else None for n, h, k in zip(name, head.fillna(""), ok)], index=name.index)
+
+    out = pd.DataFrame(index=ld.index)
+    out["LDONG_SE_CD"] = se
+    out["SIDO_CD"] = c.str[:2]
+    out["SIDO_NM"] = nm.str.split().str[0]
+    out["SGG_CD"] = c.str[:5].where(se != "시도")
+    out["SGG_NM"] = rest(sgg_full, out["SIDO_NM"]).where(se != "시도")
+    out["UMD_NM"] = rest(umd_full, sgg_full).where(se.isin(["읍면동", "리"]))
+    out["RI_NM"] = rest(nm, umd_full).where(se == "리")
+    # 폐지된 옛 리 중 상위 읍면 코드의 이름이 다른 행(코드 재사용): 자기 이름에서 마지막 단어를 리로 나눈다
+    odd = (se == "리") & ~pd.Series([n.startswith(u + " ") if isinstance(u, str) else False for n, u in zip(nm, umd_full)],
+                                    index=ld.index)
+    if odd.any():
+        tail = rest(nm[odd], sgg_full[odd])
+        out.loc[odd, "UMD_NM"] = tail.str.rsplit(" ", n=1).str[0]
+        out.loc[odd, "RI_NM"] = tail.str.rsplit(" ", n=1).str[-1]
+    return out
 
 
 # ──────────────────────────────────────────────────────────────

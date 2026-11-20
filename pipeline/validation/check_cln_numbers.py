@@ -83,6 +83,8 @@ def measure(row) -> int:
         return int(((t["HIRA_SIDO_NM"] == "서울") & (t["LDONG_SRC_CD"] == "실패")).sum())
     if ref == "S1" and row.handling == "LDONG_NOT_CURRENT":
         return n_issue(row.handling, ds)
+    if ref == "L1":                   # 법정동코드 (change_log)
+        return int(clog(ds, "L1", "서울_현행" if row.column == "LDONG_CD" else "서울_읍면동_현행") or 0)
     if ref == "S2":                   # 상가정보 02 층 변환 실패 (change_log)
         return int(clog(ds, "S2", "FLR_NUM_변환실패") or 0)
     if ref == "G4":                   # 실거래가 전월세 02 변환 실패 (change_log)

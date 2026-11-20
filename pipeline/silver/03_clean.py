@@ -1,7 +1,7 @@
 """[03] Silver 정제: data/silver/{ds}/02_*.parquet → data/silver/{ds}/03_silver__{ds}.parquet
 
 사용법
-  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세 + 심평원 + 상가정보
+  python pipeline/silver/03_clean.py                       # 인허가 5종 + 실거래가 매매·전월세 + 심평원 + 상가정보 + 법정동코드
   python pipeline/silver/03_clean.py --dataset pharmacy    # 일부만 (기록의 다른 데이터셋 행은 유지)
   python pipeline/silver/03_clean.py --check               # metadata 검사만 (파일을 쓰지 않음)
 
@@ -16,6 +16,7 @@
   도로명 주소로 법정 시군구 SGG_CD, UMD_NM·도로명 괄호 동명으로 LDONG_CD 를 붙인다 [H1].
 - 상가정보는 시도별 02 파일 16개를 하나로 합치고(전국 유지) [S0], 현행 코드표에 없는 LDONG_CD 만
   SGG_CD + LDONG_NM 으로 다시 찾거나 NULL 로 둔다 [S1].
+- 법정동코드는 모든 행(전국·폐지 포함)을 두고 구분·시도·시군구·읍면동·리 계층 컬럼을 붙인다 [L1] (골드 dim_region 원천).
 
 기록 (report/silver/)
   03_silver__manifest.csv   : 파일별 행 수(02 → 03), 중복 제거, 완료 조건 결과, 재실행 상태
@@ -46,7 +47,7 @@ IDX = "03"
 REPORT_SILVER_DIR = REPORT_DIR / "silver"
 ROW_GROUP = 100_000
 COMPRESSION = "snappy"
-ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent", "hira_inst", "store_info"]
+ALL_DATASETS = R.LICENSE_DATASETS + ["apt_trade", "apt_rent", "hira_inst", "store_info", "ldong_code"]
 
 NEW_TYPES = {
     "ANLS_CLSBIZ_DTM": pa.date32(), "ANLS_LCNS_DTM": pa.date32(),
@@ -649,6 +650,55 @@ def clean_store(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list
             "rows_02": rows02, "dup_removed": 0, "rows_03_written": table.num_rows, "rows_03_parquet": table.num_rows,
             "row_check": row_ok, "columns_count": table.num_columns, "file_sha256": sha, "status": status}, problems
 
+# ──────────────────────────────────────────────────────────────
+# 법정동코드 [L0]·[L1]
+# ──────────────────────────────────────────────────────────────
+def clean_ldong(meta: R.Meta, ldong: pd.DataFrame, log: Log) -> tuple[dict, list[str]]:
+    """법정동코드 03 (골드 dim_region 원천): 전국·폐지 포함 모든 행 유지, 02 컬럼 그대로 [L0].
+    구분·시도·시군구·읍면동·리 계층 컬럼을 붙인다 [L1]. 다른 03 단계는 지금처럼 02 코드표를 읽는다."""
+    ds = "ldong_code"
+    src = silver02(ds)
+    df, schema02 = read02(src)
+    problems: list[str] = []
+    if df["LDONG_CD"].duplicated().any():
+        problems.append("L0: LDONG_CD 중복")
+    if (df["LDONG_CD"].str.len() != 10).any():
+        problems.append("L0: 10자리가 아닌 LDONG_CD")
+    h = R.ldong_hierarchy(df)
+    df = pd.concat([df, h], axis=1)
+    seoul = df["SIDO_CD"] == meta.p("SEOUL_SGG_PREFIX", "apt_trade")
+    cur = ~df["ABL_YN"].astype(bool)
+
+    for se in ["시도", "시군구", "읍면동", "리"]:
+        sel = df["LDONG_SE_CD"] == se
+        log.add("L1", f"{se}_현행", int((sel & cur).sum()), "ABL_YN = False")
+        log.add("L1", f"{se}_폐지", int((sel & ~cur).sum()), "ABL_YN = True, 행 유지")
+        log.add("L1", f"서울_{se}_현행", int((sel & cur & seoul).sum()))
+        log.add("L1", f"서울_{se}_폐지", int((sel & ~cur & seoul).sum()))
+    log.add("L1", "서울_현행", int((cur & seoul).sum()), "다른 데이터셋 법정동 기준 (시도·구 행 포함)")
+    log.add("L1", "SGG_NM_없음_시군구이하", int((df["SGG_CD"].notna() & df["SGG_NM"].isna()).sum()), "세종 등 시군구가 없는 시도")
+
+    # 계층 이름 검사: 이름을 이어 붙이면 원래 LDONG_NM 과 같아야 한다
+    parts = df[["SIDO_NM", "SGG_NM", "UMD_NM", "RI_NM"]]
+    joined = parts.apply(lambda r: " ".join(v for v in r if isinstance(v, str)), axis=1)
+    if n := int((joined != df["LDONG_NM"].str.split().str.join(" ")).sum()):
+        problems.append(f"L1: 계층 이름을 이어 붙인 값이 LDONG_NM 과 다른 행 {n}")
+    if bad := set(df["LDONG_SE_CD"]) - meta.codes("LDONG_SE_CD"):
+        problems.append(f"조건3: 코드표에 없는 LDONG_SE_CD {sorted(bad)}")
+    if (df.loc[df["LDONG_SE_CD"].isin(["읍면동", "리"]), "UMD_NM"].isna()).any():
+        problems.append("L1: 읍면동·리 행인데 UMD_NM 이 빈 행이 있음")
+
+    out = SILVER_DIR / ds / f"03_silver__{ds}.parquet"
+    status, sha, n_written = write_parquet(df, schema02, out, new_columns=R.LDONG_NEW_COLUMNS)
+    rows02 = pq.read_metadata(src).num_rows
+    row_ok = rows02 == n_written
+    if not row_ok:
+        problems.append(f"조건2: 행 수 02 {rows02} / 03 {n_written}")
+    print(f"[03] {ds}: {rows02:,}행 → {relative(out)} ({status}) | 서울 현행 {int((cur & seoul).sum())}")
+    return {"dataset": ds, "silver02_file": relative(src), "silver03_file": relative(out), "rows_02": rows02,
+            "dup_removed": 0, "rows_03_written": n_written, "rows_03_parquet": n_written, "row_check": row_ok,
+            "columns_count": len(schema02) + len(R.LDONG_NEW_COLUMNS), "file_sha256": sha, "status": status}, problems
+
 
 # ──────────────────────────────────────────────────────────────
 # 실행
@@ -695,6 +745,8 @@ def main() -> int:
             rec, probs = clean_hira(meta, ldong, log)
         elif ds == "store_info":
             rec, probs = clean_store(meta, ldong, log)
+        elif ds == "ldong_code":
+            rec, probs = clean_ldong(meta, ldong, log)
         else:
             rec, probs = clean_license(ds, meta, table, log)
         records.append(rec)
