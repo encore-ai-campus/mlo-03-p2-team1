@@ -11,6 +11,7 @@ apt_trade,UNIT_PRICE_AVAILABLE,,611300,611300,0,면적이 없거나 0 이하이�
 fact_apt_trd,TRADE_DETAIL_ROWS,,611300,611300,0,
 apt_trade,TRADE_AGGREGATION,,611300,11069,-600231,
 fact_apt_trd_qtr,DENSE_GRID,,11069,18213,7144,무거래 셀 7144개.
+fact_apt_trd_qtr,LOW_SAMPLE_YN,,18213,9593,-8620,가격 표본 수 5건 미만인 분기 셀 수. 관측 중앙값은 유지.
 fact_apt_trd_qtr,TRADE_COUNT_CHECK,,611300,611300,0,
 dim_region,OBSERVED_TRADE_REGION,,467,338,-129,분석 기간 중 유효 매매가 1건 이상 관측된 법정동 수.
 food_general,SELECT_COLUMNS,,60,11,-49,컬럼 수. 나머지 단계의 건수는 행 또는 집계 지표 수.
@@ -832,20 +833,31 @@ fact_lcns_qtr,SOURCE_TOTAL_CHECK,,243458,243458,0,OPEN_CNT
 fact_lcns_qtr,SOURCE_TOTAL_CHECK,,223501,223501,0,CLOSE_CNT
 fact_lcns_qtr,SOURCE_TOTAL_CHECK,,780,780,0,PROXY_CLOSE_CNT
 fact_lcns_qtr,DENSE_GRID,,174591,236769,62178,미관측 조합에 건수 0을 생성.
+fact_apt_idx_qtr,CPLX_RET_1Q,,18213,7300,-10913,값이 있는 동·분기 셀 수.
+fact_apt_idx_qtr,CPLX_RET_4Q,,18213,6416,-11797,값이 있는 동·분기 셀 수.
+fact_apt_idx_qtr,PRICE_IDX,,18213,7300,-10913,값이 있는 동·분기 셀 수.
 dim_region,KEY_UNIQUENESS,,467,467,0,
 dim_date,KEY_UNIQUENESS,,39,39,0,
 dim_lcns_induty,KEY_UNIQUENESS,,13,13,0,
 fact_apt_trd,KEY_UNIQUENESS,,611300,611300,0,
 fact_apt_trd_qtr,KEY_UNIQUENESS,,18213,18213,0,
+fact_apt_idx_qtr,KEY_UNIQUENESS,,18213,18213,0,
 fact_lcns_qtr,KEY_UNIQUENESS,,236769,236769,0,
 mart_ldong_infra_qtr,KEY_UNIQUENESS,,18213,18213,0,
 fact_apt_trd,DIMENSION_MATCH,,611300,611300,0,LDONG_CD
 fact_apt_trd,DIMENSION_MATCH,,611300,611300,0,YQ
 fact_apt_trd_qtr,DIMENSION_MATCH,,18213,18213,0,LDONG_CD
 fact_apt_trd_qtr,DIMENSION_MATCH,,18213,18213,0,YQ
+fact_apt_idx_qtr,DIMENSION_MATCH,,18213,18213,0,LDONG_CD
+fact_apt_idx_qtr,DIMENSION_MATCH,,18213,18213,0,YQ
 fact_lcns_qtr,DIMENSION_MATCH,,236769,236769,0,LDONG_CD
 fact_lcns_qtr,DIMENSION_MATCH,,236769,236769,0,YQ
 fact_lcns_qtr,DIMENSION_MATCH,,236769,236769,0,ANLS_INDUTY_CD
 mart_ldong_infra_qtr,DIMENSION_MATCH,,18213,18213,0,LDONG_CD
 mart_ldong_infra_qtr,DIMENSION_MATCH,,18213,18213,0,YQ
+fact_apt_trd_qtr,LOW_SAMPLE_RULE_CHECK,,18213,18213,0,
+mart_ldong_infra_qtr,LOW_SAMPLE_RULE_CHECK,,18213,18213,0,
+dim_date,PROVISIONAL_RULE_CHECK,,39,39,0,
+mart_ldong_infra_qtr,PROVISIONAL_RULE_CHECK,,18213,18213,0,
+fact_apt_idx_qtr,INDEX_RECALCULATION_CHECK,,18213,18213,0,상세 거래 재집계 및 지수 연결 검증
 mart_ldong_infra_qtr,FACT_JOIN,,18213,18213,0,

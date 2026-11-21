@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from common.files import replace_if_changed
 from common.paths import DATA_DIR, METADATA_DIR, REPORT_DIR, SILVER_DIR, relative, stage_file_name
 from common.report import md_table, write_csv, write_markdown
+from gold.price_index import build_price_index, load_min_price_samples
 from silver.cln_rules import LICENSE_DATASETS, TRADE_SAME_DEAL_KEY
 from validation.check_gold_numbers import check_known_issues, trade_check_parameters
 from validation.check_gold_tables import (
@@ -149,7 +150,7 @@ def build_dates(periods):
         "QTR": periods.quarter.astype("int8"),
         "QTR_BGN_DT": periods.start_time.date,
         "QTR_END_DT": periods.end_time.date,
-        "PROVISIONAL_YN": periods.year == periods[-1].year,
+        "PROVISIONAL_YN": False,
     })
 
 
@@ -193,7 +194,7 @@ def build_trade_detail(eligible_trades):
     return detail
 
 
-def aggregate_trades(trades, grid, log):
+def aggregate_trades(trades, grid, min_samples, log):
     grouped = trades.groupby(REGION_PERIOD).agg(
         TRADE_CNT=("UNIT_AMT", "size"),
         PRICE_SAMPLE_CNT=("UNIT_AMT", "count"),
@@ -202,9 +203,12 @@ def aggregate_trades(trades, grid, log):
     fact = grouped.reindex(grid)
     for column in ("TRADE_CNT", "PRICE_SAMPLE_CNT"):
         fact[column] = fact[column].fillna(0).astype("int64")
+    fact["LOW_SAMPLE_YN"] = fact["PRICE_SAMPLE_CNT"].lt(min_samples)
     empty = fact["TRADE_CNT"].eq(0).sum()
     record(log, "apt_trade", "TRADE_AGGREGATION", len(trades), len(grouped))
     record(log, "fact_apt_trd_qtr", "DENSE_GRID", len(grouped), len(fact), note=f"무거래 셀 {empty}개.")
+    record(log, "fact_apt_trd_qtr", "LOW_SAMPLE_YN", len(fact), fact["LOW_SAMPLE_YN"].sum(),
+           note=f"가격 표본 수 {min_samples}건 미만인 분기 셀 수. 관측 중앙값은 유지.")
     if fact["TRADE_CNT"].sum() != len(trades) or fact["PRICE_SAMPLE_CNT"].sum() != trades["UNIT_AMT"].count():
         raise ValueError("매매 팩트의 거래 수 또는 가격 표본 수가 Silver 선별 건수와 다릅니다.")
     record(log, "fact_apt_trd_qtr", "TRADE_COUNT_CHECK", len(trades), fact["TRADE_CNT"].sum())
@@ -361,7 +365,7 @@ def staged_file(target, cleanup):
     return path
 
 
-def write_results(tables, log, input_label, inputs, known_checks, industry_rules):
+def write_results(tables, log, input_label, inputs, known_checks, industry_rules, min_samples):
     GOLD_DIR.mkdir(parents=True, exist_ok=True)
     GOLD_REPORT_DIR.mkdir(parents=True, exist_ok=True)
     with ExitStack() as cleanup:
@@ -383,7 +387,7 @@ def write_results(tables, log, input_label, inputs, known_checks, industry_rules
         known_temp = staged_file(known_target, cleanup)
         write_csv(change_temp, change_log)
         write_csv(known_temp, known_checks)
-        write_markdown(md_temp, report_lines(tables, change_log, input_label, industry_rules))
+        write_markdown(md_temp, report_lines(tables, change_log, input_label, industry_rules, min_samples))
 
         with publish_lock():
             manifest = []
@@ -401,7 +405,7 @@ def write_results(tables, log, input_label, inputs, known_checks, industry_rules
     return manifest
 
 
-def report_lines(tables, log, input_label, industry_rules):
+def report_lines(tables, log, input_label, industry_rules, min_samples):
     dates = tables["dim_date"]
     last_quarter = dates["YQ"].iloc[-1]
     stock = log.loc[log["metric"].eq("ACTIVE_GU_TO_DONG") & log["period"].eq(last_quarter)].copy()
@@ -416,6 +420,8 @@ def report_lines(tables, log, input_label, industry_rules):
     trade_steps = trade_steps[["metric", "before_count", "after_count", "delta"]]
     trade_steps.columns = ["처리", "이전", "이후", "차이"]
     licenses = tables["fact_lcns_qtr"]
+    price_index = tables["fact_apt_idx_qtr"]
+    low_count = tables["fact_apt_trd_qtr"]["LOW_SAMPLE_YN"].sum()
     fact_only = [
         f"- `{code}`는 참고 업종이라 인허가 팩트에 보존하고 마트 집계에서는 제외했습니다. "
         f"분석 기간의 개업 수는 {licenses.loc[licenses['ANLS_INDUTY_CD'].eq(code), 'OPEN_CNT'].sum():,}건입니다."
@@ -424,7 +430,7 @@ def report_lines(tables, log, input_label, industry_rules):
     return [
         "# Gold 스타 스키마 작업 기록", "",
         f"- Silver 입력은 `{input_label}`의 03 산출물 7개입니다.",
-        f"- 분석 기간은 {dates['YQ'].iloc[0]}~{last_quarter}입니다. 마지막 연도는 잠정으로 표시했습니다.",
+        f"- 분석 기간은 {dates['YQ'].iloc[0]}~{last_quarter}입니다. 날짜 차원과 마트의 `PROVISIONAL_YN`은 전 분기 `False`입니다.",
         "- 분기 가격과 인허가 지표를 서울 법정동별로 비교할 수 있도록 구성했습니다.", "",
         "## 팩트와 차원", "",
         *md_table(table_list), "",
@@ -432,6 +438,8 @@ def report_lines(tables, log, input_label, industry_rules):
         f"- `HAS_OBSERVED_TRADE_YN`은 분석 기간 중 유효 매매가 1건 이상 관측된 동을 표시합니다. 유효 매매가 관측되지 않은 동은 {(~tables['dim_region']['HAS_OBSERVED_TRADE_YN']).sum():,}개입니다. 아파트 존재 여부는 별도 자료로 확인합니다.",
         "- 매매 상세 팩트는 유효 매매 1건당 한 행입니다. 계약일과 분기, 단지, 면적, 가격을 보존하고 원천 파일명과 행 번호를 키로 씁니다. 분기 키는 기존 분기 날짜 차원에 연결합니다.",
         "- 매매 분기 팩트는 상세 팩트에서 계산한 거래 수·가격 표본 수·㎡당 매매가 중앙값을 저장합니다. 인허가 분기 팩트에는 개업·폐업·분기 말 영업·순증·대용 폐업일 건수를 저장합니다.",
+        f"- 분기 매매 팩트와 마트의 `LOW_SAMPLE_YN`은 가격 표본이 {min_samples}건 미만인 {low_count:,}개 셀에 표시합니다. 관측 중앙값은 보존합니다.",
+        "- `fact_apt_idx_qtr`는 같은 단지의 동·구·서울 1분기 및 전년 동분기 로그 변화율과 동 가격 지수를 제공합니다.",
         "- 인허가 코드는 원천 구분과 관계없이 같은 분석 업종으로 합산하고, 원천별 대조값은 CSV에 보존합니다. 마트에서는 의원 계열과 미용 세부 업종을 각각 묶고 편의점은 참고 지표로 표시합니다.",
         *fact_only,
         "- 분기·업종 조합은 모두 생성했습니다. 거래가 없으면 거래 건수는 0, 가격은 NULL입니다. 결과표의 인허가 건수는 0으로 표현합니다.", "",
@@ -440,6 +448,10 @@ def report_lines(tables, log, input_label, industry_rules):
         "서울·계약 기간을 선별한 뒤 G1 계약 해제를 제외하고, G2 동일 조건 거래는 원천 파일명·행 번호 순서의 첫 행을 남겼습니다. 동 매칭 실패는 동 집계에서 제외했습니다. 가격 중앙값은 유효한 거래별 거래금액(원)을 전용면적(㎡)으로 나눈 값에서 산출했습니다.", "",
         *md_table(trade_steps), "",
         "마지막 행은 개별 거래를 법정동·분기별로 묶은 결과입니다. 원래 거래 수의 합계는 팩트의 TRADE_CNT에 보존했습니다.", "",
+        "### 같은 단지 가격 지수", "",
+        f"동의 1분기 변화율은 {price_index['CPLX_RET_1Q'].count():,}개 셀, 4분기 변화율은 {price_index['CPLX_RET_4Q'].count():,}개 셀에 있습니다. "
+        f"양쪽 분기의 매칭 거래 수가 각각 {min_samples}건 이상인 비교만 사용합니다.",
+        "1분기 변화율이 비어 있는 분기의 지수와 구간 번호는 NULL입니다. 다음 유효 구간은 100에서 시작하고, 같은 구간에서는 변화율을 누적합니다. 4분기 변화율은 전년 동분기와 직접 비교합니다.", "",
         "### 인허가", "",
         "대상 외 업태를 제외하고 분석용 개업·폐업일로 분기별 건수를 계산했습니다. 이상 개업일 플래그는 개업 수에서 제외했고, 영업 수는 개업일 ≤ 분기 말 < 폐업일 기준으로 계산했습니다. 폐업일이 비어 있으면 영업 구간이 이어집니다. 대용 폐업일 건수는 분석용 폐업일이 속하는 분기에 기록했습니다.",
         "개업·폐업은 전체 기준으로 집계했습니다. 이전·재등록·교체를 별도로 제외한 지표는 팀 결정 항목입니다. 구 합계 검증에는 인허가 관청 코드를 사용했습니다. 주소가 가리키는 구와 관청의 구가 다른 건수는 CSV의 DONG_GU_CODE_MATCH에 기록했습니다.", "",
@@ -456,6 +468,7 @@ def report_lines(tables, log, input_label, industry_rules):
 
 def run(archive_path):
     industry_rules, mart_groups = load_industry_rules()
+    min_samples = load_min_price_samples()
     periods, prefix, price_min, industries, proxy_codes, gu_map = load_rules(industry_rules)
     required = [silver_path(dataset) for dataset in INPUT_COLUMNS]
     if archive_path is None:
@@ -482,7 +495,7 @@ def run(archive_path):
         trade_detail = build_trade_detail(eligible_trades)
         del eligible_trades
         record(log, "fact_apt_trd", "TRADE_DETAIL_ROWS", len(trade_detail), len(trade_detail))
-        trades = aggregate_trades(trade_detail, grid, log)
+        trades = aggregate_trades(trade_detail, grid, min_samples, log)
         observed_regions = trades.loc[trades["TRADE_CNT"].gt(0), "LDONG_CD"]
         regions["HAS_OBSERVED_TRADE_YN"] = regions["LDONG_CD"].isin(observed_regions)
         record(
@@ -501,15 +514,20 @@ def run(archive_path):
 
     licenses = build_license_fact(parts, regions, dates, industries, log)
     mart = build_mart(trades, licenses, regions, dates, mart_groups)
+    price_index = build_price_index(trade_detail, regions, grid, min_samples)
+    for column in ("CPLX_RET_1Q", "CPLX_RET_4Q", "PRICE_IDX"):
+        record(log, "fact_apt_idx_qtr", column, len(price_index), price_index[column].notna().sum(),
+               note="값이 있는 동·분기 셀 수.")
     tables = {
         "dim_region": regions, "dim_date": dates, "dim_lcns_induty": industries,
         "fact_apt_trd": trade_detail,
-        "fact_apt_trd_qtr": trades, "fact_lcns_qtr": licenses, "mart_ldong_infra_qtr": mart,
+        "fact_apt_trd_qtr": trades, "fact_apt_idx_qtr": price_index,
+        "fact_lcns_qtr": licenses, "mart_ldong_infra_qtr": mart,
     }
-    for name, metric, before, after, note in validate_tables(tables, industry_rules, mart_groups):
+    for name, metric, before, after, note in validate_tables(tables, industry_rules, mart_groups, min_samples):
         record(log, name, metric, before, after, note=note)
     record(log, "mart_ldong_infra_qtr", "FACT_JOIN", len(trades), len(mart))
-    for row in write_results(tables, log, input_label, inputs, known_checks, industry_rules):
+    for row in write_results(tables, log, input_label, inputs, known_checks, industry_rules, min_samples):
         print(f"{row['dataset']}: {row['rows']:,} rows ({row['status']})")
 
 
