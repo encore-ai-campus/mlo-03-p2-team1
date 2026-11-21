@@ -1,4 +1,144 @@
 ﻿dataset,section,item,value,note
+apt_rent,LDONG_SRC_CD,시군구_동명,8001132,
+apt_rent,LDONG_SRC_CD_서울,시군구_동명,3107551,SGG_CD 앞 2자리 11
+apt_rent,G3,서울_전월세,3107551,
+apt_rent,G3,서울_전세,2011084,"MTHLY_RENT_AMT_NUM = 0, 골드에서 구분"
+apt_rent,G3,서울_월세,1096467,
+apt_rent,G3,서울_보증금0,2777,"보증금 없는 월세, 값 유지"
+apt_rent,G3,서울_CNTRCT_SE_NM_있음,1289466,"신규/갱신, 2021년 이후만 값 있음"
+apt_rent,동일조건,키7_겹치는행,870708,"82개 시군구 전체, 행 목록 없음"
+apt_rent,동일조건,키7_겹치는행_서울,294250,동·호 정보가 없어 정상 계약일 수 있음
+apt_rent,G4,CNTRCT_BGN_DTM_변환실패,24246,"02 STD_ERR_TXT, NULL 유지"
+apt_trade,LDONG_SRC_CD,실패,20,
+apt_trade,LDONG_SRC_CD,원본코드,4265460,
+apt_trade,LDONG_SRC_CD_서울,실패,20,SGG_CD 앞 2자리 11
+apt_trade,LDONG_SRC_CD_서울,원본코드,1443108,SGG_CD 앞 2자리 11
+apt_trade,G2,서울_매매,1443128,
+apt_trade,G2,키6_겹치는행,35863,"서울, 해제 포함"
+apt_trade,G2,SAME_DEAL_YN,37756,82개 시군구 전체
+apt_trade,G2,키7_해제제외_겹치는행,12798,"서울, issue_list SAME_DEAL"
+apt_trade,G1,CNCL_YN,77802,"행 유지, 골드 가격·거래 수에서 제외"
+apt_trade,G6,서울_단가기준미만,124,"값 유지, issue_list ABNRM_UNIT_AMT"
+apt_trade,G6,서울_단가기준미만_2017이후,0,
+apt_trade,이슈,ABNRM_UNIT_AMT,124,
+apt_trade,이슈,LDONG_NOT_CURRENT,20,
+apt_trade,이슈,SAME_DEAL,12798,
+beauty,행수,02,100349,
+beauty,행수,중복_LCNS_KEY,0,
+beauty,행수,중복_행,0,
+beauty,상태_조합,영업/정상|영업→영업/원본매핑,33810,
+beauty,상태_조합,폐업|폐업→폐업/원본매핑,66539,
+beauty,출처_CLSBIZ_SRC_CD,원본,66532,
+beauty,출처_CLSBIZ_SRC_CD,최종수정일자_대용,7,
+beauty,출처_CLSBIZ_SRC_CD,해당없음,33810,
+beauty,C2,대용폐업일_분석기간안,0,개별 확인 대상 (LCNS_KEY: )
+beauty,출처_LDONG_SRC_CD,도로명,78,
+beauty,출처_LDONG_SRC_CD,실패,4,
+beauty,출처_LDONG_SRC_CD,실패_서울밖,7,
+beauty,출처_LDONG_SRC_CD,지번,100260,
+beauty,D1,2017이후영업_대상,59229,
+beauty,D1,2017이후영업_실패,4,
+beauty,D1,2017이후영업_지번만_성공률,0.9989,
+beauty,D1,2017이후영업_성공률,0.9999,
+beauty,D3,서울밖_2017이후영업,4,
+beauty,업종_ANLS_INDUTY_CD,대상외,2,
+beauty,업종_ANLS_INDUTY_CD,미용_기타,790,
+beauty,업종_ANLS_INDUTY_CD,미용_네일,9629,
+beauty,업종_ANLS_INDUTY_CD,미용_메이크업,3531,
+beauty,업종_ANLS_INDUTY_CD,미용_피부,15761,
+beauty,업종_ANLS_INDUTY_CD,미용_헤어,70636,
+beauty,업종_INDUTY_RULE_CD,대상외_업태,2,
+beauty,업종_INDUTY_RULE_CD,원천업종,100347,
+beauty,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+beauty,연결,이전_후보묶음,1164,
+beauty,연결,이전_미확정_종료일동률묶음,21,
+beauty,연결,이전_인접쌍_다른구,1232,
+beauty,연결,이전_전화번호일치,361,
+beauty,연결,이전_확정,361,
+beauty,연결,재등록_후보쌍,2779,
+beauty,연결,재등록_확정,2744,
+beauty,연결,재등록_미확정,27,
+beauty,연결,교체_후보쌍,4028,
+beauty,연결,교체_미확정_대형건물,19,
+beauty,연결,교체_확정,3850,
+beauty,연결,교체_미확정,170,
+beauty,재고_연결전후,2017Q1_차이,173,연결 전 25410 → 후 25237
+beauty,재고_연결전후,2026Q3_차이,3,연결 전 33740 → 후 33737
+beauty,재고_연결전후,평균_차이,99.8,
+beauty,재고_연결전후,최대_차이,173,
+beauty,재고_동구,2026Q3_구합계,33736,대상외 제외
+beauty,재고_동구,2026Q3_동합계,33736,차이 0 = 법정동 실패
+beauty,플래그,ABNRM_LCNS_DTM_YN,9,
+beauty,플래그,OUT_SEOUL_ADDR_YN,7,
+beauty,플래그,OUT_SCOPE_YN,2,
+beauty,행수,03,100349,
+beauty,이슈,ADDR_MISMATCH,10,
+beauty,이슈,AMBIG_LINK,210,
+beauty,이슈,INVALID_CLSBIZ,1,
+beauty,이슈,MULTI_TENANT,16,
+beauty,이슈,OUT_SEOUL_COORD,3,
+beauty,이슈,PLACEHOLDER_TEL,835,
+beauty,이슈,TIME_CONFLICT,16,
+beauty,이슈,ZERO_AREA,3913,
+clinic,행수,02,37791,
+clinic,행수,중복_LCNS_KEY,0,
+clinic,행수,중복_행,0,
+clinic,상태_조합,영업/정상|영업중→영업/원본매핑,19295,
+clinic,상태_조합,제외/삭제/전출|전출→폐업/전출_폐업,812,
+clinic,상태_조합,취소/말소/만료/정지/중지|직권폐업→폐업/직권폐업,184,
+clinic,상태_조합,폐업|폐업→폐업/원본매핑,17450,
+clinic,상태_조합,휴업|휴업→영업/휴업_영업간주,50,
+clinic,출처_CLSBIZ_SRC_CD,원본,16799,
+clinic,출처_CLSBIZ_SRC_CD,최종수정일자_대용,835,
+clinic,출처_CLSBIZ_SRC_CD,최종수정일자_전출,812,
+clinic,출처_CLSBIZ_SRC_CD,해당없음,19345,
+clinic,C2,대용폐업일_분석기간안,801,"개별 확인 대상 (LCNS_KEY: PHMA120113210034041100034, PHMA120163210034041100031, PHMA120113210034041100053, PHMA120163210034041100040, PHMA120163210034041100063, PHMA120163210034041100066, PHMA120203210034041100039, PHMA120203210034041100041, PHMA120163210034041100072, PHMA120203210034041100051)"
+clinic,출처_LDONG_SRC_CD,도로명,7555,
+clinic,출처_LDONG_SRC_CD,도로명_정규화,2,
+clinic,출처_LDONG_SRC_CD,실패,2138,
+clinic,출처_LDONG_SRC_CD,실패_전출주소,10,
+clinic,출처_LDONG_SRC_CD,지번,23412,
+clinic,출처_LDONG_SRC_CD,지번_정규화,4674,
+clinic,D1,2017이후영업_대상,25397,
+clinic,D1,2017이후영업_실패,27,
+clinic,D1,2017이후영업_지번만_성공률,0.6970,
+clinic,D1,2017이후영업_성공률,0.9989,
+clinic,D3,서울밖_2017이후영업,0,
+clinic,업종_ANLS_INDUTY_CD,대상외,50,
+clinic,업종_ANLS_INDUTY_CD,의원,20318,
+clinic,업종_ANLS_INDUTY_CD,치과의원,9055,
+clinic,업종_ANLS_INDUTY_CD,한의원,8368,
+clinic,업종_INDUTY_RULE_CD,대상외_업태,50,
+clinic,업종_INDUTY_RULE_CD,원천업종,37741,
+clinic,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+clinic,연결,이전_후보묶음,408,
+clinic,연결,이전_미확정_종료일동률묶음,5,
+clinic,연결,이전_인접쌍_다른구,432,
+clinic,연결,이전_전화번호일치,277,
+clinic,연결,이전_확정,277,
+clinic,연결,재등록_후보쌍,391,
+clinic,연결,재등록_확정,384,
+clinic,연결,재등록_미확정,3,
+clinic,연결,교체_후보쌍,207,
+clinic,연결,교체_미확정_대형건물,0,
+clinic,연결,교체_확정,203,
+clinic,연결,교체_미확정,2,
+clinic,재고_연결전후,2017Q1_차이,176,연결 전 17000 → 후 16824
+clinic,재고_연결전후,2026Q3_차이,5,연결 전 19339 → 후 19334
+clinic,재고_연결전후,평균_차이,137.6,
+clinic,재고_연결전후,최대_차이,209,
+clinic,재고_동구,2026Q3_구합계,19293,대상외 제외
+clinic,재고_동구,2026Q3_동합계,19282,차이 11 = 법정동 실패
+clinic,플래그,ABNRM_LCNS_DTM_YN,178,
+clinic,플래그,OUT_SEOUL_ADDR_YN,0,
+clinic,플래그,OUT_SCOPE_YN,50,
+clinic,행수,03,37791,
+clinic,이슈,ADDR_MISMATCH,12,
+clinic,이슈,AMBIG_LINK,14,
+clinic,이슈,OUT_SEOUL_COORD,2,
+clinic,이슈,PLACEHOLDER_TEL,49,
+clinic,이슈,TIME_CONFLICT,6,
+clinic,이슈,ZERO_AREA,4128,
 food_general,행수,02,540008,
 food_general,행수,중복_LCNS_KEY,0,
 food_general,행수,중복_행,0,
@@ -22,22 +162,23 @@ food_general,D1,2017이후영업_실패,12,
 food_general,D1,2017이후영업_지번만_성공률,0.9999,
 food_general,D1,2017이후영업_성공률,1.0000,
 food_general,D3,서울밖_2017이후영업,11,
-food_general,업종_ANLS_INDUTY_CD,기타,110,
-food_general,업종_ANLS_INDUTY_CD,일반음식점,519926,
-food_general,업종_ANLS_INDUTY_CD,카페,19878,
+food_general,업종_ANLS_INDUTY_CD,기타,348,
+food_general,업종_ANLS_INDUTY_CD,일반음식점,519693,
+food_general,업종_ANLS_INDUTY_CD,카페,19873,
 food_general,업종_ANLS_INDUTY_CD,편의점,94,
-food_general,업종_INDUTY_RULE_CD,나머지,519546,
+food_general,업종_INDUTY_RULE_CD,나머지,519313,
+food_general,업종_INDUTY_RULE_CD,비음식입지,238,
 food_general,업종_INDUTY_RULE_CD,업태예외_라이브카페,380,
 food_general,업종_INDUTY_RULE_CD,업태예외_전통찻집,823,
 food_general,업종_INDUTY_RULE_CD,카페B,7819,
-food_general,업종_INDUTY_RULE_CD,카페C,11236,
+food_general,업종_INDUTY_RULE_CD,카페C,11231,
 food_general,업종_INDUTY_RULE_CD,키즈카페,110,
 food_general,업종_INDUTY_RULE_CD,편의점_브랜드,94,
 food_general,카페_상가정보대조,카페B,0.466,현재 영업 중 1211곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_general,카페_상가정보대조,카페C,0.697,현재 영업 중 4597곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_general,카페_상가정보대조,나머지,0.266,현재 영업 중 113902곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_general,카페_키워드,카페,5053,유스카페(한시적)(23) / 푸드카페(14) / 농업회사법인 카페인신현리 주식회사(12) / 야심떡카페(10) / 김밥카페(8)
-food_general,카페_키워드,까페,348,까페동향(9) / 김밥까페(4) / 까페 루아(3) / 궁까페(2) / 명동사주까페(2)
+food_general,카페_상가정보대조,카페C,0.697,현재 영업 중 4596곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_상가정보대조,나머지,0.266,현재 영업 중 113783곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_키워드,카페,5049,유스카페(한시적)(23) / 푸드카페(14) / 농업회사법인 카페인신현리 주식회사(12) / 야심떡카페(10) / 김밥카페(8)
+food_general,카페_키워드,까페,347,까페동향(9) / 김밥까페(4) / 까페 루아(3) / 궁까페(2) / 명동사주까페(2)
 food_general,카페_키워드,커피,5288,(주)커피빈코리아(한시적)(20) / 커피나무(12) / 커피하우스(9) / 메쉬커피(7) / (주)커피빈코리아삼성봉은사거리점(한시적)(7)
 food_general,카페_키워드,CAFE,206,모찌당(수제과일모찌cafe)(5) / 투유(TOU) CAFE(2) / CAFE 아카시아(ACACIA)(2) / 요요미Gcafe(2) / cafe 미소콩(2)
 food_general,카페_키워드,CAFFE,10,caffe&츄러스(5) / Caffe Bookmark(1) / 오라카이 청계산 호텔 illy caffe(1) / The Caffe R(1) / 이레(Caffe Library)(1)
@@ -46,6 +187,17 @@ food_general,카페_키워드,로스터,83,주식회사 소울로스터리(한�
 food_general,카페_키워드,로스팅,24,더로스팅(3) / 누 로스팅 하우스(2) / 크레이저 로스팅 랩(C Razer Roasting Lab)(1) / 로스팅팩토리(1) / 더 로스팅(1)
 food_general,카페_키워드,에스프레소,118,에스프레소(4) / 더블유에스프레소바(3) / 파치노 에스프레소바(2) / 에스프레소 알코(2) / 아마렐로 에스프레소바(2)
 food_general,카페_키워드,바리스타,20,바리스타조(1) / 멀티컬렉샾 키스더바리스타(1) / 바리스타 독산점(1) / 게스트로 바리스타(Gastro Barista)(1) / 식스 바리스타즈(1)
+food_general,비음식입지_키워드,PC방,4,큐브PC방(1) / 넘버원PC방(1) / 인터라켄PC방(1) / PizzaChicken방(PC방)(1)
+food_general,비음식입지_키워드,피씨방,5,아베크피씨방(2) / 옙 피씨방(1) / 러쉬피씨방매점(1) / 닉피씨방(1)
+food_general,비음식입지_키워드,피씨카페,1,대치티피씨 카페(1)
+food_general,비음식입지_키워드,스터디카페,17,스터디카페(1) / 이음 스터디 카페(1) / 스터디카페북킹(1) / 유진스터디카페(1) / 덤보스터디카페(1)
+food_general,비음식입지_키워드,만화방,1,공자왈만화방(1)
+food_general,비음식입지_키워드,만화카페,11,만화카페통툰(1) / 24시 데이즈 만화카페 오류동역점(1) / 달꿈만화카페(1) / 만화카페힐링앤툰(1) / 쉼표 만화카페(1)
+food_general,비음식입지_키워드,보드게임,95,와룸보드게임카페(2) / 구구즈 보드게임카페(2) / 오즈보드게임카페(1) / 보드게임세븐(1) / 오즈보드게임카페성신여대점(주)(1)
+food_general,비음식입지_키워드,당구장,19,매니아 당구장(1) / 비어&당구장(1) / 비바체 당구장(1) / 365일이벤트당구장(1) / 성원당구장(1)
+food_general,비음식입지_키워드,스크린골프,17,샤인스크린골프(1) / 홀인원앤원 스크린골프장(1) / 젠트리스크린골프 그늘집(1) / 월계동네스크린골프(1) / 케이K 스크린골프(1)
+food_general,비음식입지_키워드,골프존,18,러빙유골프존(1) / 골프존파크 상계스퀘어(1) / 디에이치(D.H)골프존(1) / 골프존파크 망우역파크점(1) / 골프존파크 신정목동점(1)
+food_general,비음식입지_키워드,보드카페,50,미르보드카페(2) / 위너보드카페(2) / 리치보드카페(2) / 도파민보드카페(1) / 토마토 보드카페(1)
 food_general,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
 food_general,연결,이전_후보묶음,2568,
 food_general,연결,이전_미확정_종료일동률묶음,96,
@@ -190,65 +342,52 @@ food_rest,이슈,OUT_SEOUL_COORD,7,
 food_rest,이슈,PLACEHOLDER_TEL,813,
 food_rest,이슈,TIME_CONFLICT,1402,
 food_rest,이슈,ZERO_AREA,1622,
-clinic,행수,02,37791,
-clinic,행수,중복_LCNS_KEY,0,
-clinic,행수,중복_행,0,
-clinic,상태_조합,영업/정상|영업중→영업/원본매핑,19295,
-clinic,상태_조합,제외/삭제/전출|전출→폐업/전출_폐업,812,
-clinic,상태_조합,취소/말소/만료/정지/중지|직권폐업→폐업/직권폐업,184,
-clinic,상태_조합,폐업|폐업→폐업/원본매핑,17450,
-clinic,상태_조합,휴업|휴업→영업/휴업_영업간주,50,
-clinic,출처_CLSBIZ_SRC_CD,원본,16799,
-clinic,출처_CLSBIZ_SRC_CD,최종수정일자_대용,835,
-clinic,출처_CLSBIZ_SRC_CD,최종수정일자_전출,812,
-clinic,출처_CLSBIZ_SRC_CD,해당없음,19345,
-clinic,C2,대용폐업일_분석기간안,801,"개별 확인 대상 (LCNS_KEY: PHMA120113210034041100034, PHMA120163210034041100031, PHMA120113210034041100053, PHMA120163210034041100040, PHMA120163210034041100063, PHMA120163210034041100066, PHMA120203210034041100039, PHMA120203210034041100041, PHMA120163210034041100072, PHMA120203210034041100051)"
-clinic,출처_LDONG_SRC_CD,도로명,7555,
-clinic,출처_LDONG_SRC_CD,도로명_정규화,2,
-clinic,출처_LDONG_SRC_CD,실패,2138,
-clinic,출처_LDONG_SRC_CD,실패_전출주소,10,
-clinic,출처_LDONG_SRC_CD,지번,23412,
-clinic,출처_LDONG_SRC_CD,지번_정규화,4674,
-clinic,D1,2017이후영업_대상,25397,
-clinic,D1,2017이후영업_실패,27,
-clinic,D1,2017이후영업_지번만_성공률,0.6970,
-clinic,D1,2017이후영업_성공률,0.9989,
-clinic,D3,서울밖_2017이후영업,0,
-clinic,업종_ANLS_INDUTY_CD,대상외,50,
-clinic,업종_ANLS_INDUTY_CD,의원,20318,
-clinic,업종_ANLS_INDUTY_CD,치과의원,9055,
-clinic,업종_ANLS_INDUTY_CD,한의원,8368,
-clinic,업종_INDUTY_RULE_CD,대상외_업태,50,
-clinic,업종_INDUTY_RULE_CD,원천업종,37741,
-clinic,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
-clinic,연결,이전_후보묶음,408,
-clinic,연결,이전_미확정_종료일동률묶음,5,
-clinic,연결,이전_인접쌍_다른구,432,
-clinic,연결,이전_전화번호일치,277,
-clinic,연결,이전_확정,277,
-clinic,연결,재등록_후보쌍,391,
-clinic,연결,재등록_확정,384,
-clinic,연결,재등록_미확정,3,
-clinic,연결,교체_후보쌍,207,
-clinic,연결,교체_미확정_대형건물,0,
-clinic,연결,교체_확정,203,
-clinic,연결,교체_미확정,2,
-clinic,재고_연결전후,2017Q1_차이,176,연결 전 17000 → 후 16824
-clinic,재고_연결전후,2026Q3_차이,5,연결 전 19339 → 후 19334
-clinic,재고_연결전후,평균_차이,137.6,
-clinic,재고_연결전후,최대_차이,209,
-clinic,재고_동구,2026Q3_구합계,19293,대상외 제외
-clinic,재고_동구,2026Q3_동합계,19282,차이 11 = 법정동 실패
-clinic,플래그,ABNRM_LCNS_DTM_YN,178,
-clinic,플래그,OUT_SEOUL_ADDR_YN,0,
-clinic,플래그,OUT_SCOPE_YN,50,
-clinic,행수,03,37791,
-clinic,이슈,ADDR_MISMATCH,12,
-clinic,이슈,AMBIG_LINK,14,
-clinic,이슈,OUT_SEOUL_COORD,2,
-clinic,이슈,PLACEHOLDER_TEL,49,
-clinic,이슈,TIME_CONFLICT,6,
-clinic,이슈,ZERO_AREA,4128,
+hira_inst,H0,1.병원정보서비스(2026.9.),79899,03 에 합친 02 파일
+hira_inst,H0,2.약국정보서비스(2026.9.),25850,03 에 합친 02 파일
+hira_inst,H1,SGG_CD_실패,8,도로명 주소가 옛 시도 이름
+hira_inst,H1,SGG_CD_실패_서울,0,
+hira_inst,LDONG_SRC_CD,도로명,578,
+hira_inst,LDONG_SRC_CD,시군구_동명,104878,
+hira_inst,LDONG_SRC_CD,실패,293,
+hira_inst,LDONG_SRC_CD_서울,도로명,11,HIRA_SIDO_NM = 서울
+hira_inst,LDONG_SRC_CD_서울,시군구_동명,25834,HIRA_SIDO_NM = 서울
+hira_inst,H2,보건소·보건지소·조산원,1549,"전국, 값 유지"
+hira_inst,H2,개설일_1950이전,28,"전국, 값 유지"
+hira_inst,서울_기관종류,병원,231,
+hira_inst,서울_기관종류,보건소,25,
+hira_inst,서울_기관종류,보건지소,11,
+hira_inst,서울_기관종류,상급종합,14,
+hira_inst,서울_기관종류,약국,5913,
+hira_inst,서울_기관종류,요양병원,101,
+hira_inst,서울_기관종류,의원,10728,
+hira_inst,서울_기관종류,정신병원,13,
+hira_inst,서울_기관종류,조산원,3,
+hira_inst,서울_기관종류,종합병원,45,
+hira_inst,서울_기관종류,치과병원,59,
+hira_inst,서울_기관종류,치과의원,4889,
+hira_inst,서울_기관종류,한방병원,92,
+hira_inst,서울_기관종류,한의원,3721,
+hira_inst,이슈,ABNRM_ESTB,8,
+hira_inst,이슈,ADDR_MISMATCH,12,
+hira_inst,이슈,OUT_SCOPE_INST,39,
+ldong_code,L1,시도_현행,15,ABL_YN = False
+ldong_code,L1,시도_폐지,10,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_시도_현행,1,
+ldong_code,L1,서울_시도_폐지,0,
+ldong_code,L1,시군구_현행,269,ABL_YN = False
+ldong_code,L1,시군구_폐지,243,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_시군구_현행,25,
+ldong_code,L1,서울_시군구_폐지,0,
+ldong_code,L1,읍면동_현행,5067,ABL_YN = False
+ldong_code,L1,읍면동_폐지,8540,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_읍면동_현행,467,
+ldong_code,L1,서울_읍면동_폐지,619,
+ldong_code,L1,리_현행,15209,ABL_YN = False
+ldong_code,L1,리_폐지,24050,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_리_현행,0,
+ldong_code,L1,서울_리_폐지,0,
+ldong_code,L1,서울_현행,493,다른 데이터셋 법정동 기준 (시도·구 행 포함)
+ldong_code,L1,SGG_NM_없음_시군구이하,159,세종 등 시군구가 없는 시도
 pharmacy,행수,02,22500,
 pharmacy,행수,중복_LCNS_KEY,0,
 pharmacy,행수,중복_행,0,
@@ -302,115 +441,6 @@ pharmacy,이슈,OUT_SEOUL_COORD,1,
 pharmacy,이슈,PLACEHOLDER_TEL,31,
 pharmacy,이슈,TIME_CONFLICT,3,
 pharmacy,이슈,ZERO_AREA,5693,
-beauty,행수,02,100349,
-beauty,행수,중복_LCNS_KEY,0,
-beauty,행수,중복_행,0,
-beauty,상태_조합,영업/정상|영업→영업/원본매핑,33810,
-beauty,상태_조합,폐업|폐업→폐업/원본매핑,66539,
-beauty,출처_CLSBIZ_SRC_CD,원본,66532,
-beauty,출처_CLSBIZ_SRC_CD,최종수정일자_대용,7,
-beauty,출처_CLSBIZ_SRC_CD,해당없음,33810,
-beauty,C2,대용폐업일_분석기간안,0,개별 확인 대상 (LCNS_KEY: )
-beauty,출처_LDONG_SRC_CD,도로명,78,
-beauty,출처_LDONG_SRC_CD,실패,4,
-beauty,출처_LDONG_SRC_CD,실패_서울밖,7,
-beauty,출처_LDONG_SRC_CD,지번,100260,
-beauty,D1,2017이후영업_대상,59229,
-beauty,D1,2017이후영업_실패,4,
-beauty,D1,2017이후영업_지번만_성공률,0.9989,
-beauty,D1,2017이후영업_성공률,0.9999,
-beauty,D3,서울밖_2017이후영업,4,
-beauty,업종_ANLS_INDUTY_CD,대상외,2,
-beauty,업종_ANLS_INDUTY_CD,미용_기타,790,
-beauty,업종_ANLS_INDUTY_CD,미용_네일,9629,
-beauty,업종_ANLS_INDUTY_CD,미용_메이크업,3531,
-beauty,업종_ANLS_INDUTY_CD,미용_피부,15761,
-beauty,업종_ANLS_INDUTY_CD,미용_헤어,70636,
-beauty,업종_INDUTY_RULE_CD,대상외_업태,2,
-beauty,업종_INDUTY_RULE_CD,원천업종,100347,
-beauty,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
-beauty,연결,이전_후보묶음,1164,
-beauty,연결,이전_미확정_종료일동률묶음,21,
-beauty,연결,이전_인접쌍_다른구,1232,
-beauty,연결,이전_전화번호일치,361,
-beauty,연결,이전_확정,361,
-beauty,연결,재등록_후보쌍,2779,
-beauty,연결,재등록_확정,2744,
-beauty,연결,재등록_미확정,27,
-beauty,연결,교체_후보쌍,4028,
-beauty,연결,교체_미확정_대형건물,19,
-beauty,연결,교체_확정,3850,
-beauty,연결,교체_미확정,170,
-beauty,재고_연결전후,2017Q1_차이,173,연결 전 25410 → 후 25237
-beauty,재고_연결전후,2026Q3_차이,3,연결 전 33740 → 후 33737
-beauty,재고_연결전후,평균_차이,99.8,
-beauty,재고_연결전후,최대_차이,173,
-beauty,재고_동구,2026Q3_구합계,33736,대상외 제외
-beauty,재고_동구,2026Q3_동합계,33736,차이 0 = 법정동 실패
-beauty,플래그,ABNRM_LCNS_DTM_YN,9,
-beauty,플래그,OUT_SEOUL_ADDR_YN,7,
-beauty,플래그,OUT_SCOPE_YN,2,
-beauty,행수,03,100349,
-beauty,이슈,ADDR_MISMATCH,10,
-beauty,이슈,AMBIG_LINK,210,
-beauty,이슈,INVALID_CLSBIZ,1,
-beauty,이슈,MULTI_TENANT,16,
-beauty,이슈,OUT_SEOUL_COORD,3,
-beauty,이슈,PLACEHOLDER_TEL,835,
-beauty,이슈,TIME_CONFLICT,16,
-beauty,이슈,ZERO_AREA,3913,
-apt_trade,LDONG_SRC_CD,실패,20,
-apt_trade,LDONG_SRC_CD,원본코드,4265460,
-apt_trade,LDONG_SRC_CD_서울,실패,20,SGG_CD 앞 2자리 11
-apt_trade,LDONG_SRC_CD_서울,원본코드,1443108,SGG_CD 앞 2자리 11
-apt_trade,G2,서울_매매,1443128,
-apt_trade,G2,키6_겹치는행,35863,"서울, 해제 포함"
-apt_trade,G2,SAME_DEAL_YN,37756,82개 시군구 전체
-apt_trade,G2,키7_해제제외_겹치는행,12798,"서울, issue_list SAME_DEAL"
-apt_trade,G1,CNCL_YN,77802,"행 유지, 골드 가격·거래 수에서 제외"
-apt_trade,G6,서울_단가기준미만,124,"값 유지, issue_list ABNRM_UNIT_AMT"
-apt_trade,G6,서울_단가기준미만_2017이후,0,
-apt_trade,이슈,ABNRM_UNIT_AMT,124,
-apt_trade,이슈,LDONG_NOT_CURRENT,20,
-apt_trade,이슈,SAME_DEAL,12798,
-apt_rent,LDONG_SRC_CD,시군구_동명,8001132,
-apt_rent,LDONG_SRC_CD_서울,시군구_동명,3107551,SGG_CD 앞 2자리 11
-apt_rent,G3,서울_전월세,3107551,
-apt_rent,G3,서울_전세,2011084,"MTHLY_RENT_AMT_NUM = 0, 골드에서 구분"
-apt_rent,G3,서울_월세,1096467,
-apt_rent,G3,서울_보증금0,2777,"보증금 없는 월세, 값 유지"
-apt_rent,G3,서울_CNTRCT_SE_NM_있음,1289466,"신규/갱신, 2021년 이후만 값 있음"
-apt_rent,동일조건,키7_겹치는행,870708,"82개 시군구 전체, 행 목록 없음"
-apt_rent,동일조건,키7_겹치는행_서울,294250,동·호 정보가 없어 정상 계약일 수 있음
-apt_rent,G4,CNTRCT_BGN_DTM_변환실패,24246,"02 STD_ERR_TXT, NULL 유지"
-hira_inst,H0,1.병원정보서비스(2026.9.),79899,03 에 합친 02 파일
-hira_inst,H0,2.약국정보서비스(2026.9.),25850,03 에 합친 02 파일
-hira_inst,H1,SGG_CD_실패,8,도로명 주소가 옛 시도 이름
-hira_inst,H1,SGG_CD_실패_서울,0,
-hira_inst,LDONG_SRC_CD,도로명,578,
-hira_inst,LDONG_SRC_CD,시군구_동명,104878,
-hira_inst,LDONG_SRC_CD,실패,293,
-hira_inst,LDONG_SRC_CD_서울,도로명,11,HIRA_SIDO_NM = 서울
-hira_inst,LDONG_SRC_CD_서울,시군구_동명,25834,HIRA_SIDO_NM = 서울
-hira_inst,H2,보건소·보건지소·조산원,1549,"전국, 값 유지"
-hira_inst,H2,개설일_1950이전,28,"전국, 값 유지"
-hira_inst,서울_기관종류,병원,231,
-hira_inst,서울_기관종류,보건소,25,
-hira_inst,서울_기관종류,보건지소,11,
-hira_inst,서울_기관종류,상급종합,14,
-hira_inst,서울_기관종류,약국,5913,
-hira_inst,서울_기관종류,요양병원,101,
-hira_inst,서울_기관종류,의원,10728,
-hira_inst,서울_기관종류,정신병원,13,
-hira_inst,서울_기관종류,조산원,3,
-hira_inst,서울_기관종류,종합병원,45,
-hira_inst,서울_기관종류,치과병원,59,
-hira_inst,서울_기관종류,치과의원,4889,
-hira_inst,서울_기관종류,한방병원,92,
-hira_inst,서울_기관종류,한의원,3721,
-hira_inst,이슈,ABNRM_ESTB,8,
-hira_inst,이슈,ADDR_MISMATCH,12,
-hira_inst,이슈,OUT_SCOPE_INST,39,
 store_info,S0,소상공인시장진흥공단_상가(상권)정보_강원_202609,109517,03 에 합친 02 파일
 store_info,S0,소상공인시장진흥공단_상가(상권)정보_경기_202609,666254,03 에 합친 02 파일
 store_info,S0,소상공인시장진흥공단_상가(상권)정보_경남_202609,170781,03 에 합친 02 파일
@@ -436,21 +466,3 @@ store_info,S2,FLR_NUM_변환실패,14984,"02 STD_ERR_TXT, NULL 유지 (원문 FL
 store_info,S2,FLR_NUM_변환실패_서울,8674,
 store_info,S0,서울_업소,552422,"SGG_CD 앞 2자리 11, 골드에서 거름"
 store_info,이슈,LDONG_NOT_CURRENT,2471,
-ldong_code,L1,시도_현행,15,ABL_YN = False
-ldong_code,L1,시도_폐지,10,"ABL_YN = True, 행 유지"
-ldong_code,L1,서울_시도_현행,1,
-ldong_code,L1,서울_시도_폐지,0,
-ldong_code,L1,시군구_현행,269,ABL_YN = False
-ldong_code,L1,시군구_폐지,243,"ABL_YN = True, 행 유지"
-ldong_code,L1,서울_시군구_현행,25,
-ldong_code,L1,서울_시군구_폐지,0,
-ldong_code,L1,읍면동_현행,5067,ABL_YN = False
-ldong_code,L1,읍면동_폐지,8540,"ABL_YN = True, 행 유지"
-ldong_code,L1,서울_읍면동_현행,467,
-ldong_code,L1,서울_읍면동_폐지,619,
-ldong_code,L1,리_현행,15209,ABL_YN = False
-ldong_code,L1,리_폐지,24050,"ABL_YN = True, 행 유지"
-ldong_code,L1,서울_리_현행,0,
-ldong_code,L1,서울_리_폐지,0,
-ldong_code,L1,서울_현행,493,다른 데이터셋 법정동 기준 (시도·구 행 포함)
-ldong_code,L1,SGG_NM_없음_시군구이하,159,세종 등 시군구가 없는 시도
