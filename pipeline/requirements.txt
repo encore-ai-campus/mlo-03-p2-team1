@@ -1,0 +1,8 @@
+# pipeline/ 실행에 필요한 패키지 (00 수집 ~ 05 AI Ready, validation)
+# 설치: python -m pip install -r pipeline/requirements.txt
+# 버전은 이 저장소의 report/ 결과를 만든 환경 기준 (Python 3.14)
+numpy==2.5.5
+pandas==3.1.1
+pyarrow==26.0.1
+requests==2.34.2
+lightgbm==4.7.0

@@ -1,0 +1,26 @@
+﻿check_id,item,target_cnt,fail_cnt,result,note
+AR1,"feature_set 키(LDONG_CD, YQ) 중복",7521,0,PASS,
+AR1,feature_set LDONG_CD가 dim_region에 있음,7521,0,PASS,
+AR1,feature_set YQ가 dim_date에 있음,7521,0,PASS,
+AR1,labeled TARGET_YQ가 dim_date에 있음,7300,0,PASS,
+AR1,TARGET_YQ = YQ의 다음 분기,7521,0,PASS,
+AR1,SPLIT_NM은 labeled / predict,7521,0,PASS,
+AR1,feature_set 컬럼 = 고정 컬럼 + 피처 정의,51,0,PASS,rule_ai_ready_feature.csv 순서 기준
+AR1,"prediction 키(LDONG_CD, YQ, MODEL_NM) 중복",12837,0,PASS,
+AR1,prediction MODEL_NM 3종,3,0,PASS,
+AR2,TARGET_RET = 직접 계산한 다음 분기 같은 단지 변화율,7300,0,PASS,
+AR2,직접 계산한 타깃이 있는 행은 모두 labeled,7300,0,PASS,
+AR3,2019Q4 행 피처 = 분기 2019Q4까지 자른 골드로 만든 값,10260,0,PASS,비교 법정동 228개
+AR3,2021Q2 행 피처 = 분기 2021Q2까지 자른 골드로 만든 값,8955,0,PASS,비교 법정동 199개
+AR3,2023Q4 행 피처 = 분기 2023Q4까지 자른 골드로 만든 값,7470,0,PASS,비교 법정동 166개
+AR3,2025Q3 행 피처 = 분기 2025Q3까지 자른 골드로 만든 값,9810,0,PASS,비교 법정동 218개
+AR4,회차별 학습(≤Y-2)·검증(Y-1)·테스트(Y) 행 수,36,0,PASS,
+AR4,테스트 행의 대상 분기 연도 = FOLD_YR,12174,0,PASS,
+AR5,baseline PRED_RET = 0,4279,0,PASS,
+AR5,"예측 행의 (LDONG_CD, BASE_YQ)가 피처셋에 있음",12837,0,PASS,
+AR5,테스트 행 ACTUAL_RET = TARGET_RET,12174,0,PASS,
+AR5,PRED_UNIT_AMT = BASE_UNIT_AMT × exp(PRED_RET),12837,0,PASS,
+AR5,PRED_IDX = BASE_PRICE_IDX × exp(PRED_RET),12837,0,PASS,
+AR5,"최종 예측 행: BASE_YQ = 마지막 분기, ACTUAL_RET = NULL",663,0,PASS,
+AR5,최종 예측 행 수 = predict 행 수 × 모델 3종,663,0,PASS,
+AR6,rolling_cv MAPE·행 수 = 예측 결과에서 다시 계산한 값,21,0,PASS,
