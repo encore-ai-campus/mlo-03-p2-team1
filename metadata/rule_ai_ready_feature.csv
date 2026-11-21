@@ -25,6 +25,11 @@ CAFE_ACTIVE_GR_1Q,LCNS,카페 영업 수 log1p의 t-1 대비 차이
 CAFE_ACTIVE_GR_4Q,LCNS,카페 영업 수 log1p의 t-4 대비 차이
 CAFE_OPEN_RATE_4Q,LCNS,카페 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
 CAFE_CLOSE_RATE_4Q,LCNS,카페 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+REST_FOOD_ACTIVE_LOG,LCNS,휴게음식점 분기 말 영업 수의 log1p
+REST_FOOD_ACTIVE_GR_1Q,LCNS,휴게음식점 영업 수 log1p의 t-1 대비 차이
+REST_FOOD_ACTIVE_GR_4Q,LCNS,휴게음식점 영업 수 log1p의 t-4 대비 차이
+REST_FOOD_OPEN_RATE_4Q,LCNS,휴게음식점 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+REST_FOOD_CLOSE_RATE_4Q,LCNS,휴게음식점 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
 CLINIC_ACTIVE_LOG,LCNS,의원 계열 분기 말 영업 수의 log1p
 CLINIC_ACTIVE_GR_1Q,LCNS,의원 계열 영업 수 log1p의 t-1 대비 차이
 CLINIC_ACTIVE_GR_4Q,LCNS,의원 계열 영업 수 log1p의 t-4 대비 차이

@@ -26,6 +26,7 @@ ANLS_INDUTY_CD,한의원,,E
 ANLS_INDUTY_CD,약국,,E
 ANLS_INDUTY_CD,카페,,E
 ANLS_INDUTY_CD,일반음식점,,E
+ANLS_INDUTY_CD,휴게음식점,"휴게음식점 중 카페·편의점·특수입지·키즈카페·비음식입지·과자점을 뺀 나머지",E
 ANLS_INDUTY_CD,편의점,,E
 ANLS_INDUTY_CD,기타,,E
 ANLS_INDUTY_CD,미용_헤어,,E
@@ -40,6 +41,8 @@ INDUTY_RULE_CD,편의점_업태,,E4
 INDUTY_RULE_CD,편의점_브랜드,,E4
 INDUTY_RULE_CD,특수입지,,E4
 INDUTY_RULE_CD,키즈카페,,E4
+INDUTY_RULE_CD,비음식입지,상호로 본 PC방·스터디카페·사우나 등 음식점이 아닌 업소,E4
+INDUTY_RULE_CD,과자점_업태,2016년 이후 신규 인허가가 없는 업태,E4
 INDUTY_RULE_CD,업태예외_전통찻집,,E4
 INDUTY_RULE_CD,업태예외_라이브카페,,E4
 INDUTY_RULE_CD,카페A,핵심 카페 (휴게 업태),E4

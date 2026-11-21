@@ -10,11 +10,11 @@
 | --- | --- | --- |
 | dim_region | LDONG_CD | 467 |
 | dim_date | YQ | 39 |
-| dim_lcns_induty | ANLS_INDUTY_CD | 13 |
+| dim_lcns_induty | ANLS_INDUTY_CD | 14 |
 | fact_apt_trd | SRC_FILE_NM × SRC_ROW_NUM | 611300 |
 | fact_apt_trd_qtr | LDONG_CD × YQ | 18213 |
 | fact_apt_idx_qtr | LDONG_CD × YQ | 18213 |
-| fact_lcns_qtr | LDONG_CD × YQ × ANLS_INDUTY_CD | 236769 |
+| fact_lcns_qtr | LDONG_CD × YQ × ANLS_INDUTY_CD | 254982 |
 | mart_ldong_infra_qtr | LDONG_CD × YQ | 18213 |
 
 - 지역 차원은 서울 현행 읍면동 코드와 상위 자치구를 담습니다. 날짜 차원은 분기 시작·종료일을, 업종 차원은 Silver 분석 업종과 참고 지표 여부를 담습니다.
@@ -24,7 +24,7 @@
 - 분기 매매 팩트와 마트의 `LOW_SAMPLE_YN`은 가격 표본이 5건 미만인 9,593개 셀에 표시합니다. 관측 중앙값은 보존합니다.
 - `fact_apt_idx_qtr`는 같은 단지의 동·구·서울 1분기 및 전년 동분기 로그 변화율과 동 가격 지수를 제공합니다.
 - 인허가 코드는 원천 구분과 관계없이 같은 분석 업종으로 합산하고, 원천별 대조값은 CSV에 보존합니다. 마트에서는 의원 계열과 미용 세부 업종을 각각 묶고 편의점은 참고 지표로 표시합니다.
-- `기타`는 참고 업종이라 인허가 팩트에 보존하고 마트 집계에서는 제외했습니다. 분석 기간의 개업 수는 29,752건입니다.
+- `기타`는 참고 업종이라 인허가 팩트에 보존하고 마트 집계에서는 제외했습니다. 분석 기간의 개업 수는 5,763건입니다.
 - 분기·업종 조합은 모두 생성했습니다. 거래가 없으면 거래 건수는 0, 가격은 NULL입니다. 결과표의 인허가 건수는 0으로 표현합니다.
 
 ## Silver에서 Gold로 바뀐 내용

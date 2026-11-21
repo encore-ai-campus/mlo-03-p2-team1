@@ -215,10 +215,16 @@ def cafe_log(df: pd.DataFrame, bunji: pd.Series, keyword_hits: dict, log: Log) -
         if sel.any():
             rate = loc[sel].isin(places).mean()
             log.add("카페_상가정보대조", rule, f"{rate:.3f}", f"현재 영업 중 {int(sel.sum())}곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율")
-    for kw, hit in keyword_hits.items():
-        if hit.any():
+    keyword_log(df, keyword_hits, "카페C", "카페_키워드", log)
+    keyword_log(df, keyword_hits, "비음식입지", "비음식입지_키워드", log)
+
+
+def keyword_log(df: pd.DataFrame, keyword_hits: dict, rule_cd: str, metric: str, log: Log) -> None:
+    """[E1][E7] 상호 키워드 규칙 확인용: 키워드별 건수와 상위 상호 5개."""
+    for (rule, kw), hit in keyword_hits.items():
+        if rule == rule_cd and hit.any():
             top = df.loc[hit, "BPLC_NM"].value_counts().head(5)
-            log.add("카페_키워드", kw, int(hit.sum()), " / ".join(f"{k}({v})" for k, v in top.items()))
+            log.add(metric, kw, int(hit.sum()), " / ".join(f"{k}({v})" for k, v in top.items()))
 
 
 def clean_license(dataset: str, meta: R.Meta, table: dict, log: Log) -> tuple[dict, list[str]]:

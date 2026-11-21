@@ -199,7 +199,7 @@ def year_label(fold: str) -> str:
 
 
 def conclusion_lines(metrics: pd.DataFrame, compare: pd.DataFrame) -> list[str]:
-    """실행 결과 숫자로 결론 문장을 만든다 (재학습하면 문장도 같이 바뀐다)."""
+    """실행 결과 숫자만 적는다. 좋다·같다 같은 판정은 쓰지 않는다 (재학습하면 숫자도 같이 바뀐다)."""
     def get(fold, model, col):
         return metrics.loc[metrics["FOLD_YR"].eq(fold) & metrics["MODEL_NM"].eq(model), col].item()
 
@@ -212,21 +212,19 @@ def conclusion_lines(metrics: pd.DataFrame, compare: pd.DataFrame) -> list[str]:
     base, price, lcns = (get("ALL", m, "MAPE_PCT") for m in ("baseline", "price", "price_lcns"))
     p, l = pair("baseline", "price"), pair("price", "price_lcns")
     lines = [
-        f"1. **집값 모델은 기준선보다 정확하다.** 오차(MAPE)가 {base:.2f}% → {price:.2f}%로 "
-        f"{get('ALL', 'price', 'VS_BASELINE_PCT'):.1f}% 줄었다 ({ci(p)}). "
-        f"{p['FOLD_CNT']}개 연도 중 {p['IMPROVED_FOLD_CNT']}개 연도에서 기준선보다 나았다. "
-        f"다음 분기에 오를지 내릴지는 {get('ALL', 'price', 'DIRECTION_PCT'):.0f}% 맞혔다.",
-        f"2. **상권 데이터를 더해도 정확도는 그대로다.** 오차는 {price:.2f}% → {lcns:.2f}%다 ({ci(l)}). "
-        f"{l['FOLD_CNT']}개 연도 중 {l['IMPROVED_FOLD_CNT']}개 연도에서만 나아졌다.",
+        f"1. **기준선 → 집값:** 오차(MAPE) {base:.2f}% → {price:.2f}% "
+        f"(차이 {p['MAPE_DIFF_PCTP']:+.3f}%p, {ci(p)}). "
+        f"{p['FOLD_CNT']}개 연도 중 {p['IMPROVED_FOLD_CNT']}개 연도에서 오차가 줄었다. "
+        f"집값 모델의 방향 정확도 {get('ALL', 'price', 'DIRECTION_PCT'):.0f}%.",
+        f"2. **집값 → 집값+상권:** 오차(MAPE) {price:.2f}% → {lcns:.2f}% "
+        f"(차이 {l['MAPE_DIFF_PCTP']:+.3f}%p, {ci(l)}). "
+        f"{l['FOLD_CNT']}개 연도 중 {l['IMPROVED_FOLD_CNT']}개 연도에서 오차가 줄었다.",
     ]
     yearly = metrics[metrics["MODEL_NM"].eq("price") & metrics["FOLD_YR"].ne("ALL")]
-    worse = yearly[yearly["VS_BASELINE_PCT"] < 0]
-    if len(worse):
-        w = worse.sort_values("VS_BASELINE_PCT").iloc[0]
-        lines.append(
-            f"3. **시장 방향이 바뀌는 해에는 틀릴 수 있다.** {w['FOLD_YR']}년에는 집값 모델의 오차가 "
-            f"기준선보다 {-w['VS_BASELINE_PCT']:.1f}% 컸고, 방향 정확도는 {w['DIRECTION_PCT']:.0f}%였다. "
-            f"기준선보다 나빴던 해: {', '.join(f'{y}년' for y in worse['FOLD_YR'])}.")
+    worse = yearly[yearly["VS_BASELINE_PCT"] < 0].sort_values("FOLD_YR")
+    years = ", ".join(f"{w['FOLD_YR']}년(오차 +{-w['VS_BASELINE_PCT']:.1f}%, 방향 정확도 {w['DIRECTION_PCT']:.0f}%)"
+                      for _, w in worse.iterrows())
+    lines.append(f"3. **집값 모델 오차가 기준선보다 컸던 해:** {years or '없음'}.")
     return lines
 
 
@@ -267,8 +265,8 @@ def summary_lines(data, metrics, compare, iters, model_ver) -> list[str]:
 
     return [
         "# AI Ready 예측 정확도 요약", "",
-        "> `pipeline/ai_ready/05_train.py`가 실행할 때마다 다시 만드는 파일입니다. 숫자와 결론 문장은 실행 결과에서 자동으로 채웁니다.", "",
-        "## 결론", "", *conclusion_lines(metrics, compare), "",
+        "> `pipeline/ai_ready/05_train.py`가 실행할 때마다 다시 만드는 파일입니다. 숫자는 실행 결과에서 자동으로 채우고, 판정 문구는 쓰지 않습니다.", "",
+        "## 결과", "", *conclusion_lines(metrics, compare), "",
         "## 무엇을 예측했나", "",
         "- **예측 대상:** 법정동별 **다음 분기** 아파트 ㎡당 매매가 변화율",
         "- **계산 방식:** 두 분기에 모두 거래된 **같은 단지끼리** 가격을 비교한다. "
