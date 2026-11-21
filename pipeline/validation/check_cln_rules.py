@@ -78,6 +78,16 @@ cubes = pd.DataFrame({"UPTAE_NM": ["한식"], "BPLC_NM": ["CUBE 커피"]})
 check("E3 CU 는 단어 단위", R.classify(cubes, META, "food_general")[0]["INDUTY_RULE_CD"].tolist(), ["카페C"])
 clinic = pd.DataFrame({"UPTAE_NM": ["치과의원", "보건소"], "BPLC_NM": ["a", "b"]})
 check("E5 대상외", R.classify(clinic, META, "clinic")[0]["ANLS_INDUTY_CD"].tolist(), ["치과의원", "대상외"])
+# [E7] 휴게음식점: PC방 표기 변형은 모두 비음식입지, 업태 커피숍은 카페A 우선, 상호 카페 키워드가 있어도 PC방류는 카페C 제외
+rest = pd.DataFrame({
+    "UPTAE_NM": ["기타 휴게음식점"] * 7 + ["일반조리판매", "커피숍", "과자점", "기타 휴게음식점", "기타 휴게음식점"],
+    "BPLC_NM": ["언니네 피시방", "제노PC방", "본피씨방", "레벨업 PC CAFE", "옵티멈존 피씨카페", "짐박스피트니스", "하이롤러보드카페",
+                "보드게임까페 레드버튼", "랭스터디카페", "고려당", "신전떡볶이", "피시프레소"],
+})
+rest_cls = R.classify(rest, META, "food_rest")[0]
+check("E7 비음식입지 표기별", rest_cls["INDUTY_RULE_CD"].tolist(),
+      ["비음식입지"] * 8 + ["카페A", "과자점_업태", "나머지", "나머지"])
+check("E7 휴게음식점 코드", rest_cls["ANLS_INDUTY_CD"].tolist()[-2:], ["휴게음식점", "휴게음식점"])
 
 
 # [F] 연결

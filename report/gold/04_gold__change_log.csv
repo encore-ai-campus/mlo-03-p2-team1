@@ -832,7 +832,7 @@ beauty,PROXY_CLOSE_CNT,,100347,0,-100347,기간 전체의 동 집계 건수.
 fact_lcns_qtr,SOURCE_TOTAL_CHECK,,243458,243458,0,OPEN_CNT
 fact_lcns_qtr,SOURCE_TOTAL_CHECK,,223501,223501,0,CLOSE_CNT
 fact_lcns_qtr,SOURCE_TOTAL_CHECK,,780,780,0,PROXY_CLOSE_CNT
-fact_lcns_qtr,DENSE_GRID,,184211,254982,70771,미관측 조합에 건수 0을 생성.
+fact_lcns_qtr,DENSE_GRID,,184441,254982,70541,미관측 조합에 건수 0을 생성.
 fact_apt_idx_qtr,CPLX_RET_1Q,,18213,7300,-10913,값이 있는 동·분기 셀 수.
 fact_apt_idx_qtr,CPLX_RET_4Q,,18213,6416,-11797,값이 있는 동·분기 셀 수.
 fact_apt_idx_qtr,PRICE_IDX,,18213,7300,-10913,값이 있는 동·분기 셀 수.

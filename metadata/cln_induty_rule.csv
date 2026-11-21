@@ -55,6 +55,15 @@
 65,classify,비음식입지,food_rest,BPLC_NM,contains,골프연습장,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
 65,classify,비음식입지,food_rest,BPLC_NM,contains,노래연습장,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
 65,classify,비음식입지,food_rest,BPLC_NM,contains,코인노래,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,피시방,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,피씨클럽,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,보드카페,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,플스방,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,오락실,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,방탈출,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,피트니스,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,휘트니스,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
+65,classify,비음식입지,food_rest,BPLC_NM,contains,헬스클럽,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교 — 리뷰 반영 추가
 66,classify,과자점_업태,food_rest,UPTAE_NM,eq,과자점,기타,휴게음식점 과자점: 2016년 이후 신규 인허가 0건이라 추세 왜곡 (2026-11-21)
 50,classify,업태예외_전통찻집,food_general,UPTAE_NM,eq,전통찻집,카페,E2
 50,classify,업태예외_라이브카페,food_general,UPTAE_NM,eq,라이브카페,일반음식점,E2
@@ -91,6 +100,31 @@
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,PCCAFE,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,카페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,까페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
+63,classify,카페C,food_rest,BPLC_NM,excludes,PC방,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,피씨방,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,피씨카페,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,PC클럽,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,PC존,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,만화방,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,보드게임,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,사우나,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,찜질방,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,수영장,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,볼링,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,당구장,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,스크린골프,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,골프존,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,골프연습장,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,노래연습장,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,코인노래,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,피시방,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,피씨클럽,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,플스방,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,오락실,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,방탈출,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,피트니스,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,휘트니스,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
+63,classify,카페C,food_rest,BPLC_NM,excludes,헬스클럽,,"E1·E7 제외 키워드 (2026-11-21, 휴게음식점만). 비음식입지 키워드와 같은 목록. 카페C에서 빠지면 65 비음식입지 → 기타"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes_rule,편의점_브랜드,,E1 편의점 브랜드 상호는 카페C 제외
 70,classify,나머지,food_general,*,all,,일반음식점,E4-7
 70,classify,나머지,food_rest,*,all,,휴게음식점,E4-7 (2026-11-21 기타 → 휴게음식점)
