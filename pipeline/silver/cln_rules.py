@@ -445,8 +445,13 @@ def _rule_hit(df: pd.DataFrame, row, names: pd.Series) -> pd.Series:
     return names.str.contains(kw, regex=False)
 
 
+# 상호 키워드 규칙 중 키워드별 건수·상위 상호를 change_log 에 남기는 규칙
+KEYWORD_LOG_RULES = ("카페C", "비음식입지")
+
+
 def classify(df: pd.DataFrame, m: Meta, dataset: str) -> tuple[pd.DataFrame, pd.Series, dict]:
-    """[E4] 순서대로 처음 맞는 규칙 하나. 돌려주는 값: (ANLS_INDUTY_CD, INDUTY_RULE_CD), ABNRM_UPTAE 마스크, 카페C 키워드 기록."""
+    """[E4] 순서대로 처음 맞는 규칙 하나. 돌려주는 값: (ANLS_INDUTY_CD, INDUTY_RULE_CD), ABNRM_UPTAE 마스크,
+    키워드 기록 {(규칙, 키워드): 그 키워드로 분류된 행}."""
     rules = m.induty[m.induty["dataset"].str.split(";").apply(lambda l: dataset in l)].copy()
     rules["rule_seq"] = rules["rule_seq"].astype(int)
     names = _name_for_match(df["BPLC_NM"]) if "BPLC_NM" in df else pd.Series("", index=df.index)
@@ -468,8 +473,8 @@ def classify(df: pd.DataFrame, m: Meta, dataset: str) -> tuple[pd.DataFrame, pd.
         group_hit = pd.Series(False, index=df.index)
         for row in include.itertuples():
             hit = _rule_hit(df, row, names) & ~excl
-            if rule_cd == "카페C":
-                keyword_hits[row.match_value] = hit & todo
+            if rule_cd in KEYWORD_LOG_RULES:
+                keyword_hits[(rule_cd, row.match_value)] = hit & todo
             group_hit |= hit
             take = hit & todo
             out.loc[take, "ANLS_INDUTY_CD"] = row.ANLS_INDUTY_CD
