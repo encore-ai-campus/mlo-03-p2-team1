@@ -187,29 +187,119 @@ def main() -> int:
     return 0
 
 
+LABEL = {"baseline": "기준선", "price": "집값만", "price_lcns": "집값+상권"}
+
+
+def fmt(value, spec: str) -> str:
+    return "" if pd.isna(value) else format(value, spec)
+
+
+def year_label(fold: str) -> str:
+    return "전체" if fold == "ALL" else f"{fold}년"
+
+
+def conclusion_lines(metrics: pd.DataFrame, compare: pd.DataFrame) -> list[str]:
+    """실행 결과 숫자로 결론 문장을 만든다 (재학습하면 문장도 같이 바뀐다)."""
+    def get(fold, model, col):
+        return metrics.loc[metrics["FOLD_YR"].eq(fold) & metrics["MODEL_NM"].eq(model), col].item()
+
+    def pair(a, b):
+        return compare[compare["MODEL_FROM"].eq(a) & compare["MODEL_TO"].eq(b)].iloc[0]
+
+    def verdict(row) -> str:
+        ci = f"95% 신뢰구간 [{row['CI_LOW_PCTP']:+.3f}, {row['CI_HIGH_PCTP']:+.3f}]%p"
+        if row["CI_HIGH_PCTP"] < 0 or row["CI_LOW_PCTP"] > 0:
+            return f"이 차이는 우연이 아니다 ({ci})"
+        return f"이 차이는 우연과 구분되지 않는다 ({ci})"
+
+    base, price, lcns = (get("ALL", m, "MAPE_PCT") for m in ("baseline", "price", "price_lcns"))
+    p, l = pair("baseline", "price"), pair("price", "price_lcns")
+    lines = [
+        f"1. **집값 모델은 기준선보다 정확하다.** 오차(MAPE)가 {base:.2f}% → {price:.2f}%로 "
+        f"{get('ALL', 'price', 'VS_BASELINE_PCT'):.1f}% 줄었다. {verdict(p)}. "
+        f"{p['FOLD_CNT']}개 연도 중 {p['IMPROVED_FOLD_CNT']}개 연도에서 기준선보다 나았다. "
+        f"다음 분기에 오를지 내릴지는 {get('ALL', 'price', 'DIRECTION_PCT'):.0f}% 맞혔다.",
+        f"2. **상권 데이터를 더해도 정확도는 그대로다.** 오차는 {price:.2f}% → {lcns:.2f}%이고, {verdict(l)}. "
+        f"{l['FOLD_CNT']}개 연도 중 {l['IMPROVED_FOLD_CNT']}개 연도에서만 나아졌다.",
+    ]
+    yearly = metrics[metrics["MODEL_NM"].eq("price") & metrics["FOLD_YR"].ne("ALL")]
+    worse = yearly[yearly["VS_BASELINE_PCT"] < 0]
+    if len(worse):
+        w = worse.sort_values("VS_BASELINE_PCT").iloc[0]
+        lines.append(
+            f"3. **시장 방향이 바뀌는 해에는 틀릴 수 있다.** {w['FOLD_YR']}년에는 집값 모델의 오차가 "
+            f"기준선보다 {-w['VS_BASELINE_PCT']:.1f}% 컸고, 방향 정확도는 {w['DIRECTION_PCT']:.0f}%였다. "
+            f"기준선보다 나빴던 해: {', '.join(f'{y}년' for y in worse['FOLD_YR'])}.")
+    return lines
+
+
 def summary_lines(data, metrics, compare, iters, model_ver) -> list[str]:
-    show = metrics.copy()
-    show["MAPE_PCT"] = show["MAPE_PCT"].map(lambda v: f"{v:.2f}")
-    show["VS_BASELINE_PCT"] = show["VS_BASELINE_PCT"].map(lambda v: f"{v:.1f}")
-    show["DIRECTION_PCT"] = show["DIRECTION_PCT"].map(lambda v: "" if pd.isna(v) else f"{v:.1f}")
-    show["RANK_IC"] = show["RANK_IC"].map(lambda v: "" if pd.isna(v) else f"{v:.3f}")
-    wide = show.pivot(index="FOLD_YR", columns="MODEL_NM", values="MAPE_PCT")[list(MODELS)].reset_index()
-    cmp = compare.copy()
-    for c in ("MAPE_DIFF_PCTP", "CI_LOW_PCTP", "CI_HIGH_PCTP"):
-        cmp[c] = cmp[c].map(lambda v: f"{v:+.3f}")
     counts = data["SPLIT_NM"].value_counts()
+    folds = [f for f in metrics["FOLD_YR"].unique()]
+
+    wide = pd.DataFrame({"테스트 연도": [year_label(f) for f in folds]})
+    for model_nm in MODELS:
+        values = metrics[metrics["MODEL_NM"].eq(model_nm)].set_index("FOLD_YR")["MAPE_PCT"]
+        wide[LABEL[model_nm]] = [fmt(values[f], ".2f") for f in folds]
+
+    cmp = pd.DataFrame({
+        "비교": [f"{LABEL[a]} → {LABEL[b]}" for a, b in zip(compare["MODEL_FROM"], compare["MODEL_TO"])],
+        "오차 변화 (%p)": compare["MAPE_DIFF_PCTP"].map(lambda v: f"{v:+.3f}"),
+        "95% 신뢰구간 (%p)": [f"[{lo:+.3f}, {hi:+.3f}]" for lo, hi in zip(compare["CI_LOW_PCTP"], compare["CI_HIGH_PCTP"])],
+        "좋아진 연도": [f"{w} / {n}" for w, n in zip(compare["IMPROVED_FOLD_CNT"], compare["FOLD_CNT"])],
+    })
+
+    detail = pd.DataFrame({
+        "테스트 연도": metrics["FOLD_YR"].map(year_label),
+        "모델": metrics["MODEL_NM"].map(LABEL),
+        "평가 행 수": metrics["ROW_CNT"].map(lambda v: f"{v:,}"),
+        "오차 MAPE (%)": metrics["MAPE_PCT"].map(lambda v: fmt(v, ".2f")),
+        "기준선 대비 오차 감소 (%)": metrics["VS_BASELINE_PCT"].map(lambda v: fmt(v, ".1f")),
+        "방향 정확도 (%)": metrics["DIRECTION_PCT"].map(lambda v: fmt(v, ".1f")),
+        "순위 상관": metrics["RANK_IC"].map(lambda v: fmt(v, ".3f")),
+    })
+
+    train_info = pd.DataFrame({
+        "테스트 연도": iters["FOLD_YR"].map(lambda y: f"{y}년"),
+        "모델": iters["MODEL_NM"].map(LABEL),
+        "학습 행 수": iters["TRAIN_ROW_CNT"].map(lambda v: f"{v:,}"),
+        "검증 행 수": iters["VALID_ROW_CNT"].map(lambda v: f"{v:,}"),
+        "테스트 행 수": iters["TEST_ROW_CNT"].map(lambda v: f"{v:,}"),
+        "학습 반복 횟수": iters["BEST_ITER"],
+    })
+
     return [
-        "# 05 AI Ready 학습·롤링 검증 요약", "",
-        f"- 피처셋: labeled {counts.get('labeled', 0):,}행, predict {counts.get('predict', 0):,}행, "
-        f"{data['LDONG_CD'].nunique()}개 법정동",
-        f"- 타깃: 다음 분기 같은 단지 기준 로그 변화율 (골드 `CPLX_RET_1Q`). MAPE는 같은 단지 기준 가격 오차",
-        f"- 모델 버전: `{model_ver}` (피처셋·파라미터·피처 정의 해시)", "",
-        "## 연도별 MAPE (%)", "", *md_table(wide), "",
-        "## 모델 비교 (전체 테스트 행, 법정동 부트스트랩 95% CI)", "", *md_table(cmp), "",
-        "- `MAPE_DIFF_PCTP` = MAPE(MODEL_TO) − MAPE(MODEL_FROM). 음수면 MODEL_TO가 더 정확하다.",
-        "- `IMPROVED_FOLD_CNT` = 연도별로 MODEL_TO의 MAPE가 더 낮았던 횟수.", "",
-        "## 연도·모델별 지표", "", *md_table(show), "",
-        "## 회차별 학습 행 수와 반복 횟수", "", *md_table(iters), "",
+        "# AI Ready 예측 정확도 요약", "",
+        "> `pipeline/ai_ready/05_train.py`가 실행할 때마다 다시 만드는 파일입니다. 숫자와 결론 문장은 실행 결과에서 자동으로 채웁니다.", "",
+        "## 결론", "", *conclusion_lines(metrics, compare), "",
+        "## 무엇을 예측했나", "",
+        "- **예측 대상:** 법정동별 **다음 분기** 아파트 ㎡당 매매가 변화율",
+        "- **계산 방식:** 두 분기에 모두 거래된 **같은 단지끼리** 가격을 비교한다. "
+        "그 분기에 비싼 단지가 팔렸는지 싼 단지가 팔렸는지에 따라 값이 출렁이는 영향을 빼기 위해서다.",
+        "- **비교한 모델**",
+        "  - 기준선: \"다음 분기에도 가격이 그대로다\"라고 예측한다. 다른 모델이 이걸 얼마나 이기는지 재는 자 역할이다.",
+        "  - 집값만: 최근 가격 흐름(동·구·서울 변화율, 거래 수 등)으로 예측한다.",
+        "  - 집값+상권: 집값 정보에 인허가 업소(음식점·카페·의원·약국·미용) 증감을 더해 예측한다.",
+        f"- **데이터:** {data['LDONG_CD'].nunique()}개 법정동, 학습·평가 {counts.get('labeled', 0):,}행, "
+        f"다음 분기 예측 {counts.get('predict', 0):,}행",
+        "- **평가 방법 (롤링 검증):** 테스트할 해마다 그 전 해까지의 데이터로만 학습하고, 그 해를 맞혀 본다. "
+        "실제로 쓸 때처럼 미래 데이터를 보지 않고, 시장 상황이 다른 여러 해에서 결과를 확인할 수 있다.", "",
+        "## 지표 읽는 법", "",
+        "- **오차 (MAPE):** 예측 가격이 실제 가격과 평균 몇 % 차이 나는지. 낮을수록 좋다.",
+        "- **기준선 대비 오차 감소:** 기준선보다 오차를 몇 % 줄였는지. 음수면 기준선보다 못했다는 뜻이다.",
+        "- **방향 정확도:** 다음 분기에 오를지 내릴지를 맞힌 비율. 50%면 동전 던지기와 같다.",
+        "- **순위 상관:** 어느 동이 더 많이 오를지 순서를 얼마나 맞혔는지 (−1부터 1 사이, 0이면 무관).",
+        "- **95% 신뢰구간:** 이 범위가 0을 포함하면 두 모델의 차이를 우연과 구분할 수 없다.", "",
+        "## 연도별 오차 (MAPE, %)", "", *md_table(wide), "",
+        "## 모델 비교 (전체 테스트 기간)", "", *md_table(cmp), "",
+        "- 오차 변화가 음수면 오른쪽 모델이 더 정확하다.",
+        "- 신뢰구간은 법정동 단위로 다시 뽑는 방식(부트스트랩)으로 계산했다.", "",
+        "## 연도·모델별 상세", "", *md_table(detail), "",
+        "## 참고: 회차별 학습 정보", "",
+        "- 학습 반복 횟수는 검증 연도의 오차가 더 줄지 않을 때 멈춘 횟수다. "
+        "1–10처럼 작으면 그해에는 모델이 평균에 가까운 예측만 했다는 뜻이다.",
+        f"- 모델 버전 `{model_ver}`: 피처셋·파라미터·피처 정의가 같으면 같은 값이다.", "",
+        *md_table(train_info), "",
     ]
 
 
