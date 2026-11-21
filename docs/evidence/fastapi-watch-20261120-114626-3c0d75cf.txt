@@ -1,0 +1,27 @@
+2026-11-20T11:46:26.140+09:00 RUN_START app=backend.app.main:app server=uvicorn workers=1 poll_seconds=60 accelerated_clock=false
+2026-11-20T11:46:26.140+09:00 CODE_SHA256 file=backend/app/main.py sha256=1fb6422f055cbc992305b80b45c0aea166f751c0d997b5a9ed0d00165ed02cdc
+2026-11-20T11:46:26.140+09:00 CODE_SHA256 file=backend/app/watch.py sha256=d712a04d0586c6743f3961f6c4f07226f08747eb0d41bb7502b3d9e7b1f7750c
+2026-11-20T11:46:26.188+09:00 DB_CONNECT database=bronze mode=outer_transaction_with_savepoint
+2026-11-20T11:46:26.217+09:00 SCAN_START scan=1 csv_files=[]
+2026-11-20T11:46:26.219+09:00 SCAN_FINISH scan=1
+2026-11-20T11:46:26.291+09:00 SERVER_READY bind=loopback lifespan=on
+2026-11-20T11:46:26.293+09:00 FILE_DELIVERED path=data/fastapi-watch-smoke-lth1rcbz/apt-trade-3c0d75cf.csv size_bytes=59 rows=1 delivery=part_to_csv
+2026-11-20T11:46:27.320+09:00 HTTP_CHECK_DURING_POLL_WAIT GET /openapi.json status=200
+2026-11-20T11:47:26.285+09:00 SCAN_START scan=2 csv_files=['apt-trade-3c0d75cf.csv']
+2026-11-20T11:47:26.299+09:00 SCAN_FINISH scan=2
+2026-11-20T11:47:26.299+09:00 POLL_INTERVAL_VERIFY elapsed_seconds=60.066 expected_seconds=60
+2026-11-20T11:47:26.300+09:00 ARCHIVE_VERIFY path=data/fastapi-watch-smoke-lth1rcbz/processed/apt-trade-3c0d75cf.csv contents_match=true
+2026-11-20T11:47:26.487+09:00 DB_SELECT_VERIFY tables=public.bronze_file,public.apt_trade file_id=41 row=['apt_trade', 'loaded', 1, 1, 1, 'FASTAPI_WATCH_SMOKE', '2026', '12345']
+2026-11-20T11:47:26.625+09:00 SERVER_STOPPED
+2026-11-20T11:47:26.628+09:00 DB_ROLLBACK completed=true
+2026-11-20T11:47:26.643+09:00 ROLLBACK_VERIFY new_connection=true bronze_file_rows=0 apt_trade_rows=0
+2026-11-20T11:47:26.644+09:00 APPLICATION_LOG utc_offset=+09:00 begin
+2026-11-20 11:46:26,215 INFO Watching data/fastapi-watch-smoke-lth1rcbz every 60 seconds
+2026-11-20 11:47:26,287 INFO Detected apt-trade-3c0d75cf.csv
+2026-11-20 11:47:26,299 INFO Loaded apt-trade-3c0d75cf.csv (1 rows) and moved it to processed
+2026-11-20 11:47:26,624 INFO Watch stopped
+2026-11-20T11:47:26.645+09:00 APPLICATION_LOG end
+2026-11-20T11:47:26.645+09:00 CLEANUP temporary_watch_directory_removed=true
+2026-11-20T11:47:27.791+09:00 PYTEST ...                                                                      [100%]
+2026-11-20T11:47:27.791+09:00 PYTEST 3 passed in 0.16s
+2026-11-20T11:47:27.792+09:00 RESULT passed

@@ -1,0 +1,13 @@
+﻿column,match_type,value,issue_cd,tel_compare_excl_yn,note
+SITE_TEL,eq,02-0000-0000,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,eq,02-000-0000,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,eq,02-1111-1111,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,eq,02-111-1111,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,eq,02-0111-1111,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,eq,02-2222-2222,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,eq,02-222-2222,PLACEHOLDER_TEL,Y,02 실측 반복 숫자 번호
+SITE_TEL,regex,"^0\d{1,2}-0{3,4}-0{4}$",PLACEHOLDER_TEL,Y,지역번호 + 전부 0
+SITE_AREA_NUM,eq,0,ZERO_AREA,N,면적 모름
+TOT_AREA_NUM,eq,0,ZERO_AREA,N,면적 모름
+PHARM_AREA_NUM,eq,0,ZERO_AREA,N,면적 모름
+TM_X_NUM;TM_Y_NUM,range_out,cln_param:SEOUL_TM_*,OUT_SEOUL_COORD,N,범위는 cln_param.csv

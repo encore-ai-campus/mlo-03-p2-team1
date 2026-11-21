@@ -1,0 +1,49 @@
+feature,feature_group,description
+LOG_UNIT_AMT,PRICE,분기 t 동 ㎡당 매매가 중앙값의 로그. LOW_SAMPLE_YN이면 NULL
+MED_RET_1Q,PRICE,동 중앙값 로그 변화 t-1 → t. 두 분기 중 하나라도 희소하면 NULL
+MED_RET_4Q,PRICE,동 중앙값 로그 변화 t-4 → t. 두 분기 중 하나라도 희소하면 NULL
+CPLX_RET_1Q,PRICE,동 같은 단지 기준 로그 변화 t-1 → t (골드 fact_apt_idx_qtr)
+CPLX_RET_4Q,PRICE,동 같은 단지 기준 로그 변화 t-4 → t (골드 fact_apt_idx_qtr)
+CPLX_RET_1Q_LAG1,PRICE,동 같은 단지 기준 로그 변화 t-2 → t-1
+LOG_TRADE_CNT,PRICE,분기 t 가격 표본 수(PRICE_SAMPLE_CNT)의 log1p
+TRADE_CNT_CHG_4Q,PRICE,LOG_TRADE_CNT의 t-4 대비 차이
+QTR,PRICE,분기 번호(1-4)
+BUILD_AGE_MED,PRICE,분기 t 거래 단지의 연식 중앙값(연도 - 건축연도). LOW_SAMPLE_YN이면 NULL
+EXCL_AREA_MED,PRICE,분기 t 거래의 전용면적 중앙값(㎡). LOW_SAMPLE_YN이면 NULL
+REL_SGG_LOG,PRICE,LOG_UNIT_AMT - 같은 구 분기 t 전체 거래 ㎡당 가격 중앙값의 로그
+SGG_CPLX_RET_1Q,PRICE,구 같은 단지 기준 로그 변화 t-1 → t (골드)
+SGG_CPLX_RET_4Q,PRICE,구 같은 단지 기준 로그 변화 t-4 → t (골드)
+SEOUL_CPLX_RET_1Q,PRICE,서울 같은 단지 기준 로그 변화 t-1 → t (골드)
+SEOUL_CPLX_RET_4Q,PRICE,서울 같은 단지 기준 로그 변화 t-4 → t (골드)
+GENERAL_FOOD_ACTIVE_LOG,LCNS,일반음식점 분기 말 영업 수의 log1p
+GENERAL_FOOD_ACTIVE_GR_1Q,LCNS,일반음식점 영업 수 log1p의 t-1 대비 차이
+GENERAL_FOOD_ACTIVE_GR_4Q,LCNS,일반음식점 영업 수 log1p의 t-4 대비 차이
+GENERAL_FOOD_OPEN_RATE_4Q,LCNS,일반음식점 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+GENERAL_FOOD_CLOSE_RATE_4Q,LCNS,일반음식점 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+CAFE_ACTIVE_LOG,LCNS,카페 분기 말 영업 수의 log1p
+CAFE_ACTIVE_GR_1Q,LCNS,카페 영업 수 log1p의 t-1 대비 차이
+CAFE_ACTIVE_GR_4Q,LCNS,카페 영업 수 log1p의 t-4 대비 차이
+CAFE_OPEN_RATE_4Q,LCNS,카페 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+CAFE_CLOSE_RATE_4Q,LCNS,카페 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+REST_FOOD_ACTIVE_LOG,LCNS,휴게음식점 분기 말 영업 수의 log1p
+REST_FOOD_ACTIVE_GR_1Q,LCNS,휴게음식점 영업 수 log1p의 t-1 대비 차이
+REST_FOOD_ACTIVE_GR_4Q,LCNS,휴게음식점 영업 수 log1p의 t-4 대비 차이
+REST_FOOD_OPEN_RATE_4Q,LCNS,휴게음식점 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+REST_FOOD_CLOSE_RATE_4Q,LCNS,휴게음식점 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+CLINIC_ACTIVE_LOG,LCNS,의원 계열 분기 말 영업 수의 log1p
+CLINIC_ACTIVE_GR_1Q,LCNS,의원 계열 영업 수 log1p의 t-1 대비 차이
+CLINIC_ACTIVE_GR_4Q,LCNS,의원 계열 영업 수 log1p의 t-4 대비 차이
+CLINIC_OPEN_RATE_4Q,LCNS,의원 계열 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+CLINIC_CLOSE_RATE_4Q,LCNS,의원 계열 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+PHARMACY_ACTIVE_LOG,LCNS,약국 분기 말 영업 수의 log1p
+PHARMACY_ACTIVE_GR_1Q,LCNS,약국 영업 수 log1p의 t-1 대비 차이
+PHARMACY_ACTIVE_GR_4Q,LCNS,약국 영업 수 log1p의 t-4 대비 차이
+PHARMACY_OPEN_RATE_4Q,LCNS,약국 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+PHARMACY_CLOSE_RATE_4Q,LCNS,약국 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+BEAUTY_ACTIVE_LOG,LCNS,미용 계열 분기 말 영업 수의 log1p
+BEAUTY_ACTIVE_GR_1Q,LCNS,미용 계열 영업 수 log1p의 t-1 대비 차이
+BEAUTY_ACTIVE_GR_4Q,LCNS,미용 계열 영업 수 log1p의 t-4 대비 차이
+BEAUTY_OPEN_RATE_4Q,LCNS,미용 계열 최근 4분기(t-3 – t) 개업 수 / (분기 t 영업 수 + 1)
+BEAUTY_CLOSE_RATE_4Q,LCNS,미용 계열 최근 4분기(t-3 – t) 폐업 수 / (분기 t 영업 수 + 1)
+ALL_ACTIVE_LOG,LCNS,5개 업종 묶음 영업 수 합계의 log1p
+ALL_ACTIVE_GR_4Q,LCNS,ALL_ACTIVE_LOG의 t-4 대비 차이

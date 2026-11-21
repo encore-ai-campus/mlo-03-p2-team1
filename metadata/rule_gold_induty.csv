@@ -1,0 +1,15 @@
+ANLS_INDUTY_CD,mart_group,reference_yn
+일반음식점,GENERAL_FOOD,N
+카페,CAFE,N
+휴게음식점,REST_FOOD,N
+의원,CLINIC,N
+치과의원,CLINIC,N
+한의원,CLINIC,N
+약국,PHARMACY,N
+미용_헤어,BEAUTY,N
+미용_피부,BEAUTY,N
+미용_네일,BEAUTY,N
+미용_메이크업,BEAUTY,N
+미용_기타,BEAUTY,N
+편의점,CONVENIENCE,Y
+기타,,Y

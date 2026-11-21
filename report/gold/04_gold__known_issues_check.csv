@@ -1,0 +1,5 @@
+﻿issue_id,rule_ref,dataset,description,expected_cnt,measured_cnt,diff,basis,check
+KI26,G5,apt_trade,서울 매매 LDONG_CD 가 현행 법정동 코드표에 없음 (신당동 13·사당동 5·도봉동 2),20,20,0,02 전체 (서울),OK
+KI27,G2,apt_trade,서울 매매 동일 조건 거래 (해제 제외 키 7개),12798,12798,0,02 전체 (서울),OK
+KI28,G1,apt_trade,서울 매매 계약 해제 (행 유지),17661,17661,0,02 전체 (서울),OK
+KI31,G6,apt_trade,서울 매매 ㎡당 100만 원 미만 (모두 2017년 이전),124,124,0,02 전체 (서울),OK

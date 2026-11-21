@@ -1,0 +1,40 @@
+﻿issue_id,rule_ref,dataset,description,expected_cnt,measured_cnt,diff,basis,check
+KI01,C1,clinic,전출인데 CLSBIZ_DTM 없음,812,812,0,02 전체,OK
+KI02,C2,clinic,폐업인데 CLSBIZ_DTM 없음 (전출 제외),835,835,0,02 전체,OK
+KI03,C2,pharmacy,폐업인데 CLSBIZ_DTM 없음,4795,4795,0,02 전체,OK
+KI04,C2,food_general,폐업인데 CLSBIZ_DTM 없음,27,27,0,02 전체,OK
+KI05,C2,food_rest,폐업인데 CLSBIZ_DTM 없음,4,4,0,02 전체 (중복 제거 전),OK
+KI06,C2,beauty,폐업인데 CLSBIZ_DTM 없음 (20060229 1건 포함),7,7,0,02 전체,OK
+KI07,C3,food_rest,"관리번호 중복 키 (646행, 완전 중복 310 + 값 다름 13)",323,323,0,02 전체,OK
+KI08,C4,food_general,U+FFFD 깨진 상호,178,178,0,02 전체,OK
+KI09,C4,food_general,U+FFFD 깨진 지번주소,56,56,0,02 전체,OK
+KI10,C4,food_general,U+FFFD 깨진 도로명주소,54,54,0,02 전체,OK
+KI11,C4,food_rest,U+FFFD 깨진 상호,147,147,0,02 전체,OK
+KI12,C4,food_rest,U+FFFD 깨진 지번주소,17,17,0,02 전체,OK
+KI13,C4,food_rest,U+FFFD 깨진 도로명주소,9,9,0,02 전체,OK
+KI14,C5,clinic,1950년 이전 인허가일,178,178,0,02 전체,OK
+KI15,C5,food_general,1950년 이전 인허가일,69,69,0,02 전체,OK
+KI16,C5,food_rest,1950년 이전 인허가일,13,13,0,02 전체 (중복 제거 전),OK
+KI17,C5,pharmacy,1950년 이전 인허가일,9,9,0,02 전체,OK
+KI18,C5,beauty,1950년 이전 인허가일,9,9,0,02 전체,OK
+KI19,C5,food_rest,수집일 이후 폐업일 (2026-11-30),1,1,0,02 전체,OK
+KI20,C5,beauty,없는 날짜 20060229 (02 STD_ERR_TXT),1,1,0,02 전체,OK
+KI21,C6,*,02-0000-0000 (인허가 5종 합계),8191,8191,0,02 전체,OK
+KI22,D4,clinic,전출 의원 주소가 새 주소로 갱신 (LGOV_CD 구 ≠ 주소 구),10,10,0,bronze 점검,OK
+KI23,E5,clinic,보건소·보건지소·조산원,50,50,0,02 전체,OK
+KI24,E6,beauty,일반이용업,2,2,0,02 전체,OK
+KI25,D3,*,서울 밖 주소 (2017 이후 영업 기준),22,22,0,"주소 기준 24 − 전출 의원 2 ([D4] 실패_전출주소), 전체 기간 업종별 1~14",OK
+KI26,G5,apt_trade,서울 매매 LDONG_CD 가 현행 법정동 코드표에 없음 (신당동 13·사당동 5·도봉동 2),20,20,0,02 전체 (서울),OK
+KI27,G2,apt_trade,서울 매매 동일 조건 거래 (해제 제외 키 7개),12798,12798,0,02 전체 (서울),OK
+KI28,G1,apt_trade,서울 매매 계약 해제 (행 유지),17661,17661,0,02 전체 (서울),OK
+KI29,G5,apt_rent,서울 전월세 법정동 부여 실패 (SGG_CD + UMD_NM),0,0,0,02 전체 (서울),OK
+KI30,G4,apt_rent,계약 시작일 변환 실패 (02 STD_ERR_TXT),24246,24246,0,02 전체,OK
+KI31,G6,apt_trade,서울 매매 ㎡당 100만 원 미만 (모두 2017년 이전),124,124,0,02 전체 (서울),OK
+KI32,H1,hira_inst,서울 심평원 병원·약국 법정동 부여 실패,0,0,0,02 전체 (서울),OK
+KI33,H2,hira_inst,서울 보건소·보건지소·조산원,39,39,0,02 전체 (서울),OK
+KI34,H2,hira_inst,서울 개설일 1950년 이전,8,8,0,02 전체 (서울),OK
+KI35,S1,store_info,서울 상가정보 법정동 실패,0,0,0,02 전체 (서울),OK
+KI36,S1,store_info,현행 코드표에 없는 법정동 (서울 밖 폐지 코드),2471,2471,0,02 전체,OK
+KI37,S2,store_info,층 변환 실패 (02 STD_ERR_TXT),14984,14984,0,02 전체,OK
+KI38,L1,ldong_code,서울 현행 법정동 코드 (시도·구 행 포함),493,493,0,02 전체 (서울),OK
+KI39,L1,ldong_code,서울 현행 읍면동,467,467,0,02 전체 (서울),OK

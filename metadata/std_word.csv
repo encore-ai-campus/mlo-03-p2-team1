@@ -1,11 +1,13 @@
 ﻿word,meaning
 ABL,폐지
+ABNRM,이상
 ADD,가산
 ADDR,주소
 ADONG,행정동
 ADULT,성인
 AGENT,중개사
 AMT,금액
+ANLS,분석
 APT,아파트(단지)
 AREA,면적
 ASGN,지정
@@ -98,6 +100,7 @@ MDWF,조산사
 MEAL,식사
 MED,의료
 MON,월요일
+MOVE,이전
 MTHLY,월
 MULTI,다중
 NBRN,신생아
@@ -112,6 +115,7 @@ OPEN,개방
 OPER,운영
 OPRT,수술
 ORNTL,한방
+OUT,밖·제외
 OWN,소유
 PARK,주차
 PHARM,약국
@@ -126,6 +130,7 @@ PRSN,인원
 PSY,정신과
 RCPT,접수
 RENT,임대료(월세)
+REPL,교체
 RGST,등기
 RMRK,비고
 RNW,갱신
@@ -136,12 +141,16 @@ ROW,행
 RQST,요구
 RSDNT,레지던트
 RSN,사유
+RULE,규칙
 SALE,판매
+SAME,동일
 SAT,토요일
 SCALE,규모
 SCLS,소분류
+SCOPE,범위
 SE,구분
 SELLER,매도자
+SEOUL,서울
 SEQ,일련번호
 SGG,시군구
 SIDO,시도
@@ -188,3 +197,4 @@ Y,Y 좌표
 YEAR,년도
 YN,여부
 ZIP,우편번호
+RI,리

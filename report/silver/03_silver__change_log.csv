@@ -1,0 +1,456 @@
+﻿dataset,section,item,value,note
+food_general,행수,02,540008,
+food_general,행수,중복_LCNS_KEY,0,
+food_general,행수,중복_행,0,
+food_general,A1,LCNS_KEY_집합_일치,True,
+food_general,A1,CSV_LCNS_KEY_유일,True,
+food_general,A1,CSV_LDONG_CD_있음,280437,
+food_general,상태_조합,영업/정상|영업→영업/원본매핑,120077,
+food_general,상태_조합,폐업|폐업→폐업/원본매핑,419931,
+food_general,출처_CLSBIZ_SRC_CD,원본,419904,
+food_general,출처_CLSBIZ_SRC_CD,최종수정일자_대용,27,
+food_general,출처_CLSBIZ_SRC_CD,해당없음,120077,
+food_general,C2,대용폐업일_분석기간안,0,개별 확인 대상 (LCNS_KEY: )
+food_general,출처_LDONG_SRC_CD,도로명,25,
+food_general,출처_LDONG_SRC_CD,실패,8,
+food_general,출처_LDONG_SRC_CD,실패_서울밖,14,
+food_general,출처_LDONG_SRC_CD,원본코드,280437,
+food_general,출처_LDONG_SRC_CD,지번,259524,
+food_general,D1,원본코드_지번_일치율,0.9983,둘 다 있는 280234건
+food_general,D1,2017이후영업_대상,253953,
+food_general,D1,2017이후영업_실패,12,
+food_general,D1,2017이후영업_지번만_성공률,0.9999,
+food_general,D1,2017이후영업_성공률,1.0000,
+food_general,D3,서울밖_2017이후영업,11,
+food_general,업종_ANLS_INDUTY_CD,기타,110,
+food_general,업종_ANLS_INDUTY_CD,일반음식점,519926,
+food_general,업종_ANLS_INDUTY_CD,카페,19878,
+food_general,업종_ANLS_INDUTY_CD,편의점,94,
+food_general,업종_INDUTY_RULE_CD,나머지,519546,
+food_general,업종_INDUTY_RULE_CD,업태예외_라이브카페,380,
+food_general,업종_INDUTY_RULE_CD,업태예외_전통찻집,823,
+food_general,업종_INDUTY_RULE_CD,카페B,7819,
+food_general,업종_INDUTY_RULE_CD,카페C,11236,
+food_general,업종_INDUTY_RULE_CD,키즈카페,110,
+food_general,업종_INDUTY_RULE_CD,편의점_브랜드,94,
+food_general,카페_상가정보대조,카페B,0.466,현재 영업 중 1211곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_상가정보대조,카페C,0.697,현재 영업 중 4597곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_상가정보대조,나머지,0.266,현재 영업 중 113902곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_general,카페_키워드,카페,5053,유스카페(한시적)(23) / 푸드카페(14) / 농업회사법인 카페인신현리 주식회사(12) / 야심떡카페(10) / 김밥카페(8)
+food_general,카페_키워드,까페,348,까페동향(9) / 김밥까페(4) / 까페 루아(3) / 궁까페(2) / 명동사주까페(2)
+food_general,카페_키워드,커피,5288,(주)커피빈코리아(한시적)(20) / 커피나무(12) / 커피하우스(9) / 메쉬커피(7) / (주)커피빈코리아삼성봉은사거리점(한시적)(7)
+food_general,카페_키워드,CAFE,206,모찌당(수제과일모찌cafe)(5) / 투유(TOU) CAFE(2) / CAFE 아카시아(ACACIA)(2) / 요요미Gcafe(2) / cafe 미소콩(2)
+food_general,카페_키워드,CAFFE,10,caffe&츄러스(5) / Caffe Bookmark(1) / 오라카이 청계산 호텔 illy caffe(1) / The Caffe R(1) / 이레(Caffe Library)(1)
+food_general,카페_키워드,COFFEE,86,블루보틀코리아 여의도(BLUEBOTTLE COFFEE)(2) / 1999 coffee(2) / JC COFFEE(1) / G(지) coffee(1) / 제이 coffee(1)
+food_general,카페_키워드,로스터,83,주식회사 소울로스터리(한시적)(2) / 로스터리 함(ROASTERY Haam)(2) / 강산 로스터스(1) / 부로스터(1) / 낙타로스터리(Nakta roastery)(1)
+food_general,카페_키워드,로스팅,24,더로스팅(3) / 누 로스팅 하우스(2) / 크레이저 로스팅 랩(C Razer Roasting Lab)(1) / 로스팅팩토리(1) / 더 로스팅(1)
+food_general,카페_키워드,에스프레소,118,에스프레소(4) / 더블유에스프레소바(3) / 파치노 에스프레소바(2) / 에스프레소 알코(2) / 아마렐로 에스프레소바(2)
+food_general,카페_키워드,바리스타,20,바리스타조(1) / 멀티컬렉샾 키스더바리스타(1) / 바리스타 독산점(1) / 게스트로 바리스타(Gastro Barista)(1) / 식스 바리스타즈(1)
+food_general,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+food_general,연결,이전_후보묶음,2568,
+food_general,연결,이전_미확정_종료일동률묶음,96,
+food_general,연결,이전_인접쌍_다른구,2592,
+food_general,연결,이전_전화번호일치,406,
+food_general,연결,이전_확정,406,
+food_general,연결,재등록_후보쌍,6598,
+food_general,연결,재등록_확정,6420,
+food_general,연결,재등록_미확정,120,
+food_general,연결,교체_후보쌍,53533,
+food_general,연결,교체_미확정_대형건물,13213,
+food_general,연결,교체_확정,22121,
+food_general,연결,교체_미확정,19869,
+food_general,재고_연결전후,2017Q1_차이,207,연결 전 120462 → 후 120255
+food_general,재고_연결전후,2026Q3_차이,3,연결 전 120195 → 후 120192
+food_general,재고_연결전후,평균_차이,111.3,
+food_general,재고_연결전후,최대_차이,207,
+food_general,재고_동구,2026Q3_구합계,120192,대상외 제외
+food_general,재고_동구,2026Q3_동합계,120190,차이 2 = 법정동 실패
+food_general,플래그,ABNRM_LCNS_DTM_YN,69,
+food_general,플래그,OUT_SEOUL_ADDR_YN,14,
+food_general,플래그,OUT_SCOPE_YN,0,
+food_general,행수,03,540008,
+food_general,이슈,ABNRM_UPTAE,31,
+food_general,이슈,ADDR_MISMATCH,41,
+food_general,이슈,AMBIG_LINK,2917,
+food_general,이슈,BRKN_ADDR,110,
+food_general,이슈,BRKN_NM,178,
+food_general,이슈,MULTI_TENANT,3833,
+food_general,이슈,OUT_SEOUL_COORD,10,
+food_general,이슈,PLACEHOLDER_TEL,6597,
+food_general,이슈,TIME_CONFLICT,2311,
+food_general,이슈,ZERO_AREA,2015,
+food_rest,행수,02,148778,
+food_rest,행수,중복_LCNS_KEY,323,
+food_rest,행수,중복_행,646,
+food_rest,행수,중복_완전,323,
+food_rest,행수,중복_값다름,0,
+food_rest,상태_조합,영업/정상|영업→영업/원본매핑,37017,
+food_rest,상태_조합,폐업|폐업→폐업/원본매핑,111438,
+food_rest,출처_CLSBIZ_SRC_CD,원본,111434,
+food_rest,출처_CLSBIZ_SRC_CD,최종수정일자_대용,4,
+food_rest,출처_CLSBIZ_SRC_CD,해당없음,37017,
+food_rest,C2,대용폐업일_분석기간안,0,개별 확인 대상 (LCNS_KEY: )
+food_rest,출처_LDONG_SRC_CD,도로명,145,
+food_rest,출처_LDONG_SRC_CD,실패,41,
+food_rest,출처_LDONG_SRC_CD,실패_서울밖,9,
+food_rest,출처_LDONG_SRC_CD,지번,148260,
+food_rest,D1,2017이후영업_대상,95149,
+food_rest,D1,2017이후영업_실패,46,
+food_rest,D1,2017이후영업_지번만_성공률,0.9983,
+food_rest,D1,2017이후영업_성공률,0.9995,
+food_rest,D3,서울밖_2017이후영업,7,
+food_rest,업종_ANLS_INDUTY_CD,기타,17725,
+food_rest,업종_ANLS_INDUTY_CD,카페,62327,
+food_rest,업종_ANLS_INDUTY_CD,편의점,16049,
+food_rest,업종_ANLS_INDUTY_CD,휴게음식점,52354,
+food_rest,업종_INDUTY_RULE_CD,과자점_업태,8419,
+food_rest,업종_INDUTY_RULE_CD,나머지,52354,
+food_rest,업종_INDUTY_RULE_CD,비음식입지,1590,
+food_rest,업종_INDUTY_RULE_CD,카페A,58990,
+food_rest,업종_INDUTY_RULE_CD,카페C,3337,
+food_rest,업종_INDUTY_RULE_CD,키즈카페,173,
+food_rest,업종_INDUTY_RULE_CD,특수입지,7543,
+food_rest,업종_INDUTY_RULE_CD,편의점_브랜드,2684,
+food_rest,업종_INDUTY_RULE_CD,편의점_업태,13365,
+food_rest,카페_상가정보대조,카페A,0.715,현재 영업 중 15789곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_rest,카페_상가정보대조,카페C,0.708,현재 영업 중 943곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_rest,카페_상가정보대조,나머지,0.467,현재 영업 중 11020곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_rest,카페_키워드,카페,1608,카페아모제(18) / 오시오카페(13) / 카페제이(11) / 카페큐브(한시적)(8) / 카페인(7)
+food_rest,카페_키워드,까페,124,분식까페(3) / 까페죤(2) / 까페아모제(2) / 까페라떼(1) / (주)아모제 까페아모제(1)
+food_rest,카페_키워드,커피,1436,커피크루(한시적)(19) / 커피언스(한시적)(13) / 커피크루(12) / 이디야커피(7) / 빈스빈스커피(한시적)(7)
+food_rest,카페_키워드,CAFE,72,이모네 떡볶이 Cafe(2) / 가상의점cafe(2) / 석봉토스트cafe(2) / (주)루왁코리아 대학로점 Cafe Luwak(1) / 해오름예술극장 담 cafe(1)
+food_rest,카페_키워드,CAFFE,1,caffe winter kingdom 겨울왕국(1)
+food_rest,카페_키워드,COFFEE,30,check coffee(2) / COMPOSE COFFEE 대학로점(1) / 3X Large Coffee(1) / coffee 아일랜드(1) / 이레Coffee(1)
+food_rest,카페_키워드,로스터,20,히떼 로스터리(2) / 고종의뜰굼터/더듀얼로스터즈(2) / 가비 로스터리 프로젝트(Gabi Roastery Project)(1) / 크럼블로스터스(1) / 브루 앤 웨이브 로스터스 인더스트리얼(1)
+food_rest,카페_키워드,로스팅,8,노아스 로스팅(1) / 피너츠로스팅랩(1) / 노잉 로스팅 하우스(1) / 더블 프로스팅(1) / 로스팅마스터즈2(1)
+food_rest,카페_키워드,에스프레소,31,"이디야에스프레소(2) / 에스프레소 그자체 성균관대점(1) / 모노레일 에스프레소 숭인점(1) / 조샌드위치,에스프레소(1) / Espresso Mondian(에스프레소 몬디안)(1)"
+food_rest,카페_키워드,바리스타,7,바리스타(4) / 이웃집 바리스타(1) / 일 바리스타 위례(1) / 아이엠바리스타(1)
+food_rest,비음식입지_키워드,PC방,762,제노PC방(11) / 세븐PC방(9) / 3POP PC방(8) / 레벨업 PC방(7) / 샹떼PC방(7)
+food_rest,비음식입지_키워드,피씨방,121,비원피씨방(3) / 본피씨방(3) / 엔탑피씨방(2) / 세븐피씨방(2) / 나인피씨방(2)
+food_rest,비음식입지_키워드,PC카페,84,옵티멈존PC카페(3) / 맥PC카페(3) / 레벨업PC카페(3) / 제노PC카페(2) / 찰리팝PC카페(2)
+food_rest,비음식입지_키워드,PCCAFE,58,에이플 PC CAFE(4) / 레벨업 PC CAFE(4) / 긱스타 PC CAFE(2) / 샤먼PC cafe(2) / 스타디움PC CAFE(1)
+food_rest,비음식입지_키워드,피씨카페,30,긱스타피씨카페(2) / 타워피씨카페(1) / 럭셔리피씨카페(1) / 스타피씨카페&떡볶이스타(1) / 옵티멈존피씨카페강남역점 주식회사(1)
+food_rest,비음식입지_키워드,PC클럽,5,집PC클럽(응암점)(2) / 집PC클럽(증산점)(1) / ZIP(집)PC클럽 역촌점(1) / 푸룬PC클럽(1)
+food_rest,비음식입지_키워드,PC존,12,자이PC존(2) / 센스PC존(1) / 유니넷PC존홍대점(1) / 초콜릿PC존(1) / 캐츠아이PC존(1)
+food_rest,비음식입지_키워드,스터디카페,38,랭스터디카페(4) / 범스터디카페(1) / 랭스터디카페 한양대점(1) / 랭스터디카페 사당역점(1) / 윤쌤스터디카페책먹는여우(1)
+food_rest,비음식입지_키워드,만화방,8,24시만화방(3) / 공자왈만화방(2) / 책사랑만화방(1) / 대박만화방(1) / 만화방구(1)
+food_rest,비음식입지_키워드,만화카페,25,만화카페시바툰(2) / 마나보다 만화카페(2) / 무림만화카페(1) / 툰슐랭 만화카페 충무아트센터점(1) / 만화카페사랑애(1)
+food_rest,비음식입지_키워드,보드게임,66,이수보드게임교육원(2) / 보드게임카페 레드버튼(2) / 보드게임카페 홈즈앤루팡 이대점(1) / 더홀릭보드게임카페종로점(1) / 더홀릭 보드게임카페 대학로점(1)
+food_rest,비음식입지_키워드,사우나,121,대림사우나(2) / 백두산사우나매점(2) / 백두산사우나(2) / 쑥고개사우나(2) / 한빛건강사우나(1)
+food_rest,비음식입지_키워드,찜질방,12,찜질방 매점(1) / 서울레저찜질방 남자 매점(1) / 동경프라자 찜질방 여자 매점(1) / 서울게르마늄찜질방(1) / 다솜약동기찜질방(1)
+food_rest,비음식입지_키워드,수영장,70,양재천수영장(4) / 한강수영장(4) / 이촌수영장(2) / 한강공원야외수영장 제1지역(2) / 뚝섬수영장 카페테리아(2)
+food_rest,비음식입지_키워드,볼링,11,아스코스포츠볼링센타(1) / 성대볼링센타스넥(1) / 쌍문볼링장카페(1) / 우현볼링센타내매점(1) / 원일볼링장스넥코너(1)
+food_rest,비음식입지_키워드,당구장,3,금천(KC109)당구장(1) / VIP당구장(1) / 엠당구장(1)
+food_rest,비음식입지_키워드,스크린골프,6,은평 스크린 골프존(1) / 아트스크린 골프존(1) / SG스크린골프 구로역점(1) / 하나스크린골프(1) / 관악스크린골프(관악그늘집)(1)
+food_rest,비음식입지_키워드,골프존,7,싱글벙글골프존파크(1) / 골프존파크 신수 광흥창역(1) / 골프존파크 양평점(1) / 골프존파크 삼성청담역점(1) / 골프존파크 신사압구정역점(1)
+food_rest,비음식입지_키워드,골프연습장,3,도봉골프연습장매점(1) / 도봉종합골프연습장(1) / 88골프연습장(1)
+food_rest,비음식입지_키워드,노래연습장,2,K-TOP PC & COIN노래연습장(1) / THE HIT 코인노래연습장(1)
+food_rest,비음식입지_키워드,코인노래,1,비원피시방(비투박스코인노래방)(1)
+food_rest,비음식입지_키워드,피시방,73,제노피시방(5) / 리얼피시방(2) / 아이콘피시방(2) / 엔탑피시방(2) / 언니네 피시방(1)
+food_rest,비음식입지_키워드,피씨클럽,3,피씨클럽블랙(1) / 집피씨클럽(1) / 지엠피씨클럽(GM PC CLUB)(1)
+food_rest,비음식입지_키워드,보드카페,22,보드카페(3) / 더블보드카페(2) / 업비트보드카페(1) / 블랙보드카페(1) / 하이롤러 보드카페(1)
+food_rest,비음식입지_키워드,플스방,2,피에스비(PSB) 플스방(1) / 쌈바플스방 천호점(1)
+food_rest,비음식입지_키워드,오락실,1,피닉스다트 짱오락실 이수역점(1)
+food_rest,비음식입지_키워드,방탈출,1,코난방탈출(1)
+food_rest,비음식입지_키워드,피트니스,37,짐박스피트니스 어린이대공원점(1) / 짐박스피트니스 건대입구점(1) / 짐박스피트니스 신촌2호점(1) / 짐박스피트니스 화곡역점(1) / 짐박스피트니스 길음역점(1)
+food_rest,비음식입지_키워드,휘트니스,5,휘트니스바(FITNESS BAR)(1) / 코오롱휘트니스스넥(1) / 국제스파휘트니스(1) / 렉스휘트니스(주)(1) / 더바른 휘트니스(1)
+food_rest,비음식입지_키워드,헬스클럽,1,헬스클럽(Health club)(1)
+food_rest,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+food_rest,연결,이전_후보묶음,1344,
+food_rest,연결,이전_미확정_종료일동률묶음,290,
+food_rest,연결,이전_인접쌍_다른구,1138,
+food_rest,연결,이전_전화번호일치,104,
+food_rest,연결,이전_확정,104,
+food_rest,연결,재등록_후보쌍,3910,
+food_rest,연결,재등록_확정,3159,
+food_rest,연결,재등록_미확정,600,
+food_rest,연결,교체_후보쌍,36682,
+food_rest,연결,교체_미확정_대형건물,29028,
+food_rest,연결,교체_확정,4232,
+food_rest,연결,교체_미확정,30164,
+food_rest,재고_연결전후,2017Q1_차이,35,연결 전 29625 → 후 29590
+food_rest,재고_연결전후,2026Q3_차이,1,연결 전 37032 → 후 37031
+food_rest,재고_연결전후,평균_차이,23.3,
+food_rest,재고_연결전후,최대_차이,36,
+food_rest,재고_동구,2026Q3_구합계,37031,대상외 제외
+food_rest,재고_동구,2026Q3_동합계,37020,차이 11 = 법정동 실패
+food_rest,플래그,ABNRM_LCNS_DTM_YN,13,
+food_rest,플래그,OUT_SEOUL_ADDR_YN,9,
+food_rest,플래그,OUT_SCOPE_YN,0,
+food_rest,행수,03,148455,
+food_rest,이슈,ABNRM_UPTAE,6,
+food_rest,이슈,ADDR_MISMATCH,25,
+food_rest,이슈,AMBIG_LINK,1703,
+food_rest,이슈,BRKN_ADDR,26,
+food_rest,이슈,BRKN_NM,147,
+food_rest,이슈,DUP_REMOVED,323,
+food_rest,이슈,FUTURE_CLSBIZ,1,
+food_rest,이슈,MULTI_TENANT,8118,
+food_rest,이슈,OUT_SEOUL_COORD,7,
+food_rest,이슈,PLACEHOLDER_TEL,813,
+food_rest,이슈,TIME_CONFLICT,1402,
+food_rest,이슈,ZERO_AREA,1622,
+clinic,행수,02,37791,
+clinic,행수,중복_LCNS_KEY,0,
+clinic,행수,중복_행,0,
+clinic,상태_조합,영업/정상|영업중→영업/원본매핑,19295,
+clinic,상태_조합,제외/삭제/전출|전출→폐업/전출_폐업,812,
+clinic,상태_조합,취소/말소/만료/정지/중지|직권폐업→폐업/직권폐업,184,
+clinic,상태_조합,폐업|폐업→폐업/원본매핑,17450,
+clinic,상태_조합,휴업|휴업→영업/휴업_영업간주,50,
+clinic,출처_CLSBIZ_SRC_CD,원본,16799,
+clinic,출처_CLSBIZ_SRC_CD,최종수정일자_대용,835,
+clinic,출처_CLSBIZ_SRC_CD,최종수정일자_전출,812,
+clinic,출처_CLSBIZ_SRC_CD,해당없음,19345,
+clinic,C2,대용폐업일_분석기간안,801,"개별 확인 대상 (LCNS_KEY: PHMA120113210034041100034, PHMA120163210034041100031, PHMA120113210034041100053, PHMA120163210034041100040, PHMA120163210034041100063, PHMA120163210034041100066, PHMA120203210034041100039, PHMA120203210034041100041, PHMA120163210034041100072, PHMA120203210034041100051)"
+clinic,출처_LDONG_SRC_CD,도로명,7555,
+clinic,출처_LDONG_SRC_CD,도로명_정규화,2,
+clinic,출처_LDONG_SRC_CD,실패,2138,
+clinic,출처_LDONG_SRC_CD,실패_전출주소,10,
+clinic,출처_LDONG_SRC_CD,지번,23412,
+clinic,출처_LDONG_SRC_CD,지번_정규화,4674,
+clinic,D1,2017이후영업_대상,25397,
+clinic,D1,2017이후영업_실패,27,
+clinic,D1,2017이후영업_지번만_성공률,0.6970,
+clinic,D1,2017이후영업_성공률,0.9989,
+clinic,D3,서울밖_2017이후영업,0,
+clinic,업종_ANLS_INDUTY_CD,대상외,50,
+clinic,업종_ANLS_INDUTY_CD,의원,20318,
+clinic,업종_ANLS_INDUTY_CD,치과의원,9055,
+clinic,업종_ANLS_INDUTY_CD,한의원,8368,
+clinic,업종_INDUTY_RULE_CD,대상외_업태,50,
+clinic,업종_INDUTY_RULE_CD,원천업종,37741,
+clinic,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+clinic,연결,이전_후보묶음,408,
+clinic,연결,이전_미확정_종료일동률묶음,5,
+clinic,연결,이전_인접쌍_다른구,432,
+clinic,연결,이전_전화번호일치,277,
+clinic,연결,이전_확정,277,
+clinic,연결,재등록_후보쌍,391,
+clinic,연결,재등록_확정,384,
+clinic,연결,재등록_미확정,3,
+clinic,연결,교체_후보쌍,207,
+clinic,연결,교체_미확정_대형건물,0,
+clinic,연결,교체_확정,203,
+clinic,연결,교체_미확정,2,
+clinic,재고_연결전후,2017Q1_차이,176,연결 전 17000 → 후 16824
+clinic,재고_연결전후,2026Q3_차이,5,연결 전 19339 → 후 19334
+clinic,재고_연결전후,평균_차이,137.6,
+clinic,재고_연결전후,최대_차이,209,
+clinic,재고_동구,2026Q3_구합계,19293,대상외 제외
+clinic,재고_동구,2026Q3_동합계,19282,차이 11 = 법정동 실패
+clinic,플래그,ABNRM_LCNS_DTM_YN,178,
+clinic,플래그,OUT_SEOUL_ADDR_YN,0,
+clinic,플래그,OUT_SCOPE_YN,50,
+clinic,행수,03,37791,
+clinic,이슈,ADDR_MISMATCH,12,
+clinic,이슈,AMBIG_LINK,14,
+clinic,이슈,OUT_SEOUL_COORD,2,
+clinic,이슈,PLACEHOLDER_TEL,49,
+clinic,이슈,TIME_CONFLICT,6,
+clinic,이슈,ZERO_AREA,4128,
+pharmacy,행수,02,22500,
+pharmacy,행수,중복_LCNS_KEY,0,
+pharmacy,행수,중복_행,0,
+pharmacy,상태_조합,영업/정상|사용중→영업/원본매핑,1,
+pharmacy,상태_조합,영업/정상|영업중→영업/원본매핑,5943,
+pharmacy,상태_조합,취소/말소/만료/정지/중지|직권폐업→폐업/직권폐업,27,
+pharmacy,상태_조합,폐업|폐업→폐업/원본매핑,16520,
+pharmacy,상태_조합,휴업|휴업→영업/휴업_영업간주,9,
+pharmacy,출처_CLSBIZ_SRC_CD,원본,11752,
+pharmacy,출처_CLSBIZ_SRC_CD,최종수정일자_대용,4795,
+pharmacy,출처_CLSBIZ_SRC_CD,해당없음,5953,
+pharmacy,C2,대용폐업일_분석기간안,1,개별 확인 대상 (LCNS_KEY: PHMD120023100034084000024)
+pharmacy,출처_LDONG_SRC_CD,도로명,1067,
+pharmacy,출처_LDONG_SRC_CD,실패,3313,
+pharmacy,출처_LDONG_SRC_CD,실패_서울밖,1,
+pharmacy,출처_LDONG_SRC_CD,지번,14465,
+pharmacy,출처_LDONG_SRC_CD,지번_정규화,3654,
+pharmacy,D1,2017이후영업_대상,9216,
+pharmacy,D1,2017이후영업_실패,2,
+pharmacy,D1,2017이후영업_지번만_성공률,0.8803,
+pharmacy,D1,2017이후영업_성공률,0.9998,
+pharmacy,D3,서울밖_2017이후영업,0,
+pharmacy,업종_ANLS_INDUTY_CD,약국,22500,
+pharmacy,업종_INDUTY_RULE_CD,원천업종,22500,
+pharmacy,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+pharmacy,연결,이전_후보묶음,20,
+pharmacy,연결,이전_미확정_종료일동률묶음,4,
+pharmacy,연결,이전_인접쌍_다른구,16,
+pharmacy,연결,이전_전화번호일치,0,
+pharmacy,연결,이전_확정,0,
+pharmacy,연결,재등록_후보쌍,2788,
+pharmacy,연결,재등록_확정,2747,
+pharmacy,연결,재등록_미확정,39,
+pharmacy,연결,교체_후보쌍,409,
+pharmacy,연결,교체_미확정_대형건물,0,
+pharmacy,연결,교체_확정,402,
+pharmacy,연결,교체_미확정,6,
+pharmacy,재고_연결전후,2017Q1_차이,0,연결 전 5024 → 후 5024
+pharmacy,재고_연결전후,2026Q3_차이,0,연결 전 5940 → 후 5940
+pharmacy,재고_연결전후,평균_차이,0.0,
+pharmacy,재고_연결전후,최대_차이,0,
+pharmacy,재고_동구,2026Q3_구합계,5940,대상외 제외
+pharmacy,재고_동구,2026Q3_동합계,5939,차이 1 = 법정동 실패
+pharmacy,플래그,ABNRM_LCNS_DTM_YN,9,
+pharmacy,플래그,OUT_SEOUL_ADDR_YN,1,
+pharmacy,플래그,OUT_SCOPE_YN,0,
+pharmacy,행수,03,22500,
+pharmacy,이슈,ADDR_MISMATCH,15,
+pharmacy,이슈,AMBIG_LINK,40,
+pharmacy,이슈,OUT_SEOUL_COORD,1,
+pharmacy,이슈,PLACEHOLDER_TEL,31,
+pharmacy,이슈,TIME_CONFLICT,3,
+pharmacy,이슈,ZERO_AREA,5693,
+beauty,행수,02,100349,
+beauty,행수,중복_LCNS_KEY,0,
+beauty,행수,중복_행,0,
+beauty,상태_조합,영업/정상|영업→영업/원본매핑,33810,
+beauty,상태_조합,폐업|폐업→폐업/원본매핑,66539,
+beauty,출처_CLSBIZ_SRC_CD,원본,66532,
+beauty,출처_CLSBIZ_SRC_CD,최종수정일자_대용,7,
+beauty,출처_CLSBIZ_SRC_CD,해당없음,33810,
+beauty,C2,대용폐업일_분석기간안,0,개별 확인 대상 (LCNS_KEY: )
+beauty,출처_LDONG_SRC_CD,도로명,78,
+beauty,출처_LDONG_SRC_CD,실패,4,
+beauty,출처_LDONG_SRC_CD,실패_서울밖,7,
+beauty,출처_LDONG_SRC_CD,지번,100260,
+beauty,D1,2017이후영업_대상,59229,
+beauty,D1,2017이후영업_실패,4,
+beauty,D1,2017이후영업_지번만_성공률,0.9989,
+beauty,D1,2017이후영업_성공률,0.9999,
+beauty,D3,서울밖_2017이후영업,4,
+beauty,업종_ANLS_INDUTY_CD,대상외,2,
+beauty,업종_ANLS_INDUTY_CD,미용_기타,790,
+beauty,업종_ANLS_INDUTY_CD,미용_네일,9629,
+beauty,업종_ANLS_INDUTY_CD,미용_메이크업,3531,
+beauty,업종_ANLS_INDUTY_CD,미용_피부,15761,
+beauty,업종_ANLS_INDUTY_CD,미용_헤어,70636,
+beauty,업종_INDUTY_RULE_CD,대상외_업태,2,
+beauty,업종_INDUTY_RULE_CD,원천업종,100347,
+beauty,C5,CLSBIZ_DTM<LCNS_DTM,0,검사 규칙만
+beauty,연결,이전_후보묶음,1164,
+beauty,연결,이전_미확정_종료일동률묶음,21,
+beauty,연결,이전_인접쌍_다른구,1232,
+beauty,연결,이전_전화번호일치,361,
+beauty,연결,이전_확정,361,
+beauty,연결,재등록_후보쌍,2779,
+beauty,연결,재등록_확정,2744,
+beauty,연결,재등록_미확정,27,
+beauty,연결,교체_후보쌍,4028,
+beauty,연결,교체_미확정_대형건물,19,
+beauty,연결,교체_확정,3850,
+beauty,연결,교체_미확정,170,
+beauty,재고_연결전후,2017Q1_차이,173,연결 전 25410 → 후 25237
+beauty,재고_연결전후,2026Q3_차이,3,연결 전 33740 → 후 33737
+beauty,재고_연결전후,평균_차이,99.8,
+beauty,재고_연결전후,최대_차이,173,
+beauty,재고_동구,2026Q3_구합계,33736,대상외 제외
+beauty,재고_동구,2026Q3_동합계,33736,차이 0 = 법정동 실패
+beauty,플래그,ABNRM_LCNS_DTM_YN,9,
+beauty,플래그,OUT_SEOUL_ADDR_YN,7,
+beauty,플래그,OUT_SCOPE_YN,2,
+beauty,행수,03,100349,
+beauty,이슈,ADDR_MISMATCH,10,
+beauty,이슈,AMBIG_LINK,210,
+beauty,이슈,INVALID_CLSBIZ,1,
+beauty,이슈,MULTI_TENANT,16,
+beauty,이슈,OUT_SEOUL_COORD,3,
+beauty,이슈,PLACEHOLDER_TEL,835,
+beauty,이슈,TIME_CONFLICT,16,
+beauty,이슈,ZERO_AREA,3913,
+apt_trade,LDONG_SRC_CD,실패,20,
+apt_trade,LDONG_SRC_CD,원본코드,4265460,
+apt_trade,LDONG_SRC_CD_서울,실패,20,SGG_CD 앞 2자리 11
+apt_trade,LDONG_SRC_CD_서울,원본코드,1443108,SGG_CD 앞 2자리 11
+apt_trade,G2,서울_매매,1443128,
+apt_trade,G2,키6_겹치는행,35863,"서울, 해제 포함"
+apt_trade,G2,SAME_DEAL_YN,37756,82개 시군구 전체
+apt_trade,G2,키7_해제제외_겹치는행,12798,"서울, issue_list SAME_DEAL"
+apt_trade,G1,CNCL_YN,77802,"행 유지, 골드 가격·거래 수에서 제외"
+apt_trade,G6,서울_단가기준미만,124,"값 유지, issue_list ABNRM_UNIT_AMT"
+apt_trade,G6,서울_단가기준미만_2017이후,0,
+apt_trade,이슈,ABNRM_UNIT_AMT,124,
+apt_trade,이슈,LDONG_NOT_CURRENT,20,
+apt_trade,이슈,SAME_DEAL,12798,
+apt_rent,LDONG_SRC_CD,시군구_동명,8001132,
+apt_rent,LDONG_SRC_CD_서울,시군구_동명,3107551,SGG_CD 앞 2자리 11
+apt_rent,G3,서울_전월세,3107551,
+apt_rent,G3,서울_전세,2011084,"MTHLY_RENT_AMT_NUM = 0, 골드에서 구분"
+apt_rent,G3,서울_월세,1096467,
+apt_rent,G3,서울_보증금0,2777,"보증금 없는 월세, 값 유지"
+apt_rent,G3,서울_CNTRCT_SE_NM_있음,1289466,"신규/갱신, 2021년 이후만 값 있음"
+apt_rent,동일조건,키7_겹치는행,870708,"82개 시군구 전체, 행 목록 없음"
+apt_rent,동일조건,키7_겹치는행_서울,294250,동·호 정보가 없어 정상 계약일 수 있음
+apt_rent,G4,CNTRCT_BGN_DTM_변환실패,24246,"02 STD_ERR_TXT, NULL 유지"
+hira_inst,H0,1.병원정보서비스(2026.9.),79899,03 에 합친 02 파일
+hira_inst,H0,2.약국정보서비스(2026.9.),25850,03 에 합친 02 파일
+hira_inst,H1,SGG_CD_실패,8,도로명 주소가 옛 시도 이름
+hira_inst,H1,SGG_CD_실패_서울,0,
+hira_inst,LDONG_SRC_CD,도로명,578,
+hira_inst,LDONG_SRC_CD,시군구_동명,104878,
+hira_inst,LDONG_SRC_CD,실패,293,
+hira_inst,LDONG_SRC_CD_서울,도로명,11,HIRA_SIDO_NM = 서울
+hira_inst,LDONG_SRC_CD_서울,시군구_동명,25834,HIRA_SIDO_NM = 서울
+hira_inst,H2,보건소·보건지소·조산원,1549,"전국, 값 유지"
+hira_inst,H2,개설일_1950이전,28,"전국, 값 유지"
+hira_inst,서울_기관종류,병원,231,
+hira_inst,서울_기관종류,보건소,25,
+hira_inst,서울_기관종류,보건지소,11,
+hira_inst,서울_기관종류,상급종합,14,
+hira_inst,서울_기관종류,약국,5913,
+hira_inst,서울_기관종류,요양병원,101,
+hira_inst,서울_기관종류,의원,10728,
+hira_inst,서울_기관종류,정신병원,13,
+hira_inst,서울_기관종류,조산원,3,
+hira_inst,서울_기관종류,종합병원,45,
+hira_inst,서울_기관종류,치과병원,59,
+hira_inst,서울_기관종류,치과의원,4889,
+hira_inst,서울_기관종류,한방병원,92,
+hira_inst,서울_기관종류,한의원,3721,
+hira_inst,이슈,ABNRM_ESTB,8,
+hira_inst,이슈,ADDR_MISMATCH,12,
+hira_inst,이슈,OUT_SCOPE_INST,39,
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_강원_202609,109517,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_경기_202609,666254,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_경남_202609,170781,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_경북_202609,143799,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_대구_202609,116628,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_대전_202609,79691,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_부산_202609,157296,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_서울_202609,552422,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_세종_202609,15637,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_울산_202609,53777,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_인천_202609,136379,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_전남광주_202609,178050,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_전북_202609,97942,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_제주_202609,59101,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_충남_202609,123567,03 에 합친 02 파일
+store_info,S0,소상공인시장진흥공단_상가(상권)정보_충북_202609,92937,03 에 합친 02 파일
+store_info,LDONG_SRC_CD,실패,2471,
+store_info,LDONG_SRC_CD,원본코드,2751307,
+store_info,LDONG_SRC_CD_서울,원본코드,552422,SGG_CD 앞 2자리 11
+store_info,S1,SGG_CD_LDONG_CD앞5자리_다름,2,값 유지 (원천 그대로)
+store_info,S1,SGG_CD_LDONG_CD앞5자리_다름_서울,0,
+store_info,S2,FLR_NUM_변환실패,14984,"02 STD_ERR_TXT, NULL 유지 (원문 FLR_INFO_TXT)"
+store_info,S2,FLR_NUM_변환실패_서울,8674,
+store_info,S0,서울_업소,552422,"SGG_CD 앞 2자리 11, 골드에서 거름"
+store_info,이슈,LDONG_NOT_CURRENT,2471,
+ldong_code,L1,시도_현행,15,ABL_YN = False
+ldong_code,L1,시도_폐지,10,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_시도_현행,1,
+ldong_code,L1,서울_시도_폐지,0,
+ldong_code,L1,시군구_현행,269,ABL_YN = False
+ldong_code,L1,시군구_폐지,243,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_시군구_현행,25,
+ldong_code,L1,서울_시군구_폐지,0,
+ldong_code,L1,읍면동_현행,5067,ABL_YN = False
+ldong_code,L1,읍면동_폐지,8540,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_읍면동_현행,467,
+ldong_code,L1,서울_읍면동_폐지,619,
+ldong_code,L1,리_현행,15209,ABL_YN = False
+ldong_code,L1,리_폐지,24050,"ABL_YN = True, 행 유지"
+ldong_code,L1,서울_리_현행,0,
+ldong_code,L1,서울_리_폐지,0,
+ldong_code,L1,서울_현행,493,다른 데이터셋 법정동 기준 (시도·구 행 포함)
+ldong_code,L1,SGG_NM_없음_시군구이하,159,세종 등 시군구가 없는 시도

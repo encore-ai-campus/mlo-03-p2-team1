@@ -19,7 +19,7 @@
 - 원천은 받은 그대로 저장한다. 이미 있는 원천 파일은 절대 덮어쓰지 않는다.
 - 저장이 끝난 원천 파일은 읽기 전용 속성으로 바꾼다.
 - API 인증키는 로그·파일·오류 메시지 어디에도 남기지 않는다.
-자세한 출처와 호출 방법은 docs/data_collecting.md 참고.
+자세한 출처와 호출 방법은 docs/archive/data_collecting.md 참고.
 """
 from __future__ import annotations
 
@@ -584,7 +584,7 @@ def inventory() -> None:
         "# Source — 원천 데이터 (읽기 전용)", "",
         f"- 갱신 시각: {now_kst()} (`python pipeline/source/00_collect.py inventory`)",
         "- 이 폴더의 원천 파일은 수정·이동·덮어쓰기 하지 않는다. 모든 파일은 읽기 전용 속성이다.",
-        "- 출처와 수집 방법: `docs/data_collecting.md` · 출처 정의: `metadata/src_source.csv`",
+        "- 출처와 수집 방법: `docs/archive/data_collecting.md` · 출처 정의: `metadata/src_source.csv`",
         f"- 전체 파일 수: {len(files)} / 전체 크기: {total_size}",
         f"- 전체 데이터 행 수(ROW): {total_rows:,}",
         "- 전체 목록과 SHA-256 전체 값: `data/source/_source_manifest.csv`", "",
