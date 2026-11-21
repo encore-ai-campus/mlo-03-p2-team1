@@ -1,0 +1,2 @@
+param,value,description
+MIN_PRICE_SAMPLE_CNT,5,분기 매매 희소 표시 및 같은 단지 매칭 변화율의 양쪽 분기별 최소 유효 거래 수
