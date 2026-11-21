@@ -67,6 +67,32 @@ python pipeline/ai_ready/05_train.py
 | `PRED_IDX` | `BASE_PRICE_IDX × exp(PRED_RET)`. 같은 지수 구간에서만 의미가 있다 |
 | `PRED_UNIT_AMT` | `BASE_UNIT_AMT × exp(PRED_RET)`. 분기 t가 희소하면 NULL |
 
+## 검증: `pipeline/validation/check_ai_ready.py`
+
+```powershell
+python pipeline/validation/check_ai_ready.py
+```
+
+구현 코드를 import하지 않고 골드에서 따로 계산해 대조한다. 실패가 하나라도 있으면 종료 코드 1.
+
+| ID | 검사 |
+| --- | --- |
+| AR1 | 키 유일성, 골드 차원 연결, `TARGET_YQ` = 다음 분기, 컬럼 = 피처 정의 |
+| AR2 | `fact_apt_trd`에서 같은 단지 기준 변화율을 직접 계산해 `TARGET_RET`와 대조 |
+| AR3 | 골드를 분기 t까지 자른 복사본(임시 폴더)으로 피처셋 스크립트를 다시 실행해, t 행 피처가 같은지 (t = 2019Q4, 2021Q2, 2023Q4, 2025Q3) |
+| AR4 | 회차별 학습·검증·테스트 행 수, 테스트 행의 연도 = `FOLD_YR` |
+| AR5 | baseline = 0, `ACTUAL_RET` = `TARGET_RET`, `PRED_UNIT_AMT`·`PRED_IDX` 공식, 최종 예측 행 |
+| AR6 | 예측 결과에서 다시 계산한 MAPE·행 수 = `rolling_cv` |
+
+## 전체 실행 순서
+
+```powershell
+python pipeline/gold/04_gold.py
+python pipeline/ai_ready/05_feature_set.py
+python pipeline/ai_ready/05_train.py
+python pipeline/validation/check_ai_ready.py
+```
+
 ## 기록: `report/ai_ready/`
 | 파일 | 내용 |
 | --- | --- |
@@ -75,3 +101,4 @@ python pipeline/ai_ready/05_train.py
 | `05_ai_ready__model_compare.csv` | baseline → price, price → price_lcns의 MAPE 차이와 법정동 부트스트랩 95% CI, 개선 연도 수 |
 | `05_ai_ready__fold_iter.csv` | 회차·모델별 학습·검증·테스트 행 수와 best iteration |
 | `05_ai_ready__summary.md` | 위 결과 요약 |
+| `05_ai_ready__check.csv` | 검증 항목별 대상 수, 실패 수, 결과 |
