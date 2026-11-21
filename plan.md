@@ -53,24 +53,32 @@
 - [ ] `feature/silver-03-clean` PR 리뷰·병합
 
 ### 3. Gold — 스타 스키마 (논의 11/20 오후, 구현 11/21)
-- [ ] fact / dimension 테이블 구성 확정 (`dim_region` 법정동 기준, 법정동 × 분기 집계)
-- [ ] 골드 진입 방식 결정 (silver 플래그를 어떻게 읽을지, 집계 기준은 `silver_정제.md` 3-6)
+- [x] fact / dimension 테이블 구성 확정 (`dim_region` 법정동 기준, 법정동 × 분기 집계) — PR #29
+- [x] 골드 진입 방식 결정 — 03 silver를 직접 읽는다 (PR #29)
 - [ ] 논의 결과 문서화 (팀 합의 내용만)
-- [ ] `pipeline/gold/` 구현
-- [ ] 검증: silver ↔ gold 행 수·합계 대조, 구 합계 = 동 합계 + 법정동 실패 건수 (`silver_정제.md` 3-6), `report/gold/` 기록
+- [x] `pipeline/gold/04_gold.py` 구현 (PR #29·#31)
+- [x] 검증: silver ↔ gold 행 수·합계 대조, 구 합계 = 동 합계 + 법정동 실패 건수, `report/gold/` 기록, `pipeline/validation/check_gold_*.py` (PR #31)
+- [ ] AI Ready 방향에 맞춘 수정 (#32): `LOW_SAMPLE_YN`(5건 기준), `PROVISIONAL_YN` 정리, 동 가격 지수 `fact_apt_idx_qtr`(같은 단지 기준)
 - [ ] PostgreSQL 적재 (`.env` 연결, `SPEC.md` 4장)
 - [ ] 문서 (`docs/gold_*.md` 또는 `SPEC.md` 갱신)
 
 ### 4. AI Ready · 모델 (11/22 오전)
-- [ ] 예측 타깃 정의: 법정동 × 분기 아파트 매매가
-- [ ] 피처셋 생성 (`pipeline/ai_ready/` → `data/ai_ready/`), 시점 누수 점검
-- [ ] 학습/검증 분할 (시간 기준)
-- [ ] 베이스라인 모델 학습·평가 지표 기록
-- [ ] 예측 결과 저장 (대시보드에서 읽을 형태)
+> 빠른 실험(`experiment/ai-ready-quick` 브랜치, `docs/evidence/ai_ready-quick-experiment-20261121.md`)으로 방향을 정했다.
+> 최종 출력은 법정동 × 분기 아파트 ㎡당 매매가. 학습 타깃은 다음 분기 · 같은 단지 기준 변화율, 비교 모델은 기준선 / 집값만 / 집값+상권.
+> 상권(인허가)은 롤링 검증에서 예측 효과가 없어(+0.01%p) 대시보드 설명 레이어로 쓴다.
+
+- [x] 예측 타깃 정의: 다음 분기 · 같은 단지 기준 ㎡당 가격 변화율 → 매매가로 되돌려 출력 (빠른 실험)
+- [ ] 구현 (#33): 기준 CSV(`metadata/rule_ai_ready_*.csv`), 피처셋(`05_feature_set.py` → `data/ai_ready/`), 학습·롤링 검증(`05_train.py`, 2021–2026), 예측 결과 테이블(`LDONG_CD × YQ × MODEL_NM`), `report/ai_ready/` 기록
+- [ ] 검증 (#33): `pipeline/validation/check_ai_ready.py` — 구조, 타깃 독립 계산, 시점 누수, 성능 수치 재계산
+- [ ] 실행 확인: nomorehuman90이 자기 PC에서 처음부터 실행 (골드 → AI Ready → 검증)
+- [ ] #32 머지 후 입력을 골드 `fact_apt_idx_qtr`로 교체, 직접 계산값과 대조
+- [ ] 예측 결과 PostgreSQL 적재
 - [ ] (선택) Watch 폴더 자동 피딩 — 신규 파일 감지 → 02·03 → gold 재실행
 
 ### 5. 대시보드 (11/22 오전, AI Ready와 병행)
+- [ ] 예측 결과 테이블 컬럼 확인 (#33 댓글로 합의)
 - [ ] 백엔드 API를 Gold·예측 결과 기준으로 교체 (`backend/app/features/dashboard`)
+- [ ] 동 상세: 가격 지수 추이 + 다음 분기 예측 + 상권 개업·폐업 추이, 거래 희소 동은 "거래 희소" 표시
 - [ ] 지도 표시 방식 결정 (법정동 경계·중심점 vs 업소 위경도). 업소 위경도를 쓸 때만 좌표 변환(WGS84) 필요 — 실버 03은 좌표를 02 값 그대로 둠
 - [ ] 프론트 지도·지표를 서울 법정동 기준으로 연결
 - [ ] 헬스체크·단위 테스트, 프론트 타입 체크·빌드 통과
