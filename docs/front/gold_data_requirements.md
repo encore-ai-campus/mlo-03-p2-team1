@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | 1차 | `apt_trade` | `LDONG_CD`, `SGG_CD`, `DEAL_DTM`, `DEAL_AMT_NUM`, `EXCL_AREA_NUM`, `CNCL_YN`. 지역·계약일로 묶고 취소 신고를 제외해 ㎡당 가격·거래 건수를 만든다. `APT_KEY`, `APT_NM`, `BUILD_YEAR_NUM`은 단지 분석에 사용한다. 원천 행 키와 `SAME_DEAL_YN`을 보존해 의심 거래를 추적한다. |
 | 1차 | `ldong_code` | `LDONG_CD`, `LDONG_NM`, `SGG_CD`, `SGG_NM`, `SIDO_NM`, `ABL_YN`. 거래·입지·지도에 동일한 지역 기준을 적용한다. 지도 코드와 조인했을 때 중복과 미매칭 건수를 확인한다. |
-| 1차 | `food_general`, `food_rest`, `clinic`, `pharmacy`, `beauty` | `LDONG_CD`, `LDONG_SRC_CD`, `LGOV_CD`, `ANLS_INDUTY_CD`, `ANLS_LCNS_DTM`, `ANLS_CLSBIZ_DTM`, `OUT_SCOPE_YN`, `ABNRM_LCNS_DTM_YN`. 일반음식점·카페·의원·약국·미용업의 분기별 개업·폐업·기말 영업 수를 만든다. 이전·재등록·교체를 조정하는 지표가 필요하면 `MOVE_PRE_KEY`, `REPL_PRE_KEY`, `REPL_TYPE_CD`도 사용한다. |
+| 1차 | `food_general`, `food_rest`, `clinic`, `pharmacy`, `beauty` | `LDONG_CD`, `LDONG_SRC_CD`, `LGOV_CD`, `ANLS_INDUTY_CD`, `ANLS_LCNS_DTM`, `ANLS_CLSBIZ_DTM`, `OUT_SCOPE_YN`, `ABNRM_LCNS_DTM_YN`. 일반음식점·카페·휴게음식점·의원·약국·미용업의 분기별 개업·폐업·기말 영업 수를 만든다. 이전·재등록·교체를 조정하는 지표가 필요하면 `MOVE_PRE_KEY`, `REPL_PRE_KEY`, `REPL_TYPE_CD`도 사용한다. |
 | 후속 | `store_info`, `hira_inst` | `LDONG_CD`와 상가 `STORE_KEY`·`INDUTY_SCLS_CD`, 의료기관 `MED_INST_KEY`·`INST_TYPE_CD`로 월별 현황을 만든다. 제공된 Silver ZIP에서는 두 자료 모두 **2026년 9월 한 시점**이므로 해당 시점의 조회나 인허가 지표 대조에 사용한다. 상권 접근성이나 과거 분기별 의료 인프라 점수에는 추가 근거가 필요하다. |
 | 후속 | `apt_rent` | 계약일·법정동·보증금·월세. 현재 매매가 상세 화면에 전월세 지표가 추가될 때 별도 계약 팩트로 제공한다. |
 
@@ -36,7 +36,7 @@
 | `fact_lcns_qtr` | 법정동 × 분기 × 인허가 업종 | 지역·분기·업종 키, 개업 수·폐업 수·분기 말 영업 수와 품질 정보. 업종을 행으로 관리하면 업종별 화면 필터와 기간 비교에 같은 지표를 쓸 수 있다. |
 | `dim_region` | 법정동 1개 | 법정동 코드·이름, 자치구 코드·이름. 두 팩트가 같은 지역 키를 공유한다. 지도 형상은 법정동 코드로 연결하는 별도 자료로 관리할 수 있다. |
 | `dim_date` | 달력 날짜 1일 | 일자·월·분기·연도. 거래는 계약일 키를, 분기 집계는 분기를 대표하는 날짜 키를 참조한다. |
-| `dim_lcns_induty` | 인허가 분석 업종 1개 | 업종 코드·표시명·분류 범위. 예를 들어 카페와 휴게음식점 전체의 집계 범위를 구분할 수 있다. |
+| `dim_lcns_induty` | 인허가 분석 업종 1개 | 업종 코드·표시명·분류 범위. 예를 들어 카페와 휴게음식점(카페·편의점 등을 뺀 나머지)의 집계 범위를 구분할 수 있다. |
 | `dim_apt_cmplx` | 식별한 아파트 단지 1곳 | 단지 키·이름·건축연도. 동 내부의 단지별 비교가 필요할 때 사용하며, 현재 지역 카드의 필수 항목은 아니다. |
 
 상가·의료기관 현황을 추가하면 `fact_store_snapshot`은 **법정동 × 기준월 × 상가 업종**, `fact_med_inst_snapshot`은 **법정동 × 기준월 × 의료기관 유형**으로 둔다. 지역·날짜 차원을 공유하고, 각 원천의 분류를 각각 `dim_induty`, `dim_med_inst_type`에 연결하는 안을 제안한다.

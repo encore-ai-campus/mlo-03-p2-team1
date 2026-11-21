@@ -37,7 +37,7 @@ python pipeline/ai_ready/05_feature_set.py
 | `TARGET_RET` | 타깃. `predict` 행은 NULL |
 | `BASE_UNIT_AMT` | 분기 t 동 ㎡당 매매가 중앙값(원/㎡). `LOW_SAMPLE_YN`이면 NULL. 예측 매매가 = 이 값 × exp(예측 변화율) |
 | `BASE_PRICE_IDX`, `BASE_IDX_SEG_NO` | 분기 t 동 가격 지수와 지수 구간 번호. 예측 지수 = 이 값 × exp(예측 변화율) |
-| 피처 43개 | `rule_ai_ready_feature.csv` 순서 |
+| 피처 48개 | `rule_ai_ready_feature.csv` 순서 |
 
 - 저장하는 행은 `labeled`와 `predict`뿐이다. 타깃이 없는 과거 행은 저장하지 않는다.
 - 같은 입력으로 다시 실행하면 `unchanged`.
