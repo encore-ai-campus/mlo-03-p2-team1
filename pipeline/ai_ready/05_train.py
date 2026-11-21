@@ -206,20 +206,17 @@ def conclusion_lines(metrics: pd.DataFrame, compare: pd.DataFrame) -> list[str]:
     def pair(a, b):
         return compare[compare["MODEL_FROM"].eq(a) & compare["MODEL_TO"].eq(b)].iloc[0]
 
-    def verdict(row) -> str:
-        ci = f"95% 신뢰구간 [{row['CI_LOW_PCTP']:+.3f}, {row['CI_HIGH_PCTP']:+.3f}]%p"
-        if row["CI_HIGH_PCTP"] < 0 or row["CI_LOW_PCTP"] > 0:
-            return f"이 차이는 우연이 아니다 ({ci})"
-        return f"이 차이는 우연과 구분되지 않는다 ({ci})"
+    def ci(row) -> str:
+        return f"95% 신뢰구간 [{row['CI_LOW_PCTP']:+.3f}, {row['CI_HIGH_PCTP']:+.3f}]%p"
 
     base, price, lcns = (get("ALL", m, "MAPE_PCT") for m in ("baseline", "price", "price_lcns"))
     p, l = pair("baseline", "price"), pair("price", "price_lcns")
     lines = [
         f"1. **집값 모델은 기준선보다 정확하다.** 오차(MAPE)가 {base:.2f}% → {price:.2f}%로 "
-        f"{get('ALL', 'price', 'VS_BASELINE_PCT'):.1f}% 줄었다. {verdict(p)}. "
+        f"{get('ALL', 'price', 'VS_BASELINE_PCT'):.1f}% 줄었다 ({ci(p)}). "
         f"{p['FOLD_CNT']}개 연도 중 {p['IMPROVED_FOLD_CNT']}개 연도에서 기준선보다 나았다. "
         f"다음 분기에 오를지 내릴지는 {get('ALL', 'price', 'DIRECTION_PCT'):.0f}% 맞혔다.",
-        f"2. **상권 데이터를 더해도 정확도는 그대로다.** 오차는 {price:.2f}% → {lcns:.2f}%이고, {verdict(l)}. "
+        f"2. **상권 데이터를 더해도 정확도는 그대로다.** 오차는 {price:.2f}% → {lcns:.2f}%다 ({ci(l)}). "
         f"{l['FOLD_CNT']}개 연도 중 {l['IMPROVED_FOLD_CNT']}개 연도에서만 나아졌다.",
     ]
     yearly = metrics[metrics["MODEL_NM"].eq("price") & metrics["FOLD_YR"].ne("ALL")]
