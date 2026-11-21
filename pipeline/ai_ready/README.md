@@ -42,7 +42,36 @@ python pipeline/ai_ready/05_feature_set.py
 - 저장하는 행은 `labeled`와 `predict`뿐이다. 타깃이 없는 과거 행은 저장하지 않는다.
 - 같은 입력으로 다시 실행하면 `unchanged`.
 
+## 학습·롤링 검증: `05_train.py`
+
+```powershell
+python pipeline/ai_ready/05_train.py
+```
+
+- 테스트 연도 Y(2021–2026)마다 학습은 `TARGET_YQ`가 Y−2년 이하, early stopping 검증은 Y−1년, 테스트는 Y년.
+- 최종 예측은 labeled 전체로 다시 학습해 `predict` 행을 예측한다. 반복 횟수는 마지막 회차의 best iteration.
+- MAPE는 같은 단지 기준 가격 오차: `|exp(PRED_RET − ACTUAL_RET) − 1|`의 평균.
+
+### 출력: `data/ai_ready/05_ai_ready__prediction.parquet`
+키는 `LDONG_CD`, `YQ`, `MODEL_NM`.
+
+| 컬럼 | 설명 |
+| --- | --- |
+| `YQ` | 예측 대상 분기 (t+1) |
+| `BASE_YQ` | 예측에 쓴 마지막 분기 (t) |
+| `MODEL_NM` | `baseline` / `price` / `price_lcns` |
+| `MODEL_VER` | 피처셋·파라미터·피처 정의 해시 앞 12자리 |
+| `FOLD_YR` | 롤링 검증 테스트 연도. 최종 예측 행은 NULL |
+| `PRED_RET` | 예측 로그 변화율 |
+| `ACTUAL_RET` | 실제 로그 변화율. 최종 예측 행은 NULL |
+| `PRED_IDX` | `BASE_PRICE_IDX × exp(PRED_RET)`. 같은 지수 구간에서만 의미가 있다 |
+| `PRED_UNIT_AMT` | `BASE_UNIT_AMT × exp(PRED_RET)`. 분기 t가 희소하면 NULL |
+
 ## 기록: `report/ai_ready/`
 | 파일 | 내용 |
 | --- | --- |
 | `05_ai_ready__manifest.csv` | 단계(`step`)별 입력·출력 경로, 행 수, SHA-256, 상태 |
+| `05_ai_ready__rolling_cv.csv` | 연도(`ALL` 포함) × 모델별 MAPE, 기준선 대비 감소율, 방향 정확도, 순위 상관 |
+| `05_ai_ready__model_compare.csv` | baseline → price, price → price_lcns의 MAPE 차이와 법정동 부트스트랩 95% CI, 개선 연도 수 |
+| `05_ai_ready__fold_iter.csv` | 회차·모델별 학습·검증·테스트 행 수와 best iteration |
+| `05_ai_ready__summary.md` | 위 결과 요약 |
