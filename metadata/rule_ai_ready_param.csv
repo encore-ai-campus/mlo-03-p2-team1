@@ -1,0 +1,16 @@
+param,value,description
+HORIZON_QTR,1,예측 기간(분기). 타깃은 분기 t → t+1의 같은 단지 기준 로그 변화율(골드 fact_apt_idx_qtr.CPLX_RET_1Q). 최소 표본 수는 metadata/rule_gold_apt_price.csv의 MIN_PRICE_SAMPLE_CNT를 그대로 쓴다
+CV_TEST_YR_FROM,2021,"롤링 검증 첫 테스트 연도. 테스트 연도 Y마다 학습은 TARGET_YQ가 Y-2년 이하, early stopping 검증은 Y-1년, 테스트는 Y년"
+CV_TEST_YR_TO,2026,롤링 검증 마지막 테스트 연도
+SEED,7,LightGBM 난수 시드와 부트스트랩 시드
+BOOTSTRAP_N,2000,모델 간 MAPE 차이 95% CI를 구하는 법정동 단위 부트스트랩 반복 횟수
+DEFAULT_MODEL_NM,price,대시보드 기본 모델 (baseline / price / price_lcns)
+LGB_LEARNING_RATE,0.03,LightGBM learning_rate
+LGB_NUM_LEAVES,15,LightGBM num_leaves
+LGB_MIN_DATA_IN_LEAF,40,LightGBM min_data_in_leaf
+LGB_FEATURE_FRACTION,0.8,LightGBM feature_fraction
+LGB_BAGGING_FRACTION,0.8,LightGBM bagging_fraction
+LGB_BAGGING_FREQ,1,LightGBM bagging_freq
+LGB_LAMBDA_L2,1.0,LightGBM lambda_l2
+LGB_MAX_ROUNDS,3000,LightGBM 최대 반복 수
+LGB_EARLY_STOPPING,100,검증 오차가 이 횟수 동안 줄지 않으면 학습을 멈춘다
