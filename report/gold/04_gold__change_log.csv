@@ -1,16 +1,18 @@
 ﻿dataset,metric,period,before_count,after_count,delta,note
 ldong_code,SELECT_COLUMNS,,13,9,-4,컬럼 수. 나머지 단계의 건수는 행 또는 집계 지표 수.
 ldong_code,SEOUL_CURRENT_DONG,,53403,467,-52936,
-apt_trade,SELECT_COLUMNS,,36,13,-23,컬럼 수. 나머지 단계의 건수는 행 또는 집계 지표 수.
+apt_trade,SELECT_COLUMNS,,36,15,-21,컬럼 수. 나머지 단계의 건수는 행 또는 집계 지표 수.
 apt_trade,SEOUL_FILTER,,4265480,1443128,-2822352,
 apt_trade,ANALYSIS_PERIOD,,1443128,633172,-809956,
 apt_trade,G1_CANCELLED,,633172,615511,-17661,
 apt_trade,G2_SAME_DEAL,,615511,611309,-4202,
 apt_trade,DONG_MATCH,,611309,611300,-9,
 apt_trade,UNIT_PRICE_AVAILABLE,,611300,611300,0,면적이 없거나 0 이하이거나 금액이 없으면 중앙값에서만 제외.
+fact_apt_trd,TRADE_DETAIL_ROWS,,611300,611300,0,
 apt_trade,TRADE_AGGREGATION,,611300,11069,-600231,
 fact_apt_trd_qtr,DENSE_GRID,,11069,18213,7144,무거래 셀 7144개.
 fact_apt_trd_qtr,TRADE_COUNT_CHECK,,611300,611300,0,
+dim_region,OBSERVED_TRADE_REGION,,467,338,-129,분석 기간 중 유효 매매가 1건 이상 관측된 법정동 수.
 food_general,SELECT_COLUMNS,,60,11,-49,컬럼 수. 나머지 단계의 건수는 행 또는 집계 지표 수.
 food_general,OUT_SCOPE,,540008,540008,0,
 food_general,DONG_MATCH,,540008,539986,-22,
@@ -833,9 +835,12 @@ fact_lcns_qtr,DENSE_GRID,,174591,236769,62178,미관측 조합에 건수 0을 �
 dim_region,KEY_UNIQUENESS,,467,467,0,
 dim_date,KEY_UNIQUENESS,,39,39,0,
 dim_lcns_induty,KEY_UNIQUENESS,,13,13,0,
+fact_apt_trd,KEY_UNIQUENESS,,611300,611300,0,
 fact_apt_trd_qtr,KEY_UNIQUENESS,,18213,18213,0,
 fact_lcns_qtr,KEY_UNIQUENESS,,236769,236769,0,
 mart_ldong_infra_qtr,KEY_UNIQUENESS,,18213,18213,0,
+fact_apt_trd,DIMENSION_MATCH,,611300,611300,0,LDONG_CD
+fact_apt_trd,DIMENSION_MATCH,,611300,611300,0,YQ
 fact_apt_trd_qtr,DIMENSION_MATCH,,18213,18213,0,LDONG_CD
 fact_apt_trd_qtr,DIMENSION_MATCH,,18213,18213,0,YQ
 fact_lcns_qtr,DIMENSION_MATCH,,236769,236769,0,LDONG_CD

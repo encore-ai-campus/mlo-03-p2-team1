@@ -28,7 +28,12 @@ REGION_COLUMNS = [
 ]
 TRADE_COLUMNS = [
     *TRADE_SAME_DEAL_KEY, "SGG_CD", "LDONG_SRC_CD", "CNCL_YN", "SAME_DEAL_YN",
-    "SRC_FILE_NM", "SRC_ROW_NUM",
+    "SRC_FILE_NM", "SRC_ROW_NUM", "APT_NM", "BUILD_YEAR_NUM",
+]
+TRADE_SOURCE_KEY = ["SRC_FILE_NM", "SRC_ROW_NUM"]
+TRADE_FACT_COLUMNS = [
+    *TRADE_SOURCE_KEY, "LDONG_CD", "YQ", "DEAL_DTM", "APT_KEY", "APT_NM", "BUILD_YEAR_NUM",
+    "EXCL_AREA_NUM", "FLR_NUM", "DEAL_AMT_NUM", "UNIT_AMT", "LDONG_SRC_CD", "SAME_DEAL_YN",
 ]
 LICENSE_COLUMNS = [
     "LCNS_KEY", "LDONG_CD", "LDONG_SRC_CD", "LGOV_CD", "ANLS_INDUTY_CD",
@@ -47,6 +52,7 @@ TABLE_KEYS = {
     "dim_region": ["LDONG_CD"],
     "dim_date": ["YQ"],
     "dim_lcns_induty": ["ANLS_INDUTY_CD"],
+    "fact_apt_trd": TRADE_SOURCE_KEY,
     "fact_apt_trd_qtr": REGION_PERIOD,
     "fact_lcns_qtr": LICENSE_KEY,
     "mart_ldong_infra_qtr": REGION_PERIOD,
@@ -184,6 +190,12 @@ def prepare_trades(table, prefix, periods, region_codes, log):
     valid["UNIT_AMT"] = amount.where(usable_price) / area.where(usable_price)
     valid["YQ"] = pd.PeriodIndex(valid["DEAL_DTM"], freq="Q").astype(str)
     return valid
+
+
+def build_trade_detail(eligible_trades):
+    detail = eligible_trades.loc[:, TRADE_FACT_COLUMNS].sort_values(TRADE_SOURCE_KEY, ignore_index=True)
+    detail["DEAL_DTM"] = detail["DEAL_DTM"].astype(pd.ArrowDtype(pa.date32()))
+    return detail
 
 
 def aggregate_trades(trades, grid, log):
@@ -335,8 +347,14 @@ def validate_tables(tables, log):
             raise ValueError(f"{name}: 키의 결측 또는 중복이 있습니다.")
         record(log, name, "KEY_UNIQUENESS", len(table), len(table))
     dimensions = {"LDONG_CD": "dim_region", "YQ": "dim_date", "ANLS_INDUTY_CD": "dim_lcns_induty"}
-    for name in ("fact_apt_trd_qtr", "fact_lcns_qtr", "mart_ldong_infra_qtr"):
-        for key in TABLE_KEYS[name]:
+    foreign_keys = {
+        "fact_apt_trd": REGION_PERIOD,
+        "fact_apt_trd_qtr": REGION_PERIOD,
+        "fact_lcns_qtr": LICENSE_KEY,
+        "mart_ldong_infra_qtr": REGION_PERIOD,
+    }
+    for name, keys in foreign_keys.items():
+        for key in keys:
             table = tables[name]
             matched = table[key].isin(tables[dimensions[key]][key]).sum()
             if matched != len(table):
@@ -344,6 +362,8 @@ def validate_tables(tables, log):
             record(log, name, "DIMENSION_MATCH", len(table), matched, note=key)
 
     trades, licenses, mart = (tables[name] for name in ("fact_apt_trd_qtr", "fact_lcns_qtr", "mart_ldong_infra_qtr"))
+    if trades["TRADE_CNT"].sum() != len(tables["fact_apt_trd"]):
+        raise ValueError("매매 분기 팩트의 총 거래 수가 상세 팩트의 행 수와 다릅니다.")
     size = len(tables["dim_region"]) * len(tables["dim_date"])
     if len(trades) != size or len(mart) != size or len(licenses) != size * len(tables["dim_lcns_induty"]):
         raise ValueError("차원 조합 수와 팩트·마트 행 수가 다릅니다.")
@@ -437,7 +457,9 @@ def report_lines(tables, log, input_label):
         "## 팩트와 차원", "",
         *md_table(table_list), "",
         "- 지역 차원은 서울 현행 읍면동 코드와 상위 자치구를 담습니다. 날짜 차원은 분기 시작·종료일을, 업종 차원은 Silver 분석 업종과 참고 지표 여부를 담습니다.",
-        "- 매매 분기 팩트에는 거래 수·가격 표본 수·㎡당 매매가 중앙값을 저장합니다. 인허가 분기 팩트에는 개업·폐업·분기 말 영업·순증·대용 폐업일 건수를 저장합니다.",
+        f"- `HAS_OBSERVED_TRADE_YN`은 분석 기간 중 유효 매매가 1건 이상 관측된 동을 표시합니다. 유효 매매가 관측되지 않은 동은 {(~tables['dim_region']['HAS_OBSERVED_TRADE_YN']).sum():,}개입니다. 아파트 존재 여부는 별도 자료로 확인합니다.",
+        "- 매매 상세 팩트는 유효 매매 1건당 한 행입니다. 계약일과 분기, 단지, 면적, 가격을 보존하고 원천 파일명과 행 번호를 키로 씁니다. 분기 키는 기존 분기 날짜 차원에 연결합니다.",
+        "- 매매 분기 팩트는 상세 팩트에서 계산한 거래 수·가격 표본 수·㎡당 매매가 중앙값을 저장합니다. 인허가 분기 팩트에는 개업·폐업·분기 말 영업·순증·대용 폐업일 건수를 저장합니다.",
         "- 인허가 코드는 원천 구분과 관계없이 같은 분석 업종으로 합산하고, 원천별 대조값은 CSV에 보존합니다. 마트에서는 의원 계열과 미용 세부 업종을 각각 묶고 편의점은 참고 지표로 표시합니다.",
         "- 분기·업종 조합은 모두 생성했습니다. 거래가 없으면 거래 건수는 0, 가격은 NULL입니다. 결과표의 인허가 건수는 0으로 표현합니다.", "",
         "## Silver에서 Gold로 바뀐 내용", "",
@@ -454,7 +476,7 @@ def report_lines(tables, log, input_label):
         "## 출력과 재실행", "",
         "- `data/gold/`에 Snappy Parquet을 저장합니다. `04_gold__change_log.csv`는 실제 선택·집계·검증 건수를, `04_gold__manifest.csv`는 출력 행 수·SHA-256·재실행 상태를 기록합니다.",
         "- 심평원·상가 스냅샷, 전월세, 모델 결과는 이번 1차 집계 범위 밖입니다.",
-        "- 프로젝트 루트에서 `python pipeline/gold/03_gold.py`로 실행합니다. 로컬 Silver 입력이 없으면 다운로드 폴더의 `silver.zip`을 찾습니다. ZIP 경로는 `--silver-zip <경로>`로 지정할 수 있습니다.",
+        "- 프로젝트 루트에서 `python pipeline/gold/04_gold.py`로 실행하면 `data/silver/`를 읽습니다. ZIP은 `--silver-zip <경로>`를 지정한 경우에 읽습니다.",
     ]
 
 
@@ -462,13 +484,11 @@ def run(archive_path):
     periods, prefix, industries, proxy_codes, gu_map = load_rules()
     required = [silver_path(dataset) for dataset in INPUT_COLUMNS]
     if archive_path is None:
-        available = [(SILVER_DIR / path).is_file() for path in required]
-        download = Path.home() / "Downloads" / "silver.zip"
-        if not any(available) and download.is_file():
-            archive_path = download
-        elif not all(available):
-            missing = ", ".join(path for path, present in zip(required, available) if not present)
-            raise FileNotFoundError(f"data/silver에 입력이 없습니다: {missing}. --silver-zip으로 지정할 수 있습니다.")
+        missing = [path for path in required if not (SILVER_DIR / path).is_file()]
+        if missing:
+            raise FileNotFoundError(
+                f"data/silver에 입력이 없습니다: {', '.join(missing)}. --silver-zip으로 지정할 수 있습니다."
+            )
     input_label = archive_path.name if archive_path is not None else "data/silver"
     context = ZipFile(archive_path) if archive_path is not None else nullcontext()
     log = []
@@ -483,8 +503,16 @@ def run(archive_path):
         eligible_trades = prepare_trades(
             read_silver("apt_trade", archive, log), prefix, periods, regions["LDONG_CD"], log,
         )
-        trades = aggregate_trades(eligible_trades, grid, log)
+        trade_detail = build_trade_detail(eligible_trades)
         del eligible_trades
+        record(log, "fact_apt_trd", "TRADE_DETAIL_ROWS", len(trade_detail), len(trade_detail))
+        trades = aggregate_trades(trade_detail, grid, log)
+        observed_regions = trades.loc[trades["TRADE_CNT"].gt(0), "LDONG_CD"]
+        regions["HAS_OBSERVED_TRADE_YN"] = regions["LDONG_CD"].isin(observed_regions)
+        record(
+            log, "dim_region", "OBSERVED_TRADE_REGION", len(regions), regions["HAS_OBSERVED_TRADE_YN"].sum(),
+            note="분석 기간 중 유효 매매가 1건 이상 관측된 법정동 수.",
+        )
         parts = []
         for dataset in LICENSE_DATASETS:
             rows = prepare_licenses(
@@ -499,6 +527,7 @@ def run(archive_path):
     mart = build_mart(trades, licenses, regions, dates)
     tables = {
         "dim_region": regions, "dim_date": dates, "dim_lcns_induty": industries,
+        "fact_apt_trd": trade_detail,
         "fact_apt_trd_qtr": trades, "fact_lcns_qtr": licenses, "mart_ldong_infra_qtr": mart,
     }
     validate_tables(tables, log)
