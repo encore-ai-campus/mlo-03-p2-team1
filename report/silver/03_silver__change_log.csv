@@ -99,10 +99,13 @@ food_rest,D1,2017이후영업_실패,46,
 food_rest,D1,2017이후영업_지번만_성공률,0.9983,
 food_rest,D1,2017이후영업_성공률,0.9995,
 food_rest,D3,서울밖_2017이후영업,7,
-food_rest,업종_ANLS_INDUTY_CD,기타,70040,
+food_rest,업종_ANLS_INDUTY_CD,기타,17544,
 food_rest,업종_ANLS_INDUTY_CD,카페,62366,
 food_rest,업종_ANLS_INDUTY_CD,편의점,16049,
-food_rest,업종_INDUTY_RULE_CD,나머지,62324,
+food_rest,업종_ANLS_INDUTY_CD,휴게음식점,52496,
+food_rest,업종_INDUTY_RULE_CD,과자점_업태,8419,
+food_rest,업종_INDUTY_RULE_CD,나머지,52496,
+food_rest,업종_INDUTY_RULE_CD,비음식입지,1409,
 food_rest,업종_INDUTY_RULE_CD,카페A,58990,
 food_rest,업종_INDUTY_RULE_CD,카페C,3376,
 food_rest,업종_INDUTY_RULE_CD,키즈카페,173,
@@ -111,7 +114,7 @@ food_rest,업종_INDUTY_RULE_CD,편의점_브랜드,2684,
 food_rest,업종_INDUTY_RULE_CD,편의점_업태,13365,
 food_rest,카페_상가정보대조,카페A,0.715,현재 영업 중 15789곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
 food_rest,카페_상가정보대조,카페C,0.705,현재 영업 중 970곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
-food_rest,카페_상가정보대조,나머지,0.460,현재 영업 중 11820곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
+food_rest,카페_상가정보대조,나머지,0.466,현재 영업 중 11089곳 중 같은 법정동·번지에 상가정보 카페가 있는 비율
 food_rest,카페_키워드,카페,1645,카페아모제(18) / 오시오카페(13) / 카페제이(11) / 카페큐브(한시적)(8) / 카페인(7)
 food_rest,카페_키워드,까페,125,분식까페(3) / 까페죤(2) / 까페아모제(2) / 까페라떼(1) / (주)아모제 까페아모제(1)
 food_rest,카페_키워드,커피,1437,커피크루(한시적)(19) / 커피언스(한시적)(13) / 커피크루(12) / 이디야커피(7) / 빈스빈스커피(한시적)(7)

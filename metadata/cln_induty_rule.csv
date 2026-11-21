@@ -34,6 +34,28 @@
 30,classify,특수입지,food_rest,UPTAE_NM,eq,공항,기타,E4-3
 30,classify,특수입지,food_rest,UPTAE_NM,eq,고속도로,기타,E4-3
 40,classify,키즈카페,food_rest;food_general,UPTAE_NM,eq,키즈카페,기타,E2
+65,classify,비음식입지,food_rest,BPLC_NM,contains,PC방,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,피씨방,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,PC카페,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,PCCAFE,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,피씨카페,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,PC클럽,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,PC존,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,스터디카페,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,만화방,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,만화카페,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,보드게임,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,사우나,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,찜질방,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,수영장,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,볼링,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,당구장,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,스크린골프,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,골프존,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,골프연습장,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,노래연습장,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+65,classify,비음식입지,food_rest,BPLC_NM,contains,코인노래,기타,휴게음식점 비음식입지 (2026-11-21). 상호는 공백 제거·대문자로 비교
+66,classify,과자점_업태,food_rest,UPTAE_NM,eq,과자점,기타,휴게음식점 과자점: 2016년 이후 신규 인허가 0건이라 추세 왜곡 (2026-11-21)
 50,classify,업태예외_전통찻집,food_general,UPTAE_NM,eq,전통찻집,카페,E2
 50,classify,업태예외_라이브카페,food_general,UPTAE_NM,eq,라이브카페,일반음식점,E2
 61,classify,카페A,food_rest,UPTAE_NM,eq,커피숍,카페,E1 핵심 카페
@@ -71,7 +93,7 @@
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes,까페테리아,,"E1 제외 키워드 추가 (2026-11-20, 1차 실행 키워드별 상위 상호 검토 결과). 상호는 공백 제거·대문자로 비교"
 63,classify,카페C,food_rest;food_general,BPLC_NM,excludes_rule,편의점_브랜드,,E1 편의점 브랜드 상호는 카페C 제외
 70,classify,나머지,food_general,*,all,,일반음식점,E4-7
-70,classify,나머지,food_rest,*,all,,기타,E4-7
+70,classify,나머지,food_rest,*,all,,휴게음식점,E4-7 (2026-11-21 기타 → 휴게음식점)
 90,issue,이상업태,food_rest,UPTAE_NM,eq,호프/통닭,,E2 휴게음식점 이상 업태 (각 1건)
 90,issue,이상업태,food_rest,UPTAE_NM,eq,단란주점,,E2 휴게음식점 이상 업태 (각 1건)
 90,issue,이상업태,food_rest,UPTAE_NM,eq,김밥(도시락),,E2 휴게음식점 이상 업태 (각 1건)
