@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 from contextlib import ExitStack, contextmanager, nullcontext
 from pathlib import Path
@@ -20,6 +21,11 @@ from common.files import replace_if_changed
 from common.paths import DATA_DIR, METADATA_DIR, REPORT_DIR, SILVER_DIR, relative, stage_file_name
 from common.report import md_table, write_csv, write_markdown
 from silver.cln_rules import LICENSE_DATASETS, TRADE_SAME_DEAL_KEY
+from validation.check_gold_numbers import check_known_issues, trade_check_parameters
+from validation.check_gold_tables import (
+    LICENSE_COUNTS, LICENSE_KEY, REGION_PERIOD, TABLE_KEYS, TRADE_SOURCE_KEY,
+    load_industry_rules, validate_tables,
+)
 
 GOLD_DIR = DATA_DIR / "gold"
 GOLD_REPORT_DIR = REPORT_DIR / "gold"
@@ -30,7 +36,6 @@ TRADE_COLUMNS = [
     *TRADE_SAME_DEAL_KEY, "SGG_CD", "LDONG_SRC_CD", "CNCL_YN", "SAME_DEAL_YN",
     "SRC_FILE_NM", "SRC_ROW_NUM", "APT_NM", "BUILD_YEAR_NUM",
 ]
-TRADE_SOURCE_KEY = ["SRC_FILE_NM", "SRC_ROW_NUM"]
 TRADE_FACT_COLUMNS = [
     *TRADE_SOURCE_KEY, "LDONG_CD", "YQ", "DEAL_DTM", "APT_KEY", "APT_NM", "BUILD_YEAR_NUM",
     "EXCL_AREA_NUM", "FLR_NUM", "DEAL_AMT_NUM", "UNIT_AMT", "LDONG_SRC_CD", "SAME_DEAL_YN",
@@ -45,28 +50,6 @@ INPUT_COLUMNS = {
     "apt_trade": TRADE_COLUMNS,
     **dict.fromkeys(LICENSE_DATASETS, LICENSE_COLUMNS),
 }
-REGION_PERIOD = ["LDONG_CD", "YQ"]
-LICENSE_KEY = [*REGION_PERIOD, "ANLS_INDUTY_CD"]
-LICENSE_COUNTS = ["OPEN_CNT", "CLOSE_CNT", "ACTIVE_CNT", "PROXY_CLOSE_CNT"]
-TABLE_KEYS = {
-    "dim_region": ["LDONG_CD"],
-    "dim_date": ["YQ"],
-    "dim_lcns_induty": ["ANLS_INDUTY_CD"],
-    "fact_apt_trd": TRADE_SOURCE_KEY,
-    "fact_apt_trd_qtr": REGION_PERIOD,
-    "fact_lcns_qtr": LICENSE_KEY,
-    "mart_ldong_infra_qtr": REGION_PERIOD,
-}
-MART_INDUSTRIES = {
-    "GENERAL_FOOD": ("일반음식점",),
-    "CAFE": ("카페",),
-    "CLINIC": ("의원", "치과의원", "한의원"),
-    "PHARMACY": ("약국",),
-    "BEAUTY": ("미용_헤어", "미용_피부", "미용_네일", "미용_메이크업", "미용_기타"),
-    "CONVENIENCE": ("편의점",),
-}
-
-
 def record(log, dataset, metric, before, after, *, period="", note=""):
     log.append({
         "dataset": dataset, "metric": metric, "period": period,
@@ -75,7 +58,7 @@ def record(log, dataset, metric, before, after, *, period="", note=""):
     })
 
 
-def load_rules():
+def load_rules(industry_rules):
     params = pd.read_csv(METADATA_DIR / "cln_param.csv", dtype=str, keep_default_na=False)
     common = params.loc[params["dataset"].eq("*")].set_index("param")["value"]
     start, end = pd.Timestamp(common["ANLS_BGN_DT"]), pd.Timestamp(common["ANLS_END_DT"])
@@ -85,7 +68,7 @@ def load_rules():
     collected = params.loc[params["param"].eq("COLLECT_DT")].set_index("dataset")["value"]
     if pd.to_datetime(collected.loc[LICENSE_DATASETS]).le(end).any():
         raise ValueError("분석 종료일은 모든 인허가 수집일보다 앞서야 합니다.")
-    prefix = params.loc[params["param"].eq("SEOUL_SGG_PREFIX"), "value"].item()
+    prefix, price_min = trade_check_parameters(params)
 
     flags = pd.read_csv(METADATA_DIR / "cln_flag.csv", dtype=str).set_index("flag")
     expected = {
@@ -104,10 +87,9 @@ def load_rules():
     groups = codes.loc[codes["code_column"].eq("ANLS_INDUTY_CD"), "code_value"]
     industries = pd.DataFrame({"ANLS_INDUTY_CD": groups[groups.ne("대상외")].tolist()})
     industries["ANLS_INDUTY_NM"] = industries["ANLS_INDUTY_CD"]
-    industries["REFERENCE_YN"] = industries["ANLS_INDUTY_CD"].isin(["편의점", "기타"])
-    used_industries = {code for group in MART_INDUSTRIES.values() for code in group}
-    if not used_industries.issubset(industries["ANLS_INDUTY_CD"]):
-        raise ValueError("마트 업종 코드가 인허가 코드표에 없습니다.")
+    if set(industries["ANLS_INDUTY_CD"]) != set(industry_rules.index):
+        raise ValueError("Gold 업종 규칙과 Silver 인허가 코드표가 일치하지 않습니다.")
+    industries["REFERENCE_YN"] = industries["ANLS_INDUTY_CD"].map(industry_rules["reference_yn"].eq("Y"))
     proxy_codes = codes.loc[
         codes["code_column"].eq("CLSBIZ_SRC_CD") & codes["code_value"].str.startswith("최종수정일자_"),
         "code_value",
@@ -115,17 +97,24 @@ def load_rules():
     gu_map = pd.read_csv(METADATA_DIR / "cln_lgov_sgg_map.csv", dtype=str).set_index("LGOV_CD")["SGG_CD"]
     if not gu_map.index.is_unique or gu_map.isna().any():
         raise ValueError("인허가 관청과 자치구 코드의 대응이 유일하지 않거나 비어 있습니다.")
-    return periods, prefix, industries, proxy_codes, gu_map
+    return periods, prefix, price_min, industries, proxy_codes, gu_map
 
 
 def silver_path(dataset):
     return f"{dataset}/{stage_file_name('03', dataset)}"
 
 
-def read_silver(dataset, archive, log):
+def read_silver(dataset, archive, log, inputs):
     path = silver_path(dataset)
-    source = SILVER_DIR / path if archive is None else pa.BufferReader(archive.read(f"silver/{path}"))
-    with pq.ParquetFile(source) as parquet:
+    if archive is None:
+        source = SILVER_DIR / path
+        content = source.read_bytes()
+        label = relative(source)
+    else:
+        member = f"silver/{path}"
+        content = archive.read(member)
+        label = f"{Path(archive.filename).name}!/{member}"
+    with pq.ParquetFile(pa.BufferReader(content)) as parquet:
         columns = INPUT_COLUMNS[dataset]
         missing = sorted(set(columns) - set(parquet.schema_arrow.names))
         if missing:
@@ -135,6 +124,11 @@ def read_silver(dataset, archive, log):
             log, dataset, "SELECT_COLUMNS", len(parquet.schema_arrow.names), len(columns),
             note="컬럼 수. 나머지 단계의 건수는 행 또는 집계 지표 수.",
         )
+        inputs.append({
+            "kind": "input", "dataset": dataset, "file": label, "rows": parquet.metadata.num_rows,
+            "columns": len(parquet.schema_arrow.names), "sha256": hashlib.sha256(content).hexdigest(),
+            "status": "read",
+        })
     return table
 
 
@@ -163,8 +157,9 @@ def dong_is_valid(rows, region_codes):
     return rows["LDONG_CD"].isin(region_codes) & ~rows["LDONG_SRC_CD"].str.startswith("실패", na=False)
 
 
-def prepare_trades(table, prefix, periods, region_codes, log):
+def prepare_trades(table, prefix, price_min, periods, region_codes, log):
     seoul = table.filter(pc.starts_with(table["SGG_CD"], prefix)).to_pandas()
+    known_checks = check_known_issues(seoul, price_min)
     record(log, "apt_trade", "SEOUL_FILTER", table.num_rows, len(seoul))
     start, end = periods[0].start_time.date(), periods[-1].end_time.date()
     in_period = seoul.loc[seoul["DEAL_DTM"].between(start, end)]
@@ -189,7 +184,7 @@ def prepare_trades(table, prefix, periods, region_codes, log):
     )
     valid["UNIT_AMT"] = amount.where(usable_price) / area.where(usable_price)
     valid["YQ"] = pd.PeriodIndex(valid["DEAL_DTM"], freq="Q").astype(str)
-    return valid
+    return valid, known_checks
 
 
 def build_trade_detail(eligible_trades):
@@ -329,48 +324,15 @@ def build_license_fact(parts, regions, dates, industries, log):
     return fact.reset_index()
 
 
-def build_mart(trades, licenses, regions, dates):
+def build_mart(trades, licenses, regions, dates, mart_groups):
     mart = trades.merge(regions[["LDONG_CD", "LDONG_NM", "SGG_CD", "SGG_NM"]], on="LDONG_CD", validate="m:1")
     mart = mart.merge(dates[["YQ", "PROVISIONAL_YN"]], on="YQ", validate="m:1")
     wide = licenses.set_index(LICENSE_KEY)[LICENSE_COUNTS].unstack("ANLS_INDUTY_CD")
     metrics = {}
-    for name, codes in MART_INDUSTRIES.items():
+    for name, codes in mart_groups.items():
         for count in LICENSE_COUNTS:
             metrics[f"{name}_{count}"] = wide[count][list(codes)].sum(axis=1)
     return mart.merge(pd.DataFrame(metrics).reset_index(), on=REGION_PERIOD, validate="1:1")
-
-
-def validate_tables(tables, log):
-    for name, keys in TABLE_KEYS.items():
-        table = tables[name]
-        if table[keys].isna().any().any() or table.duplicated(keys).any():
-            raise ValueError(f"{name}: 키의 결측 또는 중복이 있습니다.")
-        record(log, name, "KEY_UNIQUENESS", len(table), len(table))
-    dimensions = {"LDONG_CD": "dim_region", "YQ": "dim_date", "ANLS_INDUTY_CD": "dim_lcns_induty"}
-    foreign_keys = {
-        "fact_apt_trd": REGION_PERIOD,
-        "fact_apt_trd_qtr": REGION_PERIOD,
-        "fact_lcns_qtr": LICENSE_KEY,
-        "mart_ldong_infra_qtr": REGION_PERIOD,
-    }
-    for name, keys in foreign_keys.items():
-        for key in keys:
-            table = tables[name]
-            matched = table[key].isin(tables[dimensions[key]][key]).sum()
-            if matched != len(table):
-                raise ValueError(f"{name}: {key} 차원 연결이 누락됐습니다.")
-            record(log, name, "DIMENSION_MATCH", len(table), matched, note=key)
-
-    trades, licenses, mart = (tables[name] for name in ("fact_apt_trd_qtr", "fact_lcns_qtr", "mart_ldong_infra_qtr"))
-    if trades["TRADE_CNT"].sum() != len(tables["fact_apt_trd"]):
-        raise ValueError("매매 분기 팩트의 총 거래 수가 상세 팩트의 행 수와 다릅니다.")
-    size = len(tables["dim_region"]) * len(tables["dim_date"])
-    if len(trades) != size or len(mart) != size or len(licenses) != size * len(tables["dim_lcns_induty"]):
-        raise ValueError("차원 조합 수와 팩트·마트 행 수가 다릅니다.")
-    trade_counts = trades.set_index(REGION_PERIOD)["TRADE_CNT"]
-    mart_counts = mart.set_index(REGION_PERIOD)["TRADE_CNT"].reindex(trade_counts.index)
-    if not trade_counts.equals(mart_counts):
-        raise ValueError("마트를 조인하면서 매매 건수가 바뀌었습니다.")
 
 
 @contextmanager
@@ -399,7 +361,7 @@ def staged_file(target, cleanup):
     return path
 
 
-def write_results(tables, log, input_label):
+def write_results(tables, log, input_label, inputs, known_checks, industry_rules):
     GOLD_DIR.mkdir(parents=True, exist_ok=True)
     GOLD_REPORT_DIR.mkdir(parents=True, exist_ok=True)
     with ExitStack() as cleanup:
@@ -414,28 +376,32 @@ def write_results(tables, log, input_label):
         change_target = GOLD_REPORT_DIR / stage_file_name("04", "change_log", ext="csv")
         md_target = GOLD_REPORT_DIR / stage_file_name("04", "work_summary", ext="md")
         manifest_target = GOLD_REPORT_DIR / stage_file_name("04", "manifest", ext="csv")
+        known_target = GOLD_REPORT_DIR / stage_file_name("04", "known_issues_check", ext="csv")
         change_temp = staged_file(change_target, cleanup)
         md_temp = staged_file(md_target, cleanup)
         manifest_temp = staged_file(manifest_target, cleanup)
+        known_temp = staged_file(known_target, cleanup)
         write_csv(change_temp, change_log)
-        write_markdown(md_temp, report_lines(tables, change_log, input_label))
+        write_csv(known_temp, known_checks)
+        write_markdown(md_temp, report_lines(tables, change_log, input_label, industry_rules))
 
         with publish_lock():
             manifest = []
             for name, temp, target, rows, columns in outputs:
                 status, digest = replace_if_changed(temp, target)
                 manifest.append({
-                    "dataset": name, "file": relative(target), "rows": rows, "columns": columns,
+                    "kind": "output", "dataset": name, "file": relative(target), "rows": rows, "columns": columns,
                     "sha256": digest, "status": status,
                 })
-            write_csv(manifest_temp, pd.DataFrame(manifest))
+            write_csv(manifest_temp, pd.DataFrame([*inputs, *manifest]))
             replace_if_changed(change_temp, change_target)
             replace_if_changed(md_temp, md_target)
+            replace_if_changed(known_temp, known_target)
             replace_if_changed(manifest_temp, manifest_target)
     return manifest
 
 
-def report_lines(tables, log, input_label):
+def report_lines(tables, log, input_label, industry_rules):
     dates = tables["dim_date"]
     last_quarter = dates["YQ"].iloc[-1]
     stock = log.loc[log["metric"].eq("ACTIVE_GU_TO_DONG") & log["period"].eq(last_quarter)].copy()
@@ -449,6 +415,12 @@ def report_lines(tables, log, input_label):
     trade_steps = log.loc[log["dataset"].eq("apt_trade") & log["metric"].ne("SELECT_COLUMNS")]
     trade_steps = trade_steps[["metric", "before_count", "after_count", "delta"]]
     trade_steps.columns = ["처리", "이전", "이후", "차이"]
+    licenses = tables["fact_lcns_qtr"]
+    fact_only = [
+        f"- `{code}`는 참고 업종이라 인허가 팩트에 보존하고 마트 집계에서는 제외했습니다. "
+        f"분석 기간의 개업 수는 {licenses.loc[licenses['ANLS_INDUTY_CD'].eq(code), 'OPEN_CNT'].sum():,}건입니다."
+        for code in industry_rules.index[industry_rules["mart_group"].eq("")]
+    ]
     return [
         "# Gold 스타 스키마 작업 기록", "",
         f"- Silver 입력은 `{input_label}`의 03 산출물 7개입니다.",
@@ -461,6 +433,7 @@ def report_lines(tables, log, input_label):
         "- 매매 상세 팩트는 유효 매매 1건당 한 행입니다. 계약일과 분기, 단지, 면적, 가격을 보존하고 원천 파일명과 행 번호를 키로 씁니다. 분기 키는 기존 분기 날짜 차원에 연결합니다.",
         "- 매매 분기 팩트는 상세 팩트에서 계산한 거래 수·가격 표본 수·㎡당 매매가 중앙값을 저장합니다. 인허가 분기 팩트에는 개업·폐업·분기 말 영업·순증·대용 폐업일 건수를 저장합니다.",
         "- 인허가 코드는 원천 구분과 관계없이 같은 분석 업종으로 합산하고, 원천별 대조값은 CSV에 보존합니다. 마트에서는 의원 계열과 미용 세부 업종을 각각 묶고 편의점은 참고 지표로 표시합니다.",
+        *fact_only,
         "- 분기·업종 조합은 모두 생성했습니다. 거래가 없으면 거래 건수는 0, 가격은 NULL입니다. 결과표의 인허가 건수는 0으로 표현합니다.", "",
         "## Silver에서 Gold로 바뀐 내용", "",
         "### 매매", "",
@@ -474,14 +447,16 @@ def report_lines(tables, log, input_label):
         *md_table(stock), "",
         "각 원천에서 모든 분기의 개업·폐업·기말 영업 수를 Silver 날짜 조건으로 직접 센 값과 대조했습니다. 팩트의 차원 연결률은 100%이며 키 중복은 0건입니다.", "",
         "## 출력과 재실행", "",
-        "- `data/gold/`에 Snappy Parquet을 저장합니다. `04_gold__change_log.csv`는 실제 선택·집계·검증 건수를, `04_gold__manifest.csv`는 출력 행 수·SHA-256·재실행 상태를 기록합니다.",
+        "- `data/gold/`에 Snappy Parquet을 저장합니다. 매니페스트는 입력과 출력의 행 수·컬럼 수·SHA-256을, 변경 로그는 선택·집계·검증 건수를 기록합니다.",
+        "- `04_gold__known_issues_check.csv`에 분석 기간 필터 전 서울 Silver 매매를 정답지와 대조한 결과를 기록합니다. 저장된 Gold는 `python pipeline/validation/check_gold_tables.py`로 검증할 수 있습니다.",
         "- 심평원·상가 스냅샷, 전월세, 모델 결과는 이번 1차 집계 범위 밖입니다.",
         "- 프로젝트 루트에서 `python pipeline/gold/04_gold.py`로 실행하면 `data/silver/`를 읽습니다. ZIP은 `--silver-zip <경로>`를 지정한 경우에 읽습니다.",
     ]
 
 
 def run(archive_path):
-    periods, prefix, industries, proxy_codes, gu_map = load_rules()
+    industry_rules, mart_groups = load_industry_rules()
+    periods, prefix, price_min, industries, proxy_codes, gu_map = load_rules(industry_rules)
     required = [silver_path(dataset) for dataset in INPUT_COLUMNS]
     if archive_path is None:
         missing = [path for path in required if not (SILVER_DIR / path).is_file()]
@@ -492,16 +467,17 @@ def run(archive_path):
     input_label = archive_path.name if archive_path is not None else "data/silver"
     context = ZipFile(archive_path) if archive_path is not None else nullcontext()
     log = []
+    inputs = []
     with context as archive:
         if archive is not None:
             missing = {f"silver/{path}" for path in required} - set(archive.namelist())
             if missing:
                 raise ValueError(f"ZIP에 Silver 입력이 없습니다: {', '.join(sorted(missing))}")
-        regions = build_region(read_silver("ldong_code", archive, log), prefix, log)
+        regions = build_region(read_silver("ldong_code", archive, log, inputs), prefix, log)
         dates = build_dates(periods)
         grid = pd.MultiIndex.from_product([regions["LDONG_CD"], dates["YQ"]], names=REGION_PERIOD)
-        eligible_trades = prepare_trades(
-            read_silver("apt_trade", archive, log), prefix, periods, regions["LDONG_CD"], log,
+        eligible_trades, known_checks = prepare_trades(
+            read_silver("apt_trade", archive, log, inputs), prefix, price_min, periods, regions["LDONG_CD"], log,
         )
         trade_detail = build_trade_detail(eligible_trades)
         del eligible_trades
@@ -516,7 +492,7 @@ def run(archive_path):
         parts = []
         for dataset in LICENSE_DATASETS:
             rows = prepare_licenses(
-                read_silver(dataset, archive, log), dataset, regions["LDONG_CD"],
+                read_silver(dataset, archive, log, inputs), dataset, regions["LDONG_CD"],
                 industries["ANLS_INDUTY_CD"], gu_map, log,
             )
             counts = aggregate_license_source(rows, periods, proxy_codes)
@@ -524,15 +500,16 @@ def run(archive_path):
             parts.append(counts)
 
     licenses = build_license_fact(parts, regions, dates, industries, log)
-    mart = build_mart(trades, licenses, regions, dates)
+    mart = build_mart(trades, licenses, regions, dates, mart_groups)
     tables = {
         "dim_region": regions, "dim_date": dates, "dim_lcns_induty": industries,
         "fact_apt_trd": trade_detail,
         "fact_apt_trd_qtr": trades, "fact_lcns_qtr": licenses, "mart_ldong_infra_qtr": mart,
     }
-    validate_tables(tables, log)
+    for name, metric, before, after, note in validate_tables(tables, industry_rules, mart_groups):
+        record(log, name, metric, before, after, note=note)
     record(log, "mart_ldong_infra_qtr", "FACT_JOIN", len(trades), len(mart))
-    for row in write_results(tables, log, input_label):
+    for row in write_results(tables, log, input_label, inputs, known_checks, industry_rules):
         print(f"{row['dataset']}: {row['rows']:,} rows ({row['status']})")
 
 
