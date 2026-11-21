@@ -58,7 +58,7 @@
 - [ ] 논의 결과 문서화 (팀 합의 내용만)
 - [x] `pipeline/gold/04_gold.py` 구현 (PR #29·#31)
 - [x] 검증: silver ↔ gold 행 수·합계 대조, 구 합계 = 동 합계 + 법정동 실패 건수, `report/gold/` 기록, `pipeline/validation/check_gold_*.py` (PR #31)
-- [ ] AI Ready 방향에 맞춘 수정 (#32): `LOW_SAMPLE_YN`(5건 기준), `PROVISIONAL_YN` 정리, 동 가격 지수 `fact_apt_idx_qtr`(같은 단지 기준)
+- [x] AI Ready 방향에 맞춘 수정 (#32, PR #35): `LOW_SAMPLE_YN`(5건 기준), `PROVISIONAL_YN` 정리, 동 가격 지수 `fact_apt_idx_qtr`(같은 단지 기준)
 - [ ] PostgreSQL 적재 (`.env` 연결, `SPEC.md` 4장)
 - [ ] 문서 (`docs/gold_*.md` 또는 `SPEC.md` 갱신)
 
@@ -71,7 +71,6 @@
 - [ ] 구현 (#33): 기준 CSV(`metadata/rule_ai_ready_*.csv`), 피처셋(`05_feature_set.py` → `data/ai_ready/`), 학습·롤링 검증(`05_train.py`, 2021–2026), 예측 결과 테이블(`LDONG_CD × YQ × MODEL_NM`), `report/ai_ready/` 기록
 - [ ] 검증 (#33): `pipeline/validation/check_ai_ready.py` — 구조, 타깃 독립 계산, 시점 누수, 성능 수치 재계산
 - [ ] 실행 확인: nomorehuman90이 자기 PC에서 처음부터 실행 (골드 → AI Ready → 검증)
-- [ ] #32 머지 후 입력을 골드 `fact_apt_idx_qtr`로 교체, 직접 계산값과 대조
 - [ ] 예측 결과 PostgreSQL 적재
 - [ ] (선택) Watch 폴더 자동 피딩 — 신규 파일 감지 → 02·03 → gold 재실행
 
