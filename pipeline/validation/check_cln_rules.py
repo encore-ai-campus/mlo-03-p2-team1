@@ -73,7 +73,7 @@ food = pd.DataFrame({"UPTAE_NM": ["전통찻집", "라이브카페", "한식", "
                      "BPLC_NM": ["다향", "재즈 커피", "스터디카페 OO", "커피명가", "치킨로스터", "아무개", "GS25", "CU 역삼점"]})
 cls, _, _ = R.classify(food, META, "food_general")
 check("E4 분류 순서", cls["INDUTY_RULE_CD"].tolist(),
-      ["업태예외_전통찻집", "업태예외_라이브카페", "나머지", "카페C", "카페C", "카페B", "편의점_업태", "편의점_브랜드"])
+      ["업태예외_전통찻집", "업태예외_라이브카페", "비음식입지", "카페C", "카페C", "카페B", "편의점_업태", "편의점_브랜드"])
 cubes = pd.DataFrame({"UPTAE_NM": ["한식"], "BPLC_NM": ["CUBE 커피"]})
 check("E3 CU 는 단어 단위", R.classify(cubes, META, "food_general")[0]["INDUTY_RULE_CD"].tolist(), ["카페C"])
 clinic = pd.DataFrame({"UPTAE_NM": ["치과의원", "보건소"], "BPLC_NM": ["a", "b"]})
@@ -88,6 +88,16 @@ rest_cls = R.classify(rest, META, "food_rest")[0]
 check("E7 비음식입지 표기별", rest_cls["INDUTY_RULE_CD"].tolist(),
       ["비음식입지"] * 8 + ["카페A", "과자점_업태", "나머지", "나머지"])
 check("E7 휴게음식점 코드", rest_cls["ANLS_INDUTY_CD"].tolist()[-2:], ["휴게음식점", "휴게음식점"])
+# [E7] 일반음식점: 게임·오락·스터디 키워드만 비음식입지(카페C 제외 포함). 시설 안 식당(사우나·수영장 등)은 일반음식점 그대로
+gen = pd.DataFrame({
+    "UPTAE_NM": ["기타"] * 6 + ["까페", "한식", "한식", "한식"],
+    "BPLC_NM": ["와룸보드게임카페", "대치티피씨 카페", "만화카페통툰", "비어&당구장", "골프존파크 망우역파크점", "이음 스터디 카페",
+                "지지보드카페", "백두산사우나식당", "볼링 콩카페", "어린이회관수영장식당"],
+})
+gen_cls = R.classify(gen, META, "food_general")[0]
+check("E7 일반음식점 비음식입지", gen_cls["INDUTY_RULE_CD"].tolist(),
+      ["비음식입지"] * 6 + ["카페B", "나머지", "카페C", "나머지"])
+check("E7 일반음식점 비음식입지 코드", gen_cls["ANLS_INDUTY_CD"].tolist()[:6], ["기타"] * 6)
 
 
 # [F] 연결
