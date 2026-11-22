@@ -259,20 +259,21 @@ export function NationalBriefingCard({
                 <span className="font-mono text-cyan-300">{selectedQuarter}</span>
               </div>
 
-              <div className="mt-1.5 flex min-h-[72px] flex-1 items-end gap-1">
+              <div className="mt-1.5 grid min-h-[72px] flex-1 grid-cols-10 items-end overflow-hidden rounded-md border border-slate-800/70 bg-slate-950/45">
+                {Array.from({ length: Math.max(0, 10 - accuracyHistory.length) }).map((_, idx) => (
+                  <div key={`empty-${idx}`} aria-hidden="true" className="h-full w-full" />
+                ))}
                 {accuracyHistory.map((pt) => {
                   const isCurrent = pt.quarter === selectedQuarter;
                   return (
                     <div
                       key={pt.quarter}
                       title={`${pt.quarter}: 0~2%p ${pt.bandPcts['0_2'].toFixed(1)}% · 2~4%p ${pt.bandPcts['2_4'].toFixed(1)}% · 4~6%p ${pt.bandPcts['4_6'].toFixed(1)}% · 6%p+ ${pt.bandPcts['6_plus'].toFixed(1)}%`}
-                      className="flex h-full flex-1 flex-col items-center justify-end gap-1"
+                      className="flex h-full flex-col items-center justify-end"
                     >
                       <div
-                        className={`flex h-full w-full flex-col overflow-hidden rounded-sm transition-all duration-300 ${
-                          isCurrent
-                            ? 'ring-1 ring-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.45)]'
-                            : 'opacity-85'
+                        className={`flex h-full w-full flex-col overflow-hidden transition-all duration-300 ${
+                          isCurrent ? 'brightness-110' : 'opacity-90'
                         }`}
                       >
                         <div

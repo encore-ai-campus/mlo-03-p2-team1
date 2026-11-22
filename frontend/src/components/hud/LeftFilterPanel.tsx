@@ -16,11 +16,17 @@ import { INDUSTRY_META, INDUSTRY_ORDER } from '../../config/industries';
 import { MODEL_META, MODEL_ORDER, MODEL_VERSION } from '../../config/models';
 import { getQuarterAccuracyBreakdown, getQuarterSummary } from '../../services/dashboardData';
 import { useDashboardStore } from '../../store/useDashboardStore';
-import type { ErrorToleranceBand, IndustryKey } from '../../types/dashboard';
+import {
+  TIMELINE_QUARTERS,
+  type ErrorToleranceBand,
+  type IndustryKey,
+} from '../../types/dashboard';
 
 const TOLERANCE_BAND_META: {
   key: ErrorToleranceBand;
   label: string;
+  tag: string;
+  tagClass: string;
   desc: string;
   color: string;
   badgeClass: string;
@@ -28,6 +34,8 @@ const TOLERANCE_BAND_META: {
   {
     key: '0_2',
     label: '0 ~ 2%p',
+    tag: '성공',
+    tagClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     desc: '초정밀 예측 성공 구간',
     color: '#10b981',
     badgeClass: 'text-emerald-300',
@@ -35,6 +43,8 @@ const TOLERANCE_BAND_META: {
   {
     key: '2_4',
     label: '2 ~ 4%p',
+    tag: '허용',
+    tagClass: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
     desc: '소폭 오차 허용 구간',
     color: '#38bdf8',
     badgeClass: 'text-sky-300',
@@ -42,6 +52,8 @@ const TOLERANCE_BAND_META: {
   {
     key: '4_6',
     label: '4 ~ 6%p',
+    tag: '주의',
+    tagClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
     desc: '주의 오차 이탈 구간',
     color: '#f59e0b',
     badgeClass: 'text-amber-300',
@@ -49,6 +61,8 @@ const TOLERANCE_BAND_META: {
   {
     key: '6_plus',
     label: '6%p 이상',
+    tag: '이탈',
+    tagClass: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
     desc: '급등·급락 대형 이탈',
     color: '#f43f5e',
     badgeClass: 'text-rose-300',
@@ -178,6 +192,15 @@ export function LeftFilterPanel() {
     [selectedQuarter, selectedModel, dataVersion],
   );
 
+  const prevAccuracy = useMemo(() => {
+    const idx = TIMELINE_QUARTERS.indexOf(selectedQuarter);
+    if (idx <= 0) return null;
+    const prevQ = TIMELINE_QUARTERS[idx - 1];
+    if (getQuarterSummary(prevQ).periodType !== 'eval') return null;
+    return getQuarterAccuracyBreakdown(prevQ, selectedModel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedQuarter, selectedModel, dataVersion]);
+
   return (
     <aside
       aria-label="예측 모델, 국면 필터 및 인허가 상권 레이어"
@@ -285,33 +308,47 @@ export function LeftFilterPanel() {
             {TOLERANCE_BAND_META.map((band) => {
               const active = activeToleranceBands[band.key];
               const stat = accuracy.bands[band.key];
+              const prevStat = prevAccuracy?.bands[band.key] ?? null;
+              const deltaPct = isAiEval && prevStat ? stat.pct - prevStat.pct : null;
               return (
                 <button
                   key={band.key}
                   type="button"
                   aria-pressed={active}
                   onClick={() => toggleToleranceBand(band.key)}
-                  className={`flex min-h-[54px] w-full flex-1 shrink-0 flex-col justify-center gap-1 rounded-xl border px-2.5 py-1.5 text-left transition ${
+                  style={{
+                    borderLeftColor: active ? band.color : undefined,
+                  }}
+                  className={`flex min-h-[62px] max-h-[96px] w-full flex-1 shrink-0 flex-col justify-between gap-1.5 rounded-xl border border-l-[3px] px-3 py-2 text-left transition ${
                     active
                       ? 'border-slate-600/85 bg-slate-800/80 text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
                       : 'border-slate-800/70 bg-slate-950/45 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
+                        className="h-2 w-2 shrink-0 rounded-full"
                         style={{
                           backgroundColor: active ? band.color : '#475569',
                           boxShadow: active ? `0 0 8px ${band.color}` : undefined,
                         }}
                       />
-                      <span className="font-mono text-[12px] font-bold leading-none">
+                      <span className="font-mono text-[13px] font-bold leading-none">
                         {band.label}
+                      </span>
+                      <span
+                        className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
+                          active
+                            ? band.tagClass
+                            : 'border-slate-700/70 bg-slate-900/70 text-slate-500'
+                        }`}
+                      >
+                        {band.tag}
                       </span>
                     </div>
                     <span
-                      className={`font-mono text-xs font-bold leading-none ${
+                      className={`font-mono text-[15px] font-extrabold leading-none ${
                         active ? band.badgeClass : 'text-slate-400'
                       }`}
                     >
@@ -319,21 +356,37 @@ export function LeftFilterPanel() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] leading-tight text-slate-400">
-                    <span>{band.desc}</span>
-                    <span className="font-mono text-slate-300">
-                      {isAiEval ? `${stat.count}동` : '—'}
-                    </span>
-                  </div>
-
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-900/90">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-950/90">
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: isAiEval ? `${stat.pct}%` : '0%',
                         backgroundColor: active ? band.color : '#475569',
+                        boxShadow: active && isAiEval ? `0 0 8px ${band.color}88` : undefined,
                       }}
                     />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-1 text-[11px] leading-none text-slate-400">
+                    <span className="truncate">{band.desc}</span>
+                    <div className="flex shrink-0 items-center gap-1.5 font-mono">
+                      <span className="font-semibold text-slate-200">
+                        {isAiEval ? `${stat.count}동` : '—'}
+                      </span>
+                      {deltaPct !== null && (
+                        <span
+                          className={`text-[10px] ${
+                            Math.abs(deltaPct) < 0.05
+                              ? 'text-slate-500'
+                              : deltaPct > 0
+                                ? 'text-cyan-300'
+                                : 'text-slate-400'
+                          }`}
+                        >
+                          {deltaPct > 0 ? `+${deltaPct.toFixed(1)}` : deltaPct.toFixed(1)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </button>
               );
