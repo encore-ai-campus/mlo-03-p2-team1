@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { INITIAL_ACTIVE_FACILITIES } from '../config/facilities';
 import { INITIAL_ACTIVE_INDUSTRIES } from '../config/industries';
 import {
-  LATEST_OBSERVED_QUARTER,
   TIMELINE_QUARTERS,
   type AiAccuracyFilter,
   type BriefingTab,
@@ -67,7 +66,7 @@ export interface DashboardState {
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
-  selectedQuarter: LATEST_OBSERVED_QUARTER,
+  selectedQuarter: TIMELINE_QUARTERS[0],
   selectedModel: 'price_lcns',
   viewMode: 'market',
   aiAccuracyFilter: 'all',
