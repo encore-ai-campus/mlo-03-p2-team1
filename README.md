@@ -74,15 +74,17 @@
 
 ![처리 구조](docs/architecture/pipeline_overview.png)
 
+실행 파일은 `pipeline/` 아래 단계별 폴더에 있고, 적재 스크립트만 `pipeline_container/`에 있습니다.
+
 | 단계 | 한 일 | 검증 | 실행 파일 | 기준 (`metadata/`) |
 | --- | --- | --- | --- | --- |
-| 00 Source | API 응답 원문 저장, 파일 수집 | 원천 읽기 전용, SHA-256 기록 | `pipeline/source/00_collect.py` | `src_*.csv` |
-| 01 Bronze | 원천을 값 그대로 parquet로, 추적 컬럼 추가 | 행 수 = 원천, 원천 불변 | `pipeline/bronze/01_bronze.py` | `ds_dataset.csv` |
-| 02 Silver 표준화 | 표준 사전으로 컬럼명·타입·단위 통일 | 행 수 = Bronze (37/37 파일) | `pipeline/silver/02_normalize.py` | `std_*.csv` |
-| 03 Silver 정제 | 중복·영업 상태·대용 폐업일·법정동·분석 업종 판정 | 오염 정답지 39개 항목 차이 0, 행 수 = 02 − 중복 제거 (10/10 데이터셋) | `pipeline/silver/03_clean.py` | `cln_*.csv`, `known_issues.csv` |
-| 04 Gold | 법정동 × 분기 집계, 같은 단지 가격 지수, 스타 스키마 | 정답지 4개 항목 차이 0, 차원 연결률 100%, 구 합계 = 동 합계 + 법정동 실패 | `pipeline/gold/04_gold.py` | `rule_gold_*.csv` |
-| 05 AI Ready | 피처셋 생성, 롤링 검증, 다음 분기 예측 | AR1~AR6 전부 PASS (시점 누수 검사 포함) | `pipeline/ai_ready/05_feature_set.py`, `05_train.py` | `rule_ai_ready_*.csv` |
-| 적재 | Gold·AI Ready를 PostgreSQL(`gold`, `ai_ready` 스키마)에 적재 | 적재 테이블 행 수·값 PASS (`report/postgresql_load_verification.csv`) | `pipeline_container/load_postgres.py` | `db/01_schema.sql` |
+| 00 Source | API 응답 원문 저장, 파일 수집 | 원천 읽기 전용, SHA-256 기록 | `00_collect.py` | `src_*.csv` |
+| 01 Bronze | 원천을 값 그대로 parquet로, 추적 컬럼 추가 | 행 수 = 원천, 원천 불변 | `01_bronze.py` | `ds_dataset.csv` |
+| 02 Silver 표준화 | 표준 사전으로 컬럼명·타입·단위 통일 | 행 수 = Bronze (37/37 파일) | `02_normalize.py` | `std_*.csv` |
+| 03 Silver 정제 | 중복·영업 상태·대용 폐업일·법정동·분석 업종 판정 | 오염 정답지 39개 항목 차이 0<br>행 수 = 02 − 중복 제거 (10/10 데이터셋) | `03_clean.py` | `cln_*.csv`<br>`known_issues.csv` |
+| 04 Gold | 법정동 × 분기 집계, 같은 단지 가격 지수, 스타 스키마 | 정답지 4개 항목 차이 0<br>차원 연결률 100%<br>구 합계 = 동 합계 + 법정동 실패 | `04_gold.py` | `rule_gold_*.csv` |
+| 05 AI Ready | 피처셋 생성, 롤링 검증, 다음 분기 예측 | AR1~AR6 전부 PASS (시점 누수 검사 포함) | `05_feature_set.py`<br>`05_train.py` | `rule_ai_ready_*.csv` |
+| 적재 | Gold·AI Ready를 PostgreSQL에 적재 | 적재 테이블 행 수·값 PASS | `load_postgres.py` | `db/01_schema.sql` |
 
 **표준 사전**: 표준 단어 199개 · 표준 용어(원천 컬럼 → 표준 컬럼) 419개 · 도메인(변환 규칙) 17개 · 접미사 9개
 
