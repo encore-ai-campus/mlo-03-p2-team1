@@ -109,12 +109,16 @@ def verify_serving(api_url: str, web_url: str) -> None:
 
 
 def main() -> int:
+    in_docker = Path("/.dockerenv").exists()
+    default_api = "http://backend:8000" if in_docker else "http://localhost:8000"
+    default_web = "http://frontend" if in_docker else "http://localhost:5173"
+
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--force", action="store_true", help="기존 data/gold/ 파일을 테스트 샘플로 덮어쓰기")
     parser.add_argument("--use-existing-gold", action="store_true", help="샘플 복사 생략 후 기존 data/gold/ 사용")
     parser.add_argument("--skip-verify", action="store_true", help="API/프론트 서빙 검증 생략")
-    parser.add_argument("--api-url", default="http://localhost:8000", help="FastAPI 기본 URL")
-    parser.add_argument("--web-url", default="http://localhost:5173", help="Frontend 기본 URL")
+    parser.add_argument("--api-url", default=default_api, help="FastAPI 기본 URL")
+    parser.add_argument("--web-url", default=default_web, help="Frontend 기본 URL")
     args = parser.parse_args()
 
     py = sys.executable
@@ -145,8 +149,9 @@ def main() -> int:
         print(f"\n[ERROR] {exc}", file=sys.stderr)
         return 1
 
+    browser_url = "http://localhost:5173" if in_docker and args.web_url == "http://frontend" else args.web_url
     print(f"\n[SUCCESS] 전체 로컬 E2E 파이프라인·학습·DB 적재·서빙 검증 완료 ({time.perf_counter() - started:.1f}s)")
-    print(f"브라우저에서 대시보드 확인: {args.web_url}")
+    print(f"브라우저에서 대시보드 확인: {browser_url}")
     return 0
 
 

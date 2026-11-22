@@ -36,6 +36,9 @@ services:
       DBSSLMODE: ${DBSSLMODE:-disable}
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data
+      - ./report:/app/report
     ports:
       - "8000:8000"
     healthcheck:
@@ -56,6 +59,28 @@ services:
     ports:
       - "5173:80"
     restart: unless-stopped
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: pipeline/Dockerfile
+    container_name: apartapart-pipeline
+    profiles: ["pipeline"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DBHOST: ${DBHOST:-postgres}
+      DBPORT: ${DBPORT:-5432}
+      DBNAME: ${DBNAME:-web}
+      DBID: ${DBID:-web}
+      DBPW: ${DBPW:-localdev}
+      DBSSLMODE: ${DBSSLMODE:-disable}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data
+      - ./report:/app/report
 
 volumes:
   pgdata:

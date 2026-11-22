@@ -20,10 +20,10 @@
 자세한 단계별 안내는 [11_로컬_Docker_E2E_실행가이드.md](../../docs/manual/11_로컬_Docker_E2E_실행가이드.md)를 참고하세요.
 
 ```bash
-# 1) 환경 파일 준비 & Docker Compose 실행
+# 1) 환경 파일 준비 & DB·백엔드·프론트 실행
 cp .env.example .env
 docker compose --profile local-db up --build -d
 
-# 2) 테스트 샘플로 파이프라인·DB 적재·학습·API 검증 한 번에 실행
-python scripts/run_local_e2e.py --force
+# 2) 전용 pipeline 컨테이너로 파이프라인·DB 적재·학습·API 검증 한 번에 실행
+docker compose --profile pipeline run --rm --build pipeline
 ```
