@@ -166,9 +166,6 @@ export function SubwayCorridorLayer({ centerMap }: SubwayCorridorLayerProps) {
               <span className="font-mono text-[11px] font-extrabold tracking-tight text-white">
                 PLAYDATA
               </span>
-              <span className="rounded bg-[#007379]/60 px-1 py-0.5 text-[10px] font-semibold text-[#b8f0d4]">
-                독산역
-              </span>
             </div>
           </Html>
         </group>
