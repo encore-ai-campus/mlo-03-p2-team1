@@ -1,0 +1,87 @@
+# Dedicated Pipeline Container E2E Verification Evidence
+Timestamp: 2026-11-22 12:51:07 +0900
+Git Commit: b80a27b (main)
+Command: docker compose --profile pipeline run --rm --build pipeline
+
+## 1. Running Docker Compose Services
+NAMES                 IMAGE                      STATUS                    PORTS
+apartapart-backend    mlo-03-p2-team1-backend    Up 23 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+apartapart-frontend   mlo-03-p2-team1-frontend   Up 23 minutes             0.0.0.0:5173->80/tcp, [::]:5173->80/tcp
+apartapart-postgres   postgres:18-alpine         Up 50 minutes (healthy)   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+## 2. Test Sample SHA-256 Checksums (samples/local_e2e/gold/)
+b0f152b66880e869d3de7214581ed3001a103a582cb2f141e4602b58554924fe  samples/local_e2e/gold/04_gold__dim_date.parquet
+9a591b091a1257998157c66cec1e723c1252ce6698d266cd10cd663b2c8f9870  samples/local_e2e/gold/04_gold__dim_lcns_induty.parquet
+54cb3e42184cb8f4dc0b5c4201139435a7ceaaf8105a9e4ff630eb66dc830e14  samples/local_e2e/gold/04_gold__dim_region.parquet
+fde4ad27f53bfe35e22bc2726f6623ce386ea36136f9e35c3175d56cd3a246bc  samples/local_e2e/gold/04_gold__fact_apt_idx_qtr.parquet
+efd995477adae45ce0dc49d22e1e75b1ebf1d374a4be07263165656af6a71d26  samples/local_e2e/gold/04_gold__fact_apt_trd.parquet
+e85df40efd840defff6f212f3d918205aa5f407fad3bc73504f81a1aaf3d9824  samples/local_e2e/gold/04_gold__fact_apt_trd_qtr.parquet
+99a483a38a1c64f0ffb3c489d57222f7b98c8e17b90855ca4010867234159953  samples/local_e2e/gold/04_gold__fact_lcns_qtr.parquet
+e01aa0713aecc53b31dfa7feb10190ef91d339dc0f07ad669949296fe36a1d4f  samples/local_e2e/gold/04_gold__mart_ldong_infra_qtr.parquet
+
+## 3. Dedicated Pipeline Container Build & 6-Step E2E Execution Log
+ ⠙ Container mlo-03-p2-team1-pipeline-run-8999c61da6d0 Creating             0.1s
+
+
+ ⠹ Container mlo-03-p2-team1-pipeline-run-8999c61da6d0 Creating             0.2s
+
+
+ ⠸ Container mlo-03-p2-team1-pipeline-run-8999c61da6d0 Creating             0.3s
+[+] run 2/2
+
+ ✔ Container mlo-03-p2-team1-pipeline-run-8999c61da6d0 Created              0.4s
+
+=== [1/6 stage-sample] 테스트 샘플 Gold 배치 ===
+  - copied 04_gold__dim_date.parquet (4.2 KB)
+  - copied 04_gold__dim_lcns_induty.parquet (2.5 KB)
+  - copied 04_gold__dim_region.parquet (16.0 KB)
+  - copied 04_gold__fact_apt_idx_qtr.parquet (275.0 KB)
+  - copied 04_gold__fact_apt_trd.parquet (791.5 KB)
+  - copied 04_gold__fact_apt_trd_qtr.parquet (142.8 KB)
+  - copied 04_gold__fact_lcns_qtr.parquet (526.7 KB)
+  - copied 04_gold__mart_ldong_infra_qtr.parquet (370.6 KB)
+
+=== [2/6 feature] /usr/local/bin/python pipeline/ai_ready/05_feature_set.py ===
+feature_set: 7,521 rows ({'labeled': 7300, 'predict': 221}), 269 dongs, 48 features (updated) -> /app/data/ai_ready/05_ai_ready__feature_set.parquet
+=== [2/6 feature] 완료 (0.66s) ===
+
+=== [3/6 load-gold] /usr/local/bin/python scripts/load_postgres.py --stage gold ===
+[DB] Connected: web@postgres:5432/web
+  - gold.dim_region                     467 rows (0.02s)
+  - gold.dim_date                        39 rows (0.00s)
+  - gold.dim_lcns_induty                 14 rows (0.00s)
+  - gold.fact_apt_idx_qtr            18,213 rows (0.16s)
+  - gold.fact_apt_trd_qtr            18,213 rows (0.05s)
+  - gold.fact_lcns_qtr              254,982 rows (0.52s)
+  - gold.mart_ldong_infra_qtr        18,213 rows (0.12s)
+  - gold.fact_apt_trd                30,562 rows (0.22s)
+[DB] Done: 8 tables, 340,703 rows in 1.13s
+=== [3/6 load-gold] 완료 (1.59s) ===
+
+=== [4/6 train] /usr/local/bin/python pipeline/ai_ready/05_train.py ===
+prediction: 12,837 rows (updated), MODEL_VER 20889f270831
+FOLD_YR   MODEL_NM  ROW_CNT  MAPE_PCT  VS_BASELINE_PCT  DIRECTION_PCT  RANK_IC
+    ALL   baseline     4058  4.739005         0.000000            NaN      NaN
+    ALL      price     4058  4.405181         7.044164      72.196204 0.154723
+    ALL price_lcns     4058  4.388007         7.406579      72.467340 0.164293
+MODEL_FROM   MODEL_TO  MAPE_DIFF_PCTP  CI_LOW_PCTP  CI_HIGH_PCTP  IMPROVED_FOLD_CNT  FOLD_CNT
+  baseline      price       -0.333823    -0.444555     -0.218555                  4         6
+     price price_lcns       -0.017175    -0.036323      0.002850                  6         6
+=== [4/6 train] 완료 (3.21s) ===
+
+=== [5/6 load-ai] /usr/local/bin/python scripts/load_postgres.py --stage ai_ready ===
+[DB] Connected: web@postgres:5432/web
+  - ai_ready.feature_set                  7,521 rows (0.43s)
+  - ai_ready.prediction                  12,837 rows (0.11s)
+[DB] Done: 2 tables, 20,358 rows in 0.56s
+=== [5/6 load-ai] 완료 (1.02s) ===
+
+=== [6/6 verify] FastAPI & Frontend 서빙 검증 ===
+  - API health: {'status': 'ok'}
+  - API bootstrap (cache refreshed): source=postgres, modelVersion=20889f270831, quarters=40, regions=467
+  - 2026Q3: total=467, predicted=209
+  - 2026Q4: total=467, predicted=221
+  - Frontend (http://frontend/): HTTP 200, proxy /api/health={'status': 'ok'}
+
+[SUCCESS] 전체 로컬 E2E 파이프라인·학습·DB 적재·서빙 검증 완료 (7.3s)
+브라우저에서 대시보드 확인: http://localhost:5173
