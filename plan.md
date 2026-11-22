@@ -33,16 +33,16 @@
 ### 2. Silver 03 — 정제 (11/20)
 - [x] 정제 규칙 초안 `docs/silver_정제.md` 병합
 - [x] `metadata/cln_*.csv`, `03_clean.py`, `cln_rules.py` 구현 (인허가 5종 규칙 기준, 나머지 데이터셋 규칙은 추가 예정)
-- [ ] 데이터셋별 03 정제 (bronze 11종 전체, 결정 11/20 — `food_general_file`은 일반음식점에 합쳐 03 파일 10개)
+- [x] 데이터셋별 03 정제 (bronze 11종 전체, 결정 11/20 — `food_general_file`은 일반음식점에 합쳐 03 파일 10개)
   - [x] 인허가 5종: 일반음식점·휴게음식점·의원·약국·미용업 (11/20 완료 — 완료 조건 1~8, L1 33/33, L3 25/25, L4 사람 확인 통과, 재실행 동일 5/5)
   - [x] 일반음식점 CSV(`food_general_file`): [A1] 결정 (11/20) — 별도 03 파일 없음, 일반음식점 03에 법정동 코드·UTM-K 좌표 보완용으로만 사용
-  - [ ] 아파트 매매 실거래가(`apt_trade`): 현재 `issue_list`만 기록, 03 산출물 생성
-  - [ ] 아파트 전월세 실거래가(`apt_rent`)
-  - [ ] 상가(상권)정보(`store_info`)
-  - [ ] 심평원 병의원·약국 현황(`hira_inst`)
-  - [ ] 법정동코드(`ldong_code`): 기준 코드표로 정리 (`dim_region` 원천)
-- [ ] 완료 조건 1~8, L1 규칙 단위 검사, L3 문서 수치 회귀를 전체 데이터셋에 통과 (진행 중)
-- [ ] `report/silver/03_*` 4종 기록 (03이 쓰는 manifest · change_log · issue_list + 검증 스크립트가 쓰는 known_issues_check)에 전체 데이터셋 반영 (진행 중)
+  - [x] 아파트 매매 실거래가(`apt_trade`): 현재 `issue_list`만 기록, 03 산출물 생성 (PR #20)
+  - [x] 아파트 전월세 실거래가(`apt_rent`) (PR #21)
+  - [x] 상가(상권)정보(`store_info`) (PR #23)
+  - [x] 심평원 병의원·약국 현황(`hira_inst`) (PR #22)
+  - [x] 법정동코드(`ldong_code`): 기준 코드표로 정리 (`dim_region` 원천) (PR #24)
+- [x] 완료 조건 1~8, L1 규칙 단위 검사, L3 문서 수치 회귀를 전체 데이터셋에 통과
+- [x] `report/silver/03_*` 4종 기록 (03이 쓰는 manifest · change_log · issue_list + 검증 스크립트가 쓰는 known_issues_check)에 전체 데이터셋 반영
 - [x] 잠정 처리 5건 확인 (11/20 모두 결정) — 03 테스트 브랜치에서 일단 정해 진행한 방향을 유지할지 수정할지 (`docs/archive/silver_정제_테스트계획.md` 6장)
   - [x] 음식점 교체 미확정: 후보가 여럿이면 연결하지 않고 `AMBIG_LINK`, 대형 건물은 `MULTI_TENANT`로 기록만 (플래그 없음, 골드에서 필요하면 `MULTI_TENANT_YN`으로 올림) [F2]
   - [x] 카페 제외 키워드: `PCCAFE`·`카페테리아`·`까페테리아` 추가 (카페 일반 −59, 휴게 −95곳) [E1]
@@ -50,17 +50,17 @@
   - [x] 일반음식점 이상 업태 31건: 기본 분류 규칙(상호 키워드) + `issue_list`(`ABNRM_UPTAE`) — 일반음식점 28, 카페 3으로 집계 [E2]
   - [x] [D3] 서울 밖 주소: 문서 28건 → 24건으로 정정 (11/20, 28건은 재현 불가). 전출 의원 2건은 [D4] `실패_전출주소`라 `OUT_SEOUL_ADDR_YN`은 22건, L3 회귀 25항목 모두 일치
 - [x] 정제 제안 팀 합의 (11/20 PM 결정) — [C2]·[D1]·[E4]·[F]·3-6 골드 집계 기준 채택, 구현 세부 해석 일괄 승인, 03은 업종별 파일(3NF 분리는 골드). 설계서 정합·좌표 변환 단계·백화점 팝업 플래그는 보류 (`docs/archive/silver_정제.md` 8장)
-- [ ] `feature/silver-03-clean` PR 리뷰·병합
+- [x] `feature/silver-03-clean` PR 리뷰·병합 (PR #14·#16)
 
 ### 3. Gold — 스타 스키마 (논의 11/20 오후, 구현 11/21)
 - [x] fact / dimension 테이블 구성 확정 (`dim_region` 법정동 기준, 법정동 × 분기 집계) — PR #29
 - [x] 골드 진입 방식 결정 — 03 silver를 직접 읽는다 (PR #29)
-- [ ] 논의 결과 문서화 (팀 합의 내용만)
+- [x] 논의 결과 문서화 (팀 합의 내용만)
 - [x] `pipeline/gold/04_gold.py` 구현 (PR #29·#31)
 - [x] 검증: silver ↔ gold 행 수·합계 대조, 구 합계 = 동 합계 + 법정동 실패 건수, `report/gold/` 기록, `pipeline/validation/check_gold_*.py` (PR #31)
 - [x] AI Ready 방향에 맞춘 수정 (#32, PR #35): `LOW_SAMPLE_YN`(5건 기준), `PROVISIONAL_YN` 정리, 동 가격 지수 `fact_apt_idx_qtr`(같은 단지 기준)
-- [ ] PostgreSQL 적재 (`.env` 연결, `SPEC.md` 4장)
-- [ ] 문서 (`docs/gold_*.md` 또는 `SPEC.md` 갱신)
+- [x] PostgreSQL 적재 (`.env` 연결, `SPEC.md` 4장) (`report/postgresql_load_verification.csv` PASS)
+- [x] 문서 (`docs/gold_*.md` 또는 `SPEC.md` 갱신)
 
 ### 4. AI Ready · 모델 (11/22 오전)
 > 빠른 실험(`experiment/ai-ready-quick` 브랜치, `docs/evidence/ai_ready-quick-experiment-20261121.md`)으로 방향을 정했다.
@@ -69,24 +69,24 @@
 > 휴게음식점 추가(2026-11-21, PR #37) 후에는 집값+상권 − 집값만이 −0.010%p (95% CI [−0.030, +0.011], 6년 중 4년 개선)이다. 일반음식점 비음식입지 238건을 `기타`로 뺀 뒤(PR #38)에는 −0.002%p (95% CI [−0.021, +0.016], 6년 중 2년 개선)이다. 상권 활용 결론은 팀 확인이 필요하다.
 
 - [x] 예측 타깃 정의: 다음 분기 · 같은 단지 기준 ㎡당 가격 변화율 → 매매가로 되돌려 출력 (빠른 실험)
-- [ ] 구현 (#33): 기준 CSV(`metadata/rule_ai_ready_*.csv`), 피처셋(`05_feature_set.py` → `data/ai_ready/`), 학습·롤링 검증(`05_train.py`, 2021–2026), 예측 결과 테이블(`LDONG_CD × YQ × MODEL_NM`), `report/ai_ready/` 기록
-- [ ] 검증 (#33): `pipeline/validation/check_ai_ready.py` — 구조, 타깃 독립 계산, 시점 누수, 성능 수치 재계산
-- [ ] 실행 확인: nomorehuman90이 자기 PC에서 처음부터 실행 (골드 → AI Ready → 검증)
-- [ ] 예측 결과 PostgreSQL 적재
-- [ ] (선택) Watch 폴더 자동 피딩 — 신규 파일 감지 → 02·03 → gold 재실행
+- [x] 구현 (#33): 기준 CSV(`metadata/rule_ai_ready_*.csv`), 피처셋(`05_feature_set.py` → `data/ai_ready/`), 학습·롤링 검증(`05_train.py`, 2021–2026), 예측 결과 테이블(`LDONG_CD × YQ × MODEL_NM`), `report/ai_ready/` 기록 (PR #36)
+- [x] 검증 (#33): `pipeline/validation/check_ai_ready.py` — 구조, 타깃 독립 계산, 시점 누수, 성능 수치 재계산 (PR #36, AR1~AR6 PASS)
+- [x] 실행 확인: nomorehuman90이 자기 PC에서 처음부터 실행 (골드 → AI Ready → 검증)
+- [x] 예측 결과 PostgreSQL 적재
+- [x] (선택) Watch 폴더 자동 피딩 — 신규 파일 감지 → 02·03 → gold 재실행 (`pipeline_container/watch_pipeline.py`)
 
 ### 5. 대시보드 (11/22 오전, AI Ready와 병행)
-- [ ] 예측 결과 테이블 컬럼 확인 (#33 댓글로 합의)
-- [ ] 백엔드 API를 Gold·예측 결과 기준으로 교체 (`backend/app/features/dashboard`)
-- [ ] 동 상세: 가격 지수 추이 + 다음 분기 예측 + 상권 개업·폐업 추이, 거래 희소 동은 "거래 희소" 표시
-- [ ] 지도 표시 방식 결정 (법정동 경계·중심점 vs 업소 위경도). 업소 위경도를 쓸 때만 좌표 변환(WGS84) 필요 — 실버 03은 좌표를 02 값 그대로 둠
-- [ ] 프론트 지도·지표를 서울 법정동 기준으로 연결
-- [ ] 헬스체크·단위 테스트, 프론트 타입 체크·빌드 통과
+- [x] 예측 결과 테이블 컬럼 확인 (#33 댓글로 합의)
+- [x] 백엔드 API를 Gold·예측 결과 기준으로 교체 (`backend/app/features/dashboard`)
+- [x] 동 상세: 가격 지수 추이 + 다음 분기 예측 + 상권 개업·폐업 추이, 거래 희소 동은 "거래 희소" 표시
+- [x] 지도 표시 방식 결정 (법정동 경계·중심점 vs 업소 위경도). 업소 위경도를 쓸 때만 좌표 변환(WGS84) 필요 — 실버 03은 좌표를 02 값 그대로 둠 — 법정동 경계
+- [x] 프론트 지도·지표를 서울 법정동 기준으로 연결
+- [x] 헬스체크·단위 테스트, 프론트 타입 체크·빌드 통과
 
 ### 6. 발표 준비 (11/22 오후)
-- [ ] 발표 자료: 문제(다채널·오염 데이터) → 정제 규칙 → `report/` 수치 근거 → Gold → 모델 → 대시보드
-- [ ] 한계 정리 (`silver_정제.md` 9장)
-- [ ] 데모 시나리오와 1차 리허설
+- [x] 발표 자료: 문제(다채널·오염 데이터) → 정제 규칙 → `report/` 수치 근거 → Gold → 모델 → 대시보드
+- [x] 한계 정리 (`silver_정제.md` 9장)
+- [x] 데모 시나리오와 1차 리허설
 
 ### 7. 트러블 슈팅 · 마무리 (11/23 09:00~)
 - [ ] 처음부터 끝까지 재실행 점검 (02 → 03 → gold → ai_ready), 재실행 시 `unchanged` 확인
