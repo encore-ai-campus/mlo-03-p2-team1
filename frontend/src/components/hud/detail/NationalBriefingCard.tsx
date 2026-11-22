@@ -263,8 +263,9 @@ export function NationalBriefingCard({
                 {Array.from({ length: Math.max(0, 10 - accuracyHistory.length) }).map((_, idx) => (
                   <div key={`empty-${idx}`} aria-hidden="true" className="h-full w-full" />
                 ))}
-                {accuracyHistory.map((pt) => {
+                {accuracyHistory.map((pt, idx) => {
                   const isCurrent = pt.quarter === selectedQuarter;
+                  const isLast = idx === accuracyHistory.length - 1;
                   return (
                     <div
                       key={pt.quarter}
@@ -273,7 +274,11 @@ export function NationalBriefingCard({
                     >
                       <div
                         className={`flex h-full w-full flex-col overflow-hidden transition-all duration-300 ${
-                          isCurrent ? 'brightness-110' : 'opacity-90'
+                          !isLast ? 'border-r border-slate-950/35' : ''
+                        } ${
+                          isCurrent
+                            ? 'brightness-110 ring-1 ring-inset ring-cyan-300/90'
+                            : 'opacity-90'
                         }`}
                       >
                         <div
