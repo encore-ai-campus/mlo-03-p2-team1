@@ -154,4 +154,6 @@ export interface TransitCorridor {
   name: string;
   color: string;
   regionCodes: string[];
+  startLngLat?: [number, number];
+  endLngLat?: [number, number];
 }

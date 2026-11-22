@@ -108,7 +108,7 @@ def _load_bootstrap_from_db() -> DashboardBootstrapResponse:
             # 1. Regions (467 Seoul legal dongs)
             cur.execute(
                 """
-                SELECT "LDONG_CD", "LDONG_NM", "SGG_NM", "HAS_OBSERVED_TRADE_YN"
+                SELECT "LDONG_CD", COALESCE(NULLIF("UMD_NM", ''), "LDONG_NM"), "SGG_NM", "HAS_OBSERVED_TRADE_YN"
                 FROM gold.dim_region
                 ORDER BY "LDONG_CD"
                 """
