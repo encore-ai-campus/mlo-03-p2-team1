@@ -1,0 +1,61 @@
+# Live Watch-Folder Daemon End-to-End Verification Evidence
+Timestamp: 2026-11-22 14:04:25 +0900
+Git Commit: 85ba98d (main)
+Mode: Persistent apartapart-pipeline daemon (10s polling, zero manual commands)
+
+## 1. Running Docker Compose Stack (4 Persistent Containers)
+NAMES                 IMAGE                      STATUS                       PORTS
+apartapart-pipeline   mlo-03-p2-team1-pipeline   Up 6 minutes                 
+apartapart-backend    mlo-03-p2-team1-backend    Up About an hour (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+apartapart-frontend   mlo-03-p2-team1-frontend   Up About an hour             0.0.0.0:5173->80/tcp, [::]:5173->80/tcp
+apartapart-postgres   postgres:18-alpine         Up 2 hours (healthy)         0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+## 2. Full Live Watch-Folder Trigger -> Archive -> Serving Output
+Command exited with code 0.
+
+Command output:
+[HOST] Dropped data/watch/live_demo_batch at 2026-11-22 14:04:05 +0900
+total 0
+drwxr-xr-x@  4 ckh  staff  128 Nov 22 14:04 .
+drwxr-xr-x@ 11 ckh  staff  352 Nov 22 14:04 ..
+-rw-r--r--@  1 ckh  staff    0 Nov 22 07:11 .gitkeep
+drwxr-xr-x@  4 ckh  staff  128 Nov 22 14:04 live_demo_batch
+[HOST] Live daemon finished and archived batch after 21s!
+=== LIVE DAEMON LOGS (apartapart-pipeline) ===
+2026-11-22 04:58:44,909 [INFO] Pipeline watcher started: watch_dir=/app/data/watch, interval=10s, api_url=http://backend:8000
+2026-11-22 05:04:06,071 [INFO] Waiting for item to settle: live_demo_batch
+2026-11-22 05:04:16,123 [INFO] Detected new source batch: live_demo_batch
+2026-11-22 05:04:16,172 [INFO] Staged 25 files from directory live_demo_batch -> data/source/
+2026-11-22 05:04:16,172 [INFO] Step [01_bronze] start
+2026-11-22 05:04:17,543 [INFO] Step [01_bronze] done (1.37s)
+2026-11-22 05:04:17,543 [INFO] Step [02_normalize] start
+2026-11-22 05:04:19,046 [INFO] Step [02_normalize] done (1.50s)
+2026-11-22 05:04:19,046 [INFO] Step [03_clean] start
+2026-11-22 05:04:20,828 [INFO] Step [03_clean] done (1.78s)
+2026-11-22 05:04:20,828 [INFO] Step [04_gold] start
+2026-11-22 05:04:21,806 [INFO] Step [04_gold] done (0.98s)
+2026-11-22 05:04:21,806 [INFO] Step [05_feature_set] start
+2026-11-22 05:04:22,345 [INFO] Step [05_feature_set] done (0.54s)
+2026-11-22 05:04:22,346 [INFO] Step [load_gold] start
+2026-11-22 05:04:23,590 [INFO] Step [load_gold] done (1.24s)
+2026-11-22 05:04:23,591 [INFO] Step [05_train] start
+2026-11-22 05:04:24,346 [INFO] Step [05_train] done (0.76s)
+2026-11-22 05:04:24,346 [INFO] Step [load_ai_ready] start
+2026-11-22 05:04:24,861 [INFO] Step [load_ai_ready] done (0.51s)
+2026-11-22 05:04:25,485 [INFO] Refreshed backend cache: HTTP 200 (http://backend:8000/api/dashboard/bootstrap?refresh=true)
+2026-11-22 05:04:25,486 [INFO] Batch succeeded in 9.4s -> archived to data/processed/20261122_050425__live_demo_batch
+=== data/watch/ (after) ===
+total 0
+drwxr-xr-x@  3 ckh  staff   96 Nov 22 14:04 .
+drwxr-xr-x@ 11 ckh  staff  352 Nov 22 14:04 ..
+-rw-r--r--@  1 ckh  staff    0 Nov 22 07:11 .gitkeep
+=== data/processed/ (after) ===
+total 0
+drwxr-xr-x@  4 ckh  staff  128 Nov 22 14:04 .
+drwxr-xr-x@ 11 ckh  staff  352 Nov 22 14:04 ..
+-rw-r--r--@  1 ckh  staff    0 Nov 22 07:11 .gitkeep
+drwxr-xr-x@  4 ckh  staff  128 Nov 22 14:04 20261122_050425__live_demo_batch
+=== LIVE API & FRONTEND CHECK ===
+{"status":"ok"}
+2026Q4 live serving: source=postgres, total=467, predicted=30
+Frontend http://localhost:5173/ -> HTTP 200
