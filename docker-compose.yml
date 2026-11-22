@@ -63,7 +63,7 @@ services:
   pipeline:
     build:
       context: .
-      dockerfile: pipeline/Dockerfile
+      dockerfile: pipeline_container/Dockerfile
     container_name: apartapart-pipeline
     env_file:
       - path: .env

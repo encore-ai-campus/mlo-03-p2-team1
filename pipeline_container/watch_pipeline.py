@@ -10,8 +10,8 @@
 - 실패 시 data/quarantine/<timestamp>__<name> 으로 격리하고 report/pipeline_watch.log 에 기록한다.
 
 사용법:
-  python scripts/watch_pipeline.py
-  python scripts/watch_pipeline.py --interval 5 --once
+  python pipeline_container/watch_pipeline.py
+  python pipeline_container/watch_pipeline.py --interval 5 --once
 """
 from __future__ import annotations
 
@@ -152,9 +152,9 @@ def run_pipeline(api_url: str, logger: logging.Logger) -> None:
         ("03_clean", [py, "pipeline/silver/03_clean.py"]),
         ("04_gold", [py, "pipeline/gold/04_gold.py"]),
         ("05_feature_set", [py, "pipeline/ai_ready/05_feature_set.py"]),
-        ("load_gold", [py, "scripts/load_postgres.py", "--stage", "gold"]),
+        ("load_gold", [py, "pipeline_container/load_postgres.py", "--stage", "gold"]),
         ("05_train", [py, "pipeline/ai_ready/05_train.py"]),
-        ("load_ai_ready", [py, "scripts/load_postgres.py", "--stage", "ai_ready"]),
+        ("load_ai_ready", [py, "pipeline_container/load_postgres.py", "--stage", "ai_ready"]),
     ]
     for name, cmd in steps:
         t0 = time.perf_counter()

@@ -1,9 +1,9 @@
 """Gold / AI Ready Parquet 산출물을 PostgreSQL(gold / ai_ready 스키마)에 적재한다.
 
 사용법:
-  python scripts/load_postgres.py --stage gold
-  python scripts/load_postgres.py --stage ai_ready
-  python scripts/load_postgres.py --stage all
+  python pipeline_container/load_postgres.py --stage gold
+  python pipeline_container/load_postgres.py --stage ai_ready
+  python pipeline_container/load_postgres.py --stage all
 
 참고:
 - 루트 .env 의 DBHOST/DBPORT/DBNAME/DBID/DBPW/DBSSLMODE 를 사용한다.

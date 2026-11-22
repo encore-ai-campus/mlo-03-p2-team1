@@ -7,14 +7,14 @@
   4. clean        : python pipeline/silver/03_clean.py
   5. gold         : python pipeline/gold/04_gold.py
   6. feature      : python pipeline/ai_ready/05_feature_set.py
-  7. load-gold    : python scripts/load_postgres.py --stage gold
+  7. load-gold    : python pipeline_container/load_postgres.py --stage gold
   8. train        : python pipeline/ai_ready/05_train.py (LightGBM 롤링 CV + 차기 분기 예측)
-  9. load-ai      : python scripts/load_postgres.py --stage ai_ready
+  9. load-ai      : python pipeline_container/load_postgres.py --stage ai_ready
  10. verify       : FastAPI(/api/health, bootstrap?refresh=true, quarters) + Frontend 응답 확인
 
 사용법:
-  python scripts/run_local_e2e.py --force                 # 비식별 테스트 원천으로 전체 10단계 실행
-  python scripts/run_local_e2e.py --use-existing-source   # 이미 data/source/에 있는 전체 원천으로 실행
+  python pipeline_container/run_local_e2e.py --force                 # 비식별 테스트 원천으로 전체 10단계 실행
+  python pipeline_container/run_local_e2e.py --use-existing-source   # 이미 data/source/에 있는 전체 원천으로 실행
 """
 from __future__ import annotations
 
@@ -160,9 +160,9 @@ def main() -> int:
         run_cmd("4/10 clean", [py, "pipeline/silver/03_clean.py"])
         run_cmd("5/10 gold", [py, "pipeline/gold/04_gold.py"])
         run_cmd("6/10 feature", [py, "pipeline/ai_ready/05_feature_set.py"])
-        run_cmd("7/10 load-gold", [py, "scripts/load_postgres.py", "--stage", "gold"])
+        run_cmd("7/10 load-gold", [py, "pipeline_container/load_postgres.py", "--stage", "gold"])
         run_cmd("8/10 train", [py, "pipeline/ai_ready/05_train.py"])
-        run_cmd("9/10 load-ai", [py, "scripts/load_postgres.py", "--stage", "ai_ready"])
+        run_cmd("9/10 load-ai", [py, "pipeline_container/load_postgres.py", "--stage", "ai_ready"])
 
         if not args.skip_verify:
             verify_serving(args.api_url.rstrip("/"), args.web_url.rstrip("/"))

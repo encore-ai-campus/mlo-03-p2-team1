@@ -19,7 +19,7 @@
 ```text
 [저장소 폴더]                                 [Docker Compose 컨테이너]
 
-pipeline/ · metadata/ · scripts/ · samples/ ──▶ apartapart-pipeline (Watch 폴링 · 전처리 · 학습 · DB 적재)
+pipeline_container/ · pipeline/ · metadata/ · samples/ ──▶ apartapart-pipeline (Watch 폴링 · 전처리 · 학습 · DB 적재)
                                                      │  ▲
                                   ./data, ./report   │  │ PostgreSQL COPY 적재
                                                      ▼  ▼
@@ -95,9 +95,9 @@ docker compose logs -f pipeline
 4. **03 Silver 정제**: `python pipeline/silver/03_clean.py` (중복·법정동·업종 정제 및 완료 조건 검증)
 5. **04 Gold 집계**: `python pipeline/gold/04_gold.py` (서울 467개 법정동 × 39개 분기 스타 스키마 8종 생성)
 6. **05 AI Ready 피처셋**: `python pipeline/ai_ready/05_feature_set.py` (48개 피처 생성)
-7. **Gold DB 적재**: `python scripts/load_postgres.py --stage gold` (로컬 PostgreSQL `gold.*` 8개 테이블 적재)
+7. **Gold DB 적재**: `python pipeline_container/load_postgres.py --stage gold` (로컬 PostgreSQL `gold.*` 8개 테이블 적재)
 8. **05 LightGBM 학습·예측**: `python pipeline/ai_ready/05_train.py` (롤링 CV 2021~2026 + `2026Q4` 예측)
-9. **학습 결과 DB 적재**: `python scripts/load_postgres.py --stage ai_ready` (`ai_ready.feature_set`, `ai_ready.prediction` 적재)
+9. **학습 결과 DB 적재**: `python pipeline_container/load_postgres.py --stage ai_ready` (`ai_ready.feature_set`, `ai_ready.prediction` 적재)
 10. **캐시 갱신 및 아카이브**:
     - `GET http://backend:8000/api/dashboard/bootstrap?refresh=true`로 백엔드 캐시 즉시 갱신
     - 성공 시 `data/watch/sample_batch` → `data/processed/<timestamp>__sample_batch` 이동
@@ -105,7 +105,7 @@ docker compose logs -f pipeline
 
 > **Watch 대신 즉시 수동 E2E 실행이 필요할 때**
 > ```bash
-> docker compose exec pipeline python scripts/run_local_e2e.py --force
+> docker compose exec pipeline python pipeline_container/run_local_e2e.py --force
 > ```
 
 ### Step 4. 브라우저에서 프론트엔드 확인
@@ -124,7 +124,7 @@ docker compose logs -f pipeline
 전체 원천 데이터(`data/source/api/`, `data/source/files/`)를 로컬에 보유하고 있다면 `--use-existing-source` 옵션으로 01 Bronze부터 DB 적재·학습·서빙 검증까지 한 번에 실행할 수 있습니다. (전체 원천 기준 약 15~20분 소요)
 
 ```bash
-docker compose exec pipeline python scripts/run_local_e2e.py --use-existing-source
+docker compose exec pipeline python pipeline_container/run_local_e2e.py --use-existing-source
 ```
 
 ---

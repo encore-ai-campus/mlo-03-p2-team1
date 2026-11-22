@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir \
 
 COPY pipeline ./pipeline
 COPY metadata ./metadata
-COPY scripts ./scripts
+COPY pipeline_container ./pipeline_container
 COPY samples ./samples
 
-CMD ["python", "scripts/watch_pipeline.py"]
+CMD ["python", "pipeline_container/watch_pipeline.py"]
