@@ -90,7 +90,7 @@ def get_table_column_types(cur: psycopg.Cursor, schema: str, table: str) -> dict
     if not rows:
         raise RuntimeError(
             f"테이블 {schema}.{table} 이 존재하지 않습니다. "
-            "docker/postgres/init/01_schema.sql 이 적용되었는지 확인하세요."
+            "db/01_schema.sql 이 적용되었는지 확인하세요."
         )
     return {name: dtype for name, dtype in rows}
 

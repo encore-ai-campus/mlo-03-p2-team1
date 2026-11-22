@@ -1,0 +1,75 @@
+# 4-Container Layout (`db/`, `pipeline_container/`, `backend/`, `frontend/`) E2E & Watch-Folder Verification Evidence
+Timestamp: 2026-11-22 18:27:28 +0900
+Base Git Commit: 2637293 (main) + db/ container split
+Mode: Fresh `docker compose --profile local-db up -d --build` (isolated named volumes `e2e_data`, `e2e_report` to preserve host 10GB `data/source/`)
+
+## 1. Running Docker Compose Stack (4 Custom-Built Containers)
+NAME                  IMAGE                      COMMAND                  SERVICE    STATUS                    PORTS
+apartapart-backend    mlo-03-p2-team1-backend    "uvicorn backend.app…"   backend    Up (healthy)              0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+apartapart-frontend   mlo-03-p2-team1-frontend   "/docker-entrypoint.…"   frontend   Up                        0.0.0.0:5173->80/tcp, [::]:5173->80/tcp
+apartapart-pipeline   mlo-03-p2-team1-pipeline   "python pipeline_con…"   pipeline   Up                        
+apartapart-postgres   mlo-03-p2-team1-postgres   "docker-entrypoint.s…"   postgres   Up (healthy)              0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+## 2. PostgreSQL Auto-Init Schema Verification (`db/Dockerfile` -> `db/01_schema.sql`)
+ table_schema |      table_name
+--------------+----------------------
+ ai_ready     | feature_set
+ ai_ready     | prediction
+ gold         | dim_date
+ gold         | dim_lcns_induty
+ gold         | dim_region
+ gold         | fact_apt_idx_qtr
+ gold         | fact_apt_trd
+ gold         | fact_apt_trd_qtr
+ gold         | fact_lcns_qtr
+ gold         | mart_ldong_infra_qtr
+(10 rows)
+
+## 3. Manual 10-Step E2E (`pipeline_container/run_local_e2e.py --force`)
+- [1/10 stage-source] staged 25 sample source files (14.18 MB) -> /app/data/source
+- [2/10 bronze] -> [3/10 normalize] (1.21s) -> [4/10 clean] (1.66s) -> [5/10 gold] (0.95s) -> [6/10 feature] (0.51s)
+- [7/10 load-gold] 8 tables, 325,597 rows in 0.82s (1.27s total)
+- [8/10 train] prediction: 2,622 rows (created), MODEL_VER c5567dcf3d8d (0.87s)
+- [9/10 load-ai] 2 tables, 4,064 rows in 0.09s (0.53s total)
+- [10/10 verify]
+  - API health: {'status': 'ok'}
+  - API bootstrap (cache refreshed): source=postgres, modelVersion=c5567dcf3d8d, quarters=40, regions=467
+  - 2026Q3: total=467, predicted=40
+  - 2026Q4: total=467, predicted=42
+  - Frontend (http://frontend:80/): HTTP 200, proxy /api/health={'status': 'ok'}
+- [SUCCESS] 전체 E2E 완료 (8.9s)
+
+## 4. Live Watch-Folder Daemon Auto-Feed (`pipeline_container/watch_pipeline.py`)
+Dropped `/app/data/watch/sample_batch` via atomic rename (`sample_batch.part` -> `sample_batch`) after clearing `/app/data/*`.
+
+=== LIVE DAEMON LOGS (apartapart-pipeline) ===
+2026-11-22 09:24:23,390 [INFO] Pipeline watcher started: watch_dir=/app/data/watch, interval=10s, api_url=http://backend:8000
+2026-11-22 09:26:53,934 [INFO] Detected new source batch: sample_batch
+2026-11-22 09:26:53,945 [INFO] Staged 25 files from directory sample_batch -> data/source/
+2026-11-22 09:26:53,945 [INFO] Step [01_bronze] start
+2026-11-22 09:26:55,134 [INFO] Step [01_bronze] done (1.19s)
+2026-11-22 09:26:55,134 [INFO] Step [02_normalize] start
+2026-11-22 09:26:56,299 [INFO] Step [02_normalize] done (1.16s)
+2026-11-22 09:26:56,299 [INFO] Step [03_clean] start
+2026-11-22 09:26:57,938 [INFO] Step [03_clean] done (1.64s)
+2026-11-22 09:26:57,938 [INFO] Step [04_gold] start
+2026-11-22 09:26:58,866 [INFO] Step [04_gold] done (0.93s)
+2026-11-22 09:26:58,866 [INFO] Step [05_feature_set] start
+2026-11-22 09:26:59,373 [INFO] Step [05_feature_set] done (0.51s)
+2026-11-22 09:26:59,373 [INFO] Step [load_gold] start
+2026-11-22 09:27:00,611 [INFO] Step [load_gold] done (1.24s)
+2026-11-22 09:27:00,611 [INFO] Step [05_train] start
+2026-11-22 09:27:01,442 [INFO] Step [05_train] done (0.83s)
+2026-11-22 09:27:01,442 [INFO] Step [load_ai_ready] start
+2026-11-22 09:27:01,963 [INFO] Step [load_ai_ready] done (0.52s)
+2026-11-22 09:27:02,303 [INFO] Refreshed backend cache: HTTP 200 (http://backend:8000/api/dashboard/bootstrap?refresh=true)
+2026-11-22 09:27:02,303 [INFO] Batch succeeded in 8.4s -> archived to data/processed/20261122_092702__sample_batch
+
+## 5. Post-Run Directory & Host Serving Check
+- `/app/data/watch/`: empty
+- `/app/data/processed/`: `20261122_092702__sample_batch`
+- `/app/data/quarantine/`: empty
+- Host `GET http://127.0.0.1:8000/api/health`: `{"status":"ok"}`
+- Host `GET http://127.0.0.1:8000/api/dashboard/bootstrap`: `source=postgres`, `modelVersion=c5567dcf3d8d`, `quarters=40`
+- Host `GET http://127.0.0.1:5173/`: HTTP 200
+- Host `data/source/`: 10G untouched

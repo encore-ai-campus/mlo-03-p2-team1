@@ -1,6 +1,8 @@
 services:
   postgres:
-    image: postgres:18-alpine
+    build:
+      context: .
+      dockerfile: db/Dockerfile
     container_name: apartapart-postgres
     profiles: ["local-db"]
     environment:
@@ -11,7 +13,6 @@ services:
       - "${LOCAL_DBPORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DBID:-web} -d ${DBNAME:-web}"]
       interval: 10s

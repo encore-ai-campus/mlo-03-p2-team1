@@ -13,7 +13,7 @@
 | --- | --- | :---: | :---: | --- |
 | Frontend (Nginx + React/Three.js) | `apartapart-frontend` | 기본 | `http://localhost:5173` | 3D 대시보드 정적 서빙 및 `/api/*` → Backend 리버스 프록시 |
 | Backend (FastAPI) | `apartapart-backend` | 기본 | `http://localhost:8000` | PostgreSQL(`gold`, `ai_ready`) 조회 및 대시보드 REST API 서빙 (경량 이미지) |
-| Local DB (PostgreSQL 18) | `apartapart-postgres` | `local-db` | `localhost:5432` | 최초 기동 시 `docker/postgres/init/01_schema.sql`로 `gold.*`(8개)·`ai_ready.*`(2개) 테이블 자동 생성 |
+| Local DB (PostgreSQL 18) | `apartapart-postgres` | `local-db` | `localhost:5432` | 최초 기동 시 `db/01_schema.sql`로 `gold.*`(8개)·`ai_ready.*`(2개) 테이블 자동 생성 |
 | Pipeline (Watch 자동 피딩·학습) | `apartapart-pipeline` | 기본 (상시 폴링) | 없음 (데몬) | `data/watch/`를 10초마다 폴링. 신규 원천 유입 시 `01_bronze` → `05_train` → DB 적재 → FastAPI 캐시 갱신 자동 실행 |
 
 ```text
@@ -23,7 +23,7 @@ pipeline_container/ · pipeline/ · metadata/ · samples/ ──▶ apartapart-p
                                                      │  ▲
                                   ./data, ./report   │  │ PostgreSQL COPY 적재
                                                      ▼  ▼
-docker/postgres/init/01_schema.sql          ──▶ apartapart-postgres (PostgreSQL 18, gold.* · ai_ready.*)
+db/                                         ──▶ apartapart-postgres (PostgreSQL 18, gold.* · ai_ready.*)
                                                         ▲
                                                         │ SQL 조회 (읽기 전용 서빙)
 backend/                                    ──▶ apartapart-backend  (FastAPI, 경량 API 서빙, :8000)
