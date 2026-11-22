@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${DBNAME:-web}
       POSTGRES_USER: ${DBID:-web}
-      POSTGRES_PASSWORD: ${DBPW:-qwer1234}
+      POSTGRES_PASSWORD: ${DBPW:-localdev}
     ports:
       - "${LOCAL_DBPORT:-5432}:5432"
     volumes:
@@ -28,12 +28,12 @@ services:
       - path: .env
         required: false
     environment:
-      DBHOST: ${DBHOST:-100.100.100.60}
+      DBHOST: ${DBHOST:-postgres}
       DBPORT: ${DBPORT:-5432}
       DBNAME: ${DBNAME:-web}
       DBID: ${DBID:-web}
-      DBPW: ${DBPW:-}
-      DBSSLMODE: ${DBSSLMODE:-prefer}
+      DBPW: ${DBPW:-localdev}
+      DBSSLMODE: ${DBSSLMODE:-disable}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
