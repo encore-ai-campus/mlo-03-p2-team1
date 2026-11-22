@@ -1,159 +1,102 @@
-import { Activity, Layers, Leaf, RotateCcw, TrendingUp } from 'lucide-react';
-import { YEAR_SUMMARIES } from '../../data/mockRegimes';
+import { Activity, Layers, Leaf, RotateCcw } from 'lucide-react';
 import { useDashboardStore } from '../../store/useDashboardStore';
 
-const REGIME_STYLES = {
-  BOOM: {
-    pill: 'bg-amber-500/15 text-amber-300 border-amber-400/35',
-    dot: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
-  },
-  SLUMP: {
-    pill: 'bg-blue-500/15 text-blue-300 border-blue-400/35',
-    dot: 'bg-blue-400 shadow-[0_0_8px_#60a5fa]',
-  },
-  POLARIZATION: {
-    pill: 'bg-rose-500/15 text-rose-300 border-rose-400/35',
-    dot: 'bg-rose-500 shadow-[0_0_8px_#f43f5e]',
-  },
-} as const;
-
 export function TopStatusBar() {
-  const selectedYear = useDashboardStore((s) => s.selectedYear);
-  const comparisonMode = useDashboardStore((s) => s.comparisonMode);
+  const viewMode = useDashboardStore((s) => s.viewMode);
   const geoStatus = useDashboardStore((s) => s.geoStatus);
   const ecoMode = useDashboardStore((s) => s.ecoMode);
+  const setViewMode = useDashboardStore((s) => s.setViewMode);
   const toggleForceFallbackGeo = useDashboardStore((s) => s.toggleForceFallbackGeo);
   const toggleEcoMode = useDashboardStore((s) => s.toggleEcoMode);
   const triggerCameraReset = useDashboardStore((s) => s.triggerCameraReset);
 
-  const summary = YEAR_SUMMARIES[selectedYear];
-  const regimeStyle = REGIME_STYLES[summary.regime];
+  const geoLabel =
+    geoStatus === 'loading'
+      ? '로딩...'
+      : geoStatus === 'geojson'
+        ? '서울 법정동 지도'
+        : 'Fallback 그리드';
 
   return (
-    <header className="pointer-events-none fixed top-0 left-0 right-0 z-20 flex items-center justify-between gap-2 px-4 py-3">
-      {/* Brand & Regime */}
-      <div className="pointer-events-auto hud-glass flex items-center gap-3 rounded-2xl px-3.5 py-2">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/25 to-rose-500/25 border border-white/10">
-            <Activity className="h-4 w-4 text-cyan-300" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-sm font-bold tracking-tight text-slate-100 whitespace-nowrap">
-                KOREA APT MLOps
-              </h1>
-              <span className="hidden xl:inline-block rounded bg-white/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-cyan-300">
-                229 시·군·구
-              </span>
-            </div>
-            <p className="hidden 2xl:block text-[11px] text-slate-400">
-              m²당 가격 예측 오차 및 5대 입지 영향력 3D 모니터
-            </p>
-          </div>
+    <header className="pointer-events-none fixed left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 px-3 pt-3">
+      {/* Brand (272px aligned with LeftFilterPanel) */}
+      <div className="pointer-events-auto hud-glass flex h-[52px] w-[272px] items-center justify-start gap-2.5 rounded-2xl px-3.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-cyan-500/25 to-rose-500/25">
+          <Activity className="h-4 w-4 text-cyan-300" />
         </div>
-
-        <div className="h-7 w-px bg-slate-700/60" />
-
-        <div className="flex items-center gap-2.5">
-          <span className="font-mono text-lg font-bold text-white">{selectedYear}</span>
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${regimeStyle.pill}`}
-          >
-            <span className={`h-2 w-2 rounded-full ${regimeStyle.dot}`} />
-            {summary.regimeLabel}
-          </span>
-          {comparisonMode && (
-            <span className="rounded-full border border-cyan-400/30 bg-cyan-500/15 px-2.5 py-1 text-[11px] font-medium text-cyan-300">
-              vs 2021 비교 중
-            </span>
-          )}
-        </div>
+        <h1 className="whitespace-nowrap text-base font-extrabold tracking-tight text-slate-100">
+          SEOUL APT MLOps
+        </h1>
       </div>
 
-      {/* KPI Metrics & Controls */}
-      <div className="pointer-events-auto hud-glass flex items-center gap-4 rounded-2xl px-4 py-2">
-        <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-wider text-slate-400">
-            모델 적중률 (±2%p)
-          </span>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-mono text-base font-bold text-cyan-300">
-              {summary.hitRatePct.toFixed(1)}%
-            </span>
-            <span className="font-mono text-[10px] text-slate-400">
-              MAE {summary.mae.toFixed(1)}%p
-            </span>
-          </div>
-        </div>
+      {/* Center Hero View Mode Switch: Market vs AI Prediction */}
+      <div
+        role="group"
+        aria-label="3D 지도 시각화 모드"
+        className="pointer-events-auto hud-glass flex h-[52px] items-center gap-1.5 rounded-2xl p-1.5"
+      >
+        <button
+          type="button"
+          aria-pressed={viewMode === 'market'}
+          onClick={() => setViewMode('market')}
+          className={`h-10 rounded-xl px-7 text-sm font-bold tracking-tight transition ${
+            viewMode === 'market'
+              ? 'border border-red-400/55 bg-red-500/20 text-red-100 shadow-[0_0_16px_-4px_rgba(239,68,68,0.55)]'
+              : 'border border-transparent text-slate-300 hover:bg-slate-800/70 hover:text-white'
+          }`}
+        >
+          실제 시세
+        </button>
+        <button
+          type="button"
+          aria-pressed={viewMode === 'error'}
+          onClick={() => setViewMode('error')}
+          className={`h-10 rounded-xl px-7 text-sm font-bold tracking-tight transition ${
+            viewMode === 'error'
+              ? 'border border-cyan-400/60 bg-cyan-500/20 text-cyan-100 shadow-[0_0_16px_-4px_rgba(34,211,238,0.6)]'
+              : 'border border-transparent text-slate-300 hover:bg-slate-800/70 hover:text-white'
+          }`}
+        >
+          AI 예측 시세
+        </button>
+      </div>
 
-        <div className="h-7 w-px bg-slate-700/60" />
+      {/* Controls (272px aligned with Right Briefing Panel) */}
+      <div className="pointer-events-auto hud-glass flex h-[52px] w-[272px] items-center justify-between gap-1 rounded-2xl px-1.5">
+        <button
+          type="button"
+          aria-pressed={ecoMode}
+          onClick={toggleEcoMode}
+          title="절전 모드: Bloom 해제·DPR 1.0·저전력 프레임으로 노트북 발열/팬 소음 최소화"
+          className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border px-2 text-[11px] font-medium transition ${
+            ecoMode
+              ? 'border-emerald-400/50 bg-emerald-500/20 text-emerald-200'
+              : 'border-slate-700/80 bg-slate-900/60 text-slate-200 hover:border-slate-500 hover:text-white'
+          }`}
+        >
+          <Leaf className={`h-3.5 w-3.5 ${ecoMode ? 'text-emerald-300' : 'text-slate-400'}`} />
+          <span>{ecoMode ? '절전' : '절전'}</span>
+        </button>
 
-        <div className="flex flex-col">
-          <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-slate-400">
-            <TrendingUp className="h-3 w-3 text-rose-400" />
-            양극화 지수 (상·하 10% 격차)
-          </span>
-          <div className="flex items-baseline gap-1.5">
-            <span
-              className={`font-mono text-base font-bold ${
-                summary.polarizationIndex >= 18
-                  ? 'text-rose-400'
-                  : summary.polarizationIndex >= 11
-                  ? 'text-amber-300'
-                  : 'text-emerald-300'
-              }`}
-            >
-              {summary.polarizationIndex.toFixed(1)}%p
-            </span>
-            <span className="font-mono text-[10px] text-slate-400">
-              평균 {summary.avgActualGrowth >= 0 ? '+' : ''}
-              {summary.avgActualGrowth.toFixed(1)}%
-            </span>
-          </div>
-        </div>
+        <button
+          type="button"
+          aria-pressed={geoStatus === 'fallback'}
+          onClick={toggleForceFallbackGeo}
+          title="서울 법정동 GeoJSON / Fallback 다각형 전환 테스트"
+          className="inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/60 px-2 text-[11px] font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
+        >
+          <Layers className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
+          <span className="truncate">{geoLabel}</span>
+        </button>
 
-        <div className="h-7 w-px bg-slate-700/60" />
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={toggleEcoMode}
-            title="절전 모드: Bloom 해제·DPR 1.0·저전력 프레임으로 노트북 발열/팬 소음 최소화"
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition ${
-              ecoMode
-                ? 'border-emerald-400/50 bg-emerald-500/20 text-emerald-200'
-                : 'border-slate-700/80 bg-slate-900/60 text-slate-300 hover:border-slate-500 hover:text-white'
-            }`}
-          >
-            <Leaf className={`h-3.5 w-3.5 ${ecoMode ? 'text-emerald-300' : 'text-slate-400'}`} />
-            <span>{ecoMode ? '절전 ON' : '절전'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleForceFallbackGeo}
-            title="외부 TopoJSON / 오프라인 Fallback 다각형 전환 테스트"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-900/60 px-2.5 py-1.5 text-[11px] font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
-          >
-            <Layers className="h-3.5 w-3.5 text-cyan-400" />
-            <span>
-              {geoStatus === 'loading'
-                ? '지형 로딩...'
-                : geoStatus === 'topojson'
-                ? 'KOSTAT 지도'
-                : 'Fallback 그리드'}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={triggerCameraReset}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-900/60 px-2.5 py-1.5 text-[11px] font-medium text-slate-200 transition hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-200"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>전체 시점</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={triggerCameraReset}
+          className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg border border-slate-700/80 bg-slate-900/60 px-2 text-[11px] font-medium text-slate-200 transition hover:border-cyan-400/50 hover:bg-cyan-500/10 hover:text-cyan-200"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          <span>전체 시점</span>
+        </button>
       </div>
     </header>
   );

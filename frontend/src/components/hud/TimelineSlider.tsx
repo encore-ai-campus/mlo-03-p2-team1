@@ -1,101 +1,198 @@
-import { useEffect } from 'react';
-import { Pause, Play } from 'lucide-react';
-import { YEAR_SUMMARIES } from '../../data/mockRegimes';
+import { ChevronLeft, ChevronRight, Pause, Play, Sparkles } from 'lucide-react';
+import { REGIME_THEME } from '../../config/regimes';
+import { useTimelinePlayback } from '../../hooks/useTimelinePlayback';
+import { getQuarterSummary } from '../../services/dashboardData';
 import { useDashboardStore } from '../../store/useDashboardStore';
-import { TIMELINE_YEARS, type MarketRegime, type YearValue } from '../../types/dashboard';
+import {
+  FORECAST_QUARTER,
+  LATEST_OBSERVED_QUARTER,
+  TIMELINE_QUARTERS,
+} from '../../types/dashboard';
 
-const REGIME_DOT_COLOR: Record<MarketRegime, string> = {
-  BOOM: 'bg-amber-400',
-  SLUMP: 'bg-blue-400',
-  POLARIZATION: 'bg-rose-500',
-};
+const PERIOD_LABEL = {
+  train: { text: '학습 구간', cls: 'text-slate-300' },
+  eval: { text: '롤링 검증', cls: 'text-cyan-300' },
+  forecast: { text: '다음 분기 예측', cls: 'text-violet-300' },
+} as const;
 
-const REGIME_ACTIVE_STYLE: Record<MarketRegime, string> = {
-  BOOM: 'border-amber-400/70 bg-amber-500/20 text-amber-200 shadow-[0_0_16px_-4px_rgba(251,191,36,0.55)]',
-  SLUMP: 'border-blue-400/70 bg-blue-500/20 text-blue-200 shadow-[0_0_16px_-4px_rgba(96,165,250,0.55)]',
-  POLARIZATION:
-    'border-rose-400/70 bg-rose-500/20 text-rose-200 shadow-[0_0_16px_-4px_rgba(244,63,94,0.55)]',
-};
+const MAX_IDX = TIMELINE_QUARTERS.length - 1;
+const EVAL_START_IDX = TIMELINE_QUARTERS.indexOf('2021Q1');
+const FORECAST_IDX = TIMELINE_QUARTERS.indexOf(FORECAST_QUARTER);
+
+const TRAIN_EVAL_BOUNDARY_PCT = ((EVAL_START_IDX - 0.5) / MAX_IDX) * 100;
+const EVAL_FORECAST_BOUNDARY_PCT = ((FORECAST_IDX - 0.5) / MAX_IDX) * 100;
 
 export function TimelineSlider() {
-  const selectedYear = useDashboardStore((s) => s.selectedYear);
+  const selectedQuarter = useDashboardStore((s) => s.selectedQuarter);
   const isPlaying = useDashboardStore((s) => s.isPlaying);
-  const setSelectedYear = useDashboardStore((s) => s.setSelectedYear);
+  const setSelectedQuarter = useDashboardStore((s) => s.setSelectedQuarter);
   const togglePlaying = useDashboardStore((s) => s.togglePlaying);
-  const stepYear = useDashboardStore((s) => s.stepYear);
 
-  useEffect(() => {
-    if (!isPlaying) return;
-    const timer = window.setInterval(() => {
-      stepYear();
-    }, 2200);
-    return () => window.clearInterval(timer);
-  }, [isPlaying, stepYear]);
+  useTimelinePlayback();
 
-  const activeIdx = TIMELINE_YEARS.indexOf(selectedYear);
+  const activeIdx = TIMELINE_QUARTERS.indexOf(selectedQuarter);
+  const thumbPct = (activeIdx / MAX_IDX) * 100;
+  const summary = getQuarterSummary(selectedQuarter);
+  const theme = REGIME_THEME[summary.regime];
+  const periodInfo = PERIOD_LABEL[summary.periodType];
+  const isForecast = selectedQuarter === FORECAST_QUARTER;
+
+  const stepBy = (delta: number) => {
+    const nextIdx = Math.min(MAX_IDX, Math.max(0, activeIdx + delta));
+    setSelectedQuarter(TIMELINE_QUARTERS[nextIdx]);
+  };
+
+  const thumbColorClass =
+    summary.periodType === 'forecast'
+      ? 'border-violet-200 bg-violet-400 shadow-[0_0_10px_#a78bfa]'
+      : summary.periodType === 'eval'
+        ? 'border-cyan-100 bg-cyan-400 shadow-[0_0_10px_#22d3ee]'
+        : 'border-slate-200 bg-slate-300 shadow-[0_0_8px_rgba(203,213,225,0.65)]';
 
   return (
-    <footer className="pointer-events-none fixed bottom-4 left-0 right-0 z-20 flex justify-center px-4">
-      <div className="pointer-events-auto hud-glass flex w-full max-w-[740px] items-center gap-4 rounded-2xl px-4 py-3">
-        <button
-          type="button"
-          onClick={togglePlaying}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-400/40 bg-cyan-500/15 text-cyan-200 transition hover:bg-cyan-500/25 hover:text-white"
-          title={isPlaying ? '타임라인 일시정지' : '연도별 자동 재생'}
-        >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="ml-0.5 h-4 w-4" />}
-        </button>
+    <footer
+      aria-label="분기 타임라인 제어"
+      className="pointer-events-none fixed bottom-3 left-0 right-0 z-20 flex justify-center px-3"
+    >
+      <div className="pointer-events-auto hud-glass flex w-full max-w-[840px] items-center gap-4 rounded-2xl px-5 py-3.5">
+        {/* Playback & Step Controls (>= 40px tap targets + aria-labels) */}
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={togglePlaying}
+            aria-label={isPlaying ? '타임라인 일시정지' : '분기별 자동 재생'}
+            aria-pressed={isPlaying}
+            title={isPlaying ? '일시정지' : '분기별 자동 재생'}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/45 bg-cyan-500/20 text-cyan-100 transition hover:bg-cyan-500/30 hover:text-white"
+          >
+            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="ml-0.5 h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => stepBy(-1)}
+            disabled={activeIdx <= 0}
+            aria-label="이전 분기"
+            title="이전 분기"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/60 text-slate-200 transition hover:border-slate-500 hover:text-white disabled:opacity-30"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => stepBy(1)}
+            disabled={activeIdx >= MAX_IDX}
+            aria-label="다음 분기"
+            title="다음 분기"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/60 text-slate-200 transition hover:border-slate-500 hover:text-white disabled:opacity-30"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
 
-        <div className="flex-1 space-y-2">
-          {/* Regime Phase Header */}
-          <div className="grid grid-cols-7 gap-1.5">
-            {TIMELINE_YEARS.map((year: YearValue) => {
-              const summary = YEAR_SUMMARIES[year];
-              const isActive = year === selectedYear;
-              return (
-                <button
-                  key={year}
-                  type="button"
-                  onClick={() => setSelectedYear(year)}
-                  className={`flex flex-col items-center rounded-xl border px-1.5 py-1.5 transition ${
-                    isActive
-                      ? REGIME_ACTIVE_STYLE[summary.regime]
-                      : 'border-slate-800/80 bg-slate-900/50 text-slate-400 hover:border-slate-600 hover:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-1">
-                    <span className={`h-1.5 w-1.5 rounded-full ${REGIME_DOT_COLOR[summary.regime]}`} />
-                    <span className="font-mono text-xs font-bold">{year}</span>
-                  </div>
-                  <span className="mt-0.5 text-[9px] font-medium opacity-85">
-                    {summary.regime === 'BOOM'
-                      ? '동반상승'
-                      : summary.regime === 'SLUMP'
-                      ? '금리침체'
-                      : '초양극화'}
-                  </span>
-                </button>
-              );
-            })}
+        {/* Current Quarter + Segmented Track with Train/Eval Boundary */}
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${isForecast ? 'bg-violet-400' : theme.dotSimple}`}
+              />
+              <span className="font-mono text-base font-extrabold text-white">
+                {selectedQuarter}
+              </span>
+              <span className={`font-semibold ${periodInfo.cls}`}>{periodInfo.text}</span>
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <span className="h-2 w-3 rounded-full bg-slate-500" />
+                학습
+              </span>
+              <span className="flex items-center gap-1.5 text-cyan-300">
+                <span className="h-2 w-3 rounded-full bg-cyan-400/80" />
+                검증
+              </span>
+            </div>
           </div>
 
-          {/* Interactive Scrubber */}
-          <div className="relative flex items-center px-1">
+          <div className="relative flex h-6 items-center">
+            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="absolute inset-y-0 left-0 bg-slate-500/75"
+                style={{ width: `${TRAIN_EVAL_BOUNDARY_PCT}%` }}
+              />
+              <div
+                className="absolute inset-y-0 bg-cyan-500/45"
+                style={{
+                  left: `${TRAIN_EVAL_BOUNDARY_PCT}%`,
+                  width: `${EVAL_FORECAST_BOUNDARY_PCT - TRAIN_EVAL_BOUNDARY_PCT}%`,
+                }}
+              />
+              <div
+                className="absolute inset-y-0 right-0 bg-violet-400/80"
+                style={{ left: `${EVAL_FORECAST_BOUNDARY_PCT}%` }}
+              />
+              <div
+                className="absolute inset-y-0 left-0 bg-white/25"
+                style={{ width: `${thumbPct}%` }}
+              />
+            </div>
+
+            {/* Train | Eval Boundary Line */}
+            <div
+              className="pointer-events-none absolute top-1/2 h-5 w-[2.5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300 shadow-[0_0_8px_#22d3ee]"
+              style={{ left: `${TRAIN_EVAL_BOUNDARY_PCT}%` }}
+            />
+
+            {/* Synced round thumb */}
+            <div
+              className={`pointer-events-none absolute top-1/2 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 transition-colors ${thumbColorClass}`}
+              style={{ left: `${thumbPct}%` }}
+            />
+
             <input
               type="range"
               min={0}
-              max={TIMELINE_YEARS.length - 1}
+              max={MAX_IDX}
               step={1}
               value={activeIdx}
               onChange={(e) => {
                 const idx = Number(e.target.value);
-                setSelectedYear(TIMELINE_YEARS[idx]);
+                setSelectedQuarter(TIMELINE_QUARTERS[idx]);
               }}
-              aria-label="연도 타임라인 슬라이더"
-              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-cyan-400"
+              aria-label="분기 타임라인 슬라이더"
+              aria-valuetext={selectedQuarter}
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             />
           </div>
+
+          <div className="relative h-4 font-mono text-xs text-slate-300">
+            <span className="absolute left-0">17Q1</span>
+            <span
+              className="absolute -translate-x-1/2 font-semibold text-cyan-300"
+              style={{ left: `${TRAIN_EVAL_BOUNDARY_PCT}%` }}
+            >
+              21Q1 검증
+            </span>
+            <span className="absolute right-0 text-violet-300">26Q4</span>
+          </div>
         </div>
+
+        {/* Quick Forecast Jump */}
+        <button
+          type="button"
+          aria-pressed={isForecast}
+          onClick={() =>
+            setSelectedQuarter(isForecast ? LATEST_OBSERVED_QUARTER : FORECAST_QUARTER)
+          }
+          className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-4 text-sm font-bold transition ${
+            isForecast
+              ? 'border-violet-400/80 bg-violet-500/30 text-violet-100 shadow-[0_0_14px_-3px_rgba(167,139,250,0.65)]'
+              : 'border-violet-500/40 bg-violet-500/15 text-violet-200 hover:border-violet-400/65 hover:bg-violet-500/25'
+          }`}
+          title={isForecast ? '최신 실측 분기(2026Q3)로 돌아가기' : '2026Q4 다음 분기 예측 보기'}
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>{isForecast ? '실측 26Q3' : '26Q4 예측'}</span>
+        </button>
       </div>
     </footer>
   );

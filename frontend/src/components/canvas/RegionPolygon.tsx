@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
-import { REGIME_MAP_BY_YEAR, TOP_10_CODES_BY_YEAR } from '../../data/mockRegimes';
+import { TERRAIN_CONFIG } from '../../config/scene';
+import {
+  classifyToleranceBand,
+  getQuarterRecordMap,
+  getTop10RegionCodes,
+} from '../../services/dashboardData';
 import { useDashboardStore } from '../../store/useDashboardStore';
 import type { ProjectedRegionGeometry } from '../../types/dashboard';
-import { getTerrainColor, getTerrainEmissive } from '../../utils/colorScales';
-
-const EXTRUDE_OPTIONS: THREE.ExtrudeGeometryOptions = {
-  depth: 0.36,
-  bevelEnabled: false,
-  curveSegments: 2,
-};
+import {
+  getTerrainColor,
+  getTerrainEmissive,
+  getToleranceBandColor,
+  getToleranceBandEmissive,
+} from '../../utils/colorScales';
+import { isPredictionHit } from '../../utils/formatters';
 
 // Module-level scratch colors (zero per-frame allocations)
 const _baseColor = new THREE.Color();
@@ -21,6 +26,8 @@ const _targetEdgeColor = new THREE.Color();
 
 const _dimColor = new THREE.Color('#0b1120');
 const _dimEmissive = new THREE.Color('#020617');
+const _noTradeColor = new THREE.Color('#0d1526');
+const _noTradeEmissive = new THREE.Color('#040814');
 const _selectTint = new THREE.Color('#38bdf8');
 const _hoverTint = new THREE.Color('#f8fafc');
 const _edgeSelected = new THREE.Color('#38bdf8');
@@ -54,14 +61,14 @@ function buildMergedTerrain(geometries: ProjectedRegionGeometry[]): MergedTerrai
   let totalEdgeVerts = 0;
 
   for (let i = 0; i < count; i++) {
-    const raw = new THREE.ExtrudeGeometry(geometries[i].shapes, EXTRUDE_OPTIONS);
+    const raw = new THREE.ExtrudeGeometry(geometries[i].shapes, TERRAIN_CONFIG.extrudeOptions);
     const nonIndexed = raw.index ? raw.toNonIndexed() : raw;
     if (nonIndexed !== raw) raw.dispose();
     if (!nonIndexed.getAttribute('normal')) {
       nonIndexed.computeVertexNormals();
     }
 
-    const edges = new THREE.EdgesGeometry(nonIndexed, 24);
+    const edges = new THREE.EdgesGeometry(nonIndexed, TERRAIN_CONFIG.edgeThresholdAngle);
 
     const vCount = nonIndexed.getAttribute('position').count;
     const eCount = edges.getAttribute('position').count;
@@ -200,7 +207,10 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
     if (!merged) return;
 
     const state = useDashboardStore.getState();
-    const key = `${state.selectedYear}|${state.spotlightMode ? 1 : 0}|${state.comparisonMode ? 1 : 0}|${state.selectedRegionCode ?? ''}|${state.hoveredRegionCode ?? ''}`;
+    const bands = state.activeToleranceBands;
+    const bandKey = `${bands['0_2'] ? 1 : 0}${bands['2_4'] ? 1 : 0}${bands['4_6'] ? 1 : 0}${bands['6_plus'] ? 1 : 0}`;
+    const hasBandFilter = bandKey !== '1111';
+    const key = `${state.dataVersion}|${state.selectedQuarter}|${state.selectedModel}|${state.viewMode}|${state.aiAccuracyFilter}|${bandKey}|${state.spotlightMode ? 1 : 0}|${state.comparisonMode ? 1 : 0}|${state.selectedRegionCode ?? ''}|${state.hoveredRegionCode ?? ''}`;
     const anim = animRef.current;
 
     if (key !== anim.lastKey) {
@@ -210,9 +220,10 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
 
     if (anim.settled) return;
 
-    const yearMap = REGIME_MAP_BY_YEAR[state.selectedYear];
-    const top10Set = TOP_10_CODES_BY_YEAR[state.selectedYear];
-    const damp = 1 - Math.exp(-Math.min(delta, 0.1) * 6.5);
+    const quarterMap = getQuarterRecordMap(state.selectedQuarter);
+    const top10Set = getTop10RegionCodes(state.selectedQuarter);
+    const damp = 1 - Math.exp(-Math.min(delta, 0.1) * TERRAIN_CONFIG.dampSpeed);
+    const isErrorMode = state.viewMode === 'error';
 
     const colorAttr = merged.terrainGeo.getAttribute('color') as THREE.BufferAttribute;
     const colorArr = colorAttr.array as Float32Array;
@@ -223,23 +234,66 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
 
     for (let i = 0; i < merged.count; i++) {
       const geo = geometries[i];
-      const record = yearMap[geo.regionCode];
+      const record = quarterMap[geo.regionCode];
       if (!record) continue;
 
       const isTop10 = top10Set.has(geo.regionCode);
       const isSelected = state.selectedRegionCode === geo.regionCode;
       const isHovered = state.hoveredRegionCode === geo.regionCode;
-      const dimmed = state.spotlightMode && !isTop10 && !isSelected;
 
-      const metricValue = state.comparisonMode ? record.growthDelta : record.actualGrowth;
+      const modelPred = record.predictions?.[state.selectedModel] ?? null;
+      const err = modelPred?.error ?? null;
+      const bandDimmed =
+        isErrorMode &&
+        hasBandFilter &&
+        !isSelected &&
+        (err === null || !bands[classifyToleranceBand(Math.abs(err))]);
+      const accuracyDimmed =
+        isErrorMode &&
+        state.aiAccuracyFilter !== 'all' &&
+        !isSelected &&
+        (err === null ||
+          (state.aiAccuracyFilter === 'hit' && !isPredictionHit(err)) ||
+          (state.aiAccuracyFilter === 'miss' && isPredictionHit(err)));
+      const dimmed =
+        (state.spotlightMode && !isTop10 && !isSelected) || accuracyDimmed || bandDimmed;
+      const metricValue = isErrorMode
+        ? (modelPred?.predictedGrowth ?? null)
+        : state.comparisonMode
+          ? record.growthDelta
+          : (record.actualGrowth ?? modelPred?.predictedGrowth ?? null);
 
-      getTerrainColor(metricValue, state.comparisonMode, _baseColor);
-      getTerrainEmissive(metricValue, state.comparisonMode, _baseEmissive);
+      const hasMetric = isErrorMode
+        ? modelPred !== null
+        : record.hasObservedTradeYn && metricValue !== null;
 
       if (dimmed) {
         _targetColor.copy(_dimColor);
         _targetEmissive.copy(_dimEmissive);
+      } else if (isErrorMode && err !== null) {
+        // AI Eval Quarter: color terrain by 4-band Error Tolerance matching Left cards & Right 100% bar
+        const band = classifyToleranceBand(Math.abs(err));
+        getToleranceBandColor(band, _baseColor);
+        getToleranceBandEmissive(band, _baseEmissive);
+        _targetColor.copy(_baseColor);
+        _targetEmissive.copy(_baseEmissive);
+        if (isSelected) {
+          _targetEmissive.lerp(_selectTint, 0.45);
+        } else if (isHovered) {
+          _targetEmissive.lerp(_hoverTint, 0.25);
+        }
+      } else if (!hasMetric || metricValue === null) {
+        _targetColor.copy(_noTradeColor);
+        _targetEmissive.copy(_noTradeEmissive);
+        if (isSelected) {
+          _targetEmissive.lerp(_selectTint, 0.35);
+        } else if (isHovered) {
+          _targetEmissive.lerp(_hoverTint, 0.2);
+        }
       } else {
+        const useComparison = !isErrorMode && state.comparisonMode;
+        getTerrainColor(metricValue, useComparison, _baseColor);
+        getTerrainEmissive(metricValue, useComparison, _baseEmissive);
         _targetColor.copy(_baseColor);
         _targetEmissive.copy(_baseEmissive);
         if (isSelected) {
@@ -249,11 +303,43 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
         }
       }
 
-      const emissiveWeight = dimmed ? 0.08 : isSelected ? 0.95 : isHovered ? 0.72 : 0.52;
+      const emissiveWeight = dimmed
+        ? 0.08
+        : !hasMetric && !(isErrorMode && err !== null)
+          ? isSelected
+            ? 0.65
+            : 0.18
+          : isSelected
+            ? 0.95
+            : isHovered
+              ? 0.72
+              : isErrorMode && err !== null
+                ? Math.abs(err) <= 2.0
+                  ? 0.26
+                  : Math.abs(err) <= 4.0
+                    ? 0.38
+                    : 0.62
+                : isErrorMode
+                  ? 0.68
+                  : record.lowSampleYn
+                    ? 0.36
+                    : 0.52;
       const tR = _targetColor.r + _targetEmissive.r * emissiveWeight;
       const tG = _targetColor.g + _targetEmissive.g * emissiveWeight;
       const tB = _targetColor.b + _targetEmissive.b * emissiveWeight;
-      const tA = dimmed ? 0.14 : isSelected || isHovered ? 0.88 : 0.72;
+      const tA = dimmed
+        ? 0.14
+        : !hasMetric
+          ? isSelected || isHovered
+            ? 0.68
+            : 0.38
+          : isSelected || isHovered
+            ? 0.9
+            : isErrorMode
+              ? 0.84
+              : record.lowSampleYn
+                ? 0.58
+                : 0.74;
 
       const nR = THREE.MathUtils.lerp(anim.curR[i], tR, damp);
       const nG = THREE.MathUtils.lerp(anim.curG[i], tG, damp);
@@ -276,13 +362,7 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
       }
 
       _targetEdgeColor.copy(
-        isSelected
-          ? _edgeSelected
-          : isHovered
-          ? _edgeHovered
-          : dimmed
-          ? _edgeDimmed
-          : _edgeDefault
+        isSelected ? _edgeSelected : isHovered ? _edgeHovered : dimmed ? _edgeDimmed : _edgeDefault,
       );
       const tEdgeA = isSelected ? 0.95 : isHovered ? 0.85 : dimmed ? 0.32 : 0.48;
 
@@ -314,7 +394,7 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
         Math.abs(neR - _targetEdgeColor.r),
         Math.abs(neG - _targetEdgeColor.g),
         Math.abs(neB - _targetEdgeColor.b),
-        Math.abs(neA - tEdgeA)
+        Math.abs(neA - tEdgeA),
       );
       if (regionMax > maxDelta) maxDelta = regionMax;
     }
@@ -322,7 +402,7 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
     colorAttr.needsUpdate = true;
     edgeColorAttr.needsUpdate = true;
 
-    if (maxDelta < 0.002) {
+    if (maxDelta < TERRAIN_CONFIG.settleThreshold) {
       anim.settled = true;
     }
   });
@@ -370,12 +450,7 @@ export function RegionPolygonsLayer({ geometries }: RegionPolygonsLayerProps) {
         onPointerOut={handlePointerOut}
         onClick={handleClick}
       >
-        <meshLambertMaterial
-          vertexColors
-          transparent
-          depthWrite
-          toneMapped={false}
-        />
+        <meshLambertMaterial vertexColors transparent depthWrite toneMapped={false} />
       </mesh>
       <lineSegments geometry={merged.edgesGeo}>
         <lineBasicMaterial vertexColors transparent />

@@ -1,15 +1,16 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
-import { REGIME_MAP_BY_YEAR, TOP_10_CODES_BY_YEAR } from '../../data/mockRegimes';
+import { ERROR_BAR_CONFIG } from '../../config/scene';
+import { getQuarterRecordMap, getTop10RegionCodes } from '../../services/dashboardData';
 import { useDashboardStore } from '../../store/useDashboardStore';
 import type { ProjectedRegionGeometry } from '../../types/dashboard';
-import { getErrorBarColor } from '../../utils/colorScales';
+import { getMarketPillarColor } from '../../utils/colorScales';
 
-const SHARED_BAR_GEO = new THREE.CylinderGeometry(0.065, 0.095, 1, 8);
-const SHARED_TIP_GEO = new THREE.SphereGeometry(0.085, 10, 10);
-const SHARED_RING_GEO = new THREE.RingGeometry(0.11, 0.175, 24);
-const SHARED_OUTER_RING_GEO = new THREE.RingGeometry(0.19, 0.22, 24);
+const SHARED_BAR_GEO = new THREE.CylinderGeometry(0.045, 0.068, 1, 8);
+const SHARED_TIP_GEO = new THREE.SphereGeometry(0.062, 10, 10);
+const SHARED_RING_GEO = new THREE.RingGeometry(0.08, 0.125, 24);
+const SHARED_OUTER_RING_GEO = new THREE.RingGeometry(0.14, 0.165, 24);
 
 // Module-level scratch objects (zero per-frame allocations)
 const _dummy = new THREE.Object3D();
@@ -31,21 +32,13 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
   const innerRingsMeshRef = useRef<THREE.InstancedMesh>(null);
   const outerRingsMeshRef = useRef<THREE.InstancedMesh>(null);
 
-  const buffers = useMemo(() => {
-    const signedHeights = new Float32Array(count);
-    const radiusScales = new Float32Array(count);
-    radiusScales.fill(1);
-    const barColors = new Float32Array(count * 3);
-    const tipColors = new Float32Array(count * 3);
-    const ringOpacities = new Float32Array(count);
-    return {
-      signedHeights,
-      radiusScales,
-      barColors,
-      tipColors,
-      ringOpacities,
-    };
-  }, [count]);
+  const buffersRef = useRef({
+    signedHeights: new Float32Array(0),
+    radiusScales: new Float32Array(0),
+    barColors: new Float32Array(0),
+    tipColors: new Float32Array(0),
+    ringOpacities: new Float32Array(0),
+  });
 
   const animStateRef = useRef({
     lastKey: '',
@@ -55,11 +48,20 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
   });
 
   useEffect(() => {
+    const radiusScales = new Float32Array(count);
+    radiusScales.fill(1);
+    buffersRef.current = {
+      signedHeights: new Float32Array(count),
+      radiusScales,
+      barColors: new Float32Array(count * 3),
+      tipColors: new Float32Array(count * 3),
+      ringOpacities: new Float32Array(count),
+    };
     animStateRef.current.lastKey = '';
     animStateRef.current.barsSettled = false;
     animStateRef.current.ringsOpacitySettled = false;
     animStateRef.current.activeRingCount = 0;
-  }, [geometries]);
+  }, [count, geometries]);
 
   // Initialize instanceColor & hidden matrices on mount before first draw
   useLayoutEffect(() => {
@@ -108,9 +110,9 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
     if (!barsMesh || !tipsMesh || !innerRingsMesh || !outerRingsMesh) return;
 
     const store = useDashboardStore.getState();
-    const yearMap = REGIME_MAP_BY_YEAR[store.selectedYear];
-    const top10Set = TOP_10_CODES_BY_YEAR[store.selectedYear];
-    const stateKey = `${store.selectedYear}|${store.spotlightMode ? 1 : 0}|${store.selectedRegionCode ?? ''}|${store.hoveredRegionCode ?? ''}`;
+    const quarterMap = getQuarterRecordMap(store.selectedQuarter);
+    const top10Set = getTop10RegionCodes(store.selectedQuarter);
+    const stateKey = `${store.dataVersion}|${store.selectedQuarter}|${store.selectedModel}|${store.viewMode}|${store.spotlightMode ? 1 : 0}|${store.selectedRegionCode ?? ''}|${store.hoveredRegionCode ?? ''}`;
 
     const animState = animStateRef.current;
     if (stateKey !== animState.lastKey) {
@@ -127,9 +129,10 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
       return;
     }
 
-    const damp = 1 - Math.exp(-Math.min(delta, 0.1) * 6.0);
+    const damp = 1 - Math.exp(-Math.min(delta, 0.1) * ERROR_BAR_CONFIG.dampSpeed);
     const elapsed = clockState.clock.elapsedTime;
-    const { signedHeights, radiusScales, barColors, tipColors, ringOpacities } = buffers;
+    const { signedHeights, radiusScales, barColors, tipColors, ringOpacities } = buffersRef.current;
+    if (signedHeights.length !== count) return;
 
     let maxBarDelta = 0;
     let maxRingDelta = 0;
@@ -137,7 +140,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
 
     for (let i = 0; i < count; i++) {
       const geo = geometries[i];
-      const record = yearMap[geo.regionCode];
+      const record = quarterMap[geo.regionCode];
       if (!record) continue;
 
       const isTop10 = top10Set.has(geo.regionCode);
@@ -145,13 +148,21 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
       const isHovered = store.hoveredRegionCode === geo.regionCode;
       const dimmed = store.spotlightMode && !isTop10 && !isSelected;
 
-      const err = record.error;
-      const isHit = Math.abs(err) <= 2.0;
+      const modelPred = record.predictions?.[store.selectedModel] ?? null;
+      const isMarketMode = store.viewMode === 'market';
+      const isForecast = record.actualGrowth === null && modelPred !== null;
 
       if (updateBars) {
-        // Non-linear scaling: Math.pow(Math.abs(error), 0.72)
-        const rawScaled = isHit ? 0 : Math.pow(Math.abs(err), 0.72) * 0.85;
-        const targetHeight = isHit ? 0 : (err > 0 ? 1 : -1) * rawScaled;
+        let targetHeight = 0;
+
+        if (isMarketMode) {
+          // Market View only: +Y pillar height represents price per sqm (AI mode is a pure heatmap)
+          const priceVal = isForecast ? (modelPred?.predPricePerSqm ?? null) : record.pricePerSqm;
+          if (record.hasObservedTradeYn && priceVal !== null) {
+            const norm = THREE.MathUtils.clamp((priceVal - 400) / 3800, 0.08, 1);
+            targetHeight = norm * 2.15;
+          }
+        }
 
         const prevH = signedHeights[i];
         const nextH = THREE.MathUtils.lerp(prevH, targetHeight, damp);
@@ -200,7 +211,10 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
           tipsMesh.setMatrixAt(i, _dummy.matrix);
         }
 
-        getErrorBarColor(err, _errColor);
+        const growthVal = isForecast
+          ? (modelPred?.predictedGrowth ?? 0)
+          : (record.actualGrowth ?? 0);
+        getMarketPillarColor(growthVal, _errColor);
         const cIdx = i * 3;
 
         const targetBase = dimmed ? _dimBarColor : _errColor;
@@ -216,7 +230,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
         const cDelta = Math.max(
           Math.abs(tR - barColors[cIdx]),
           Math.abs(tG - barColors[cIdx + 1]),
-          Math.abs(tB - barColors[cIdx + 2])
+          Math.abs(tB - barColors[cIdx + 2]),
         );
         if (cDelta > maxBarDelta) maxBarDelta = cDelta;
 
@@ -235,7 +249,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
         const tcDelta = Math.max(
           Math.abs(ttR - tipColors[cIdx]),
           Math.abs(ttG - tipColors[cIdx + 1]),
-          Math.abs(ttB - tipColors[cIdx + 2])
+          Math.abs(ttB - tipColors[cIdx + 2]),
         );
         if (tcDelta > maxBarDelta) maxBarDelta = tcDelta;
 
@@ -245,7 +259,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
 
       if (updateRingMatrices) {
         if (updateRingOpacities) {
-          const targetOpacity = isHit && !dimmed ? (isSelected ? 0.95 : 0.78) : 0;
+          const targetOpacity = isSelected && !dimmed ? 0.92 : 0;
           const nextOpacity = THREE.MathUtils.lerp(ringOpacities[i], targetOpacity, damp);
           ringOpacities[i] = nextOpacity;
           const oDelta = Math.abs(targetOpacity - nextOpacity);
@@ -291,7 +305,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
       tipsMesh.instanceMatrix.needsUpdate = true;
       if (barsMesh.instanceColor) barsMesh.instanceColor.needsUpdate = true;
       if (tipsMesh.instanceColor) tipsMesh.instanceColor.needsUpdate = true;
-      if (maxBarDelta < 0.001) {
+      if (maxBarDelta < ERROR_BAR_CONFIG.barSettleThreshold) {
         animState.barsSettled = true;
       }
     }
@@ -303,7 +317,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
         animState.activeRingCount = activeRings;
         if (innerRingsMesh.instanceColor) innerRingsMesh.instanceColor.needsUpdate = true;
         if (outerRingsMesh.instanceColor) outerRingsMesh.instanceColor.needsUpdate = true;
-        if (maxRingDelta < 0.002) {
+        if (maxRingDelta < ERROR_BAR_CONFIG.ringSettleThreshold) {
           animState.ringsOpacitySettled = true;
         }
       }
@@ -368,12 +382,7 @@ export function ErrorBarsLayer({ geometries }: ErrorBarsLayerProps) {
         onPointerOut={handlePointerOut}
         onClick={handleClick}
       >
-        <meshStandardMaterial
-          color="#ffffff"
-          roughness={0.2}
-          metalness={0.35}
-          toneMapped={false}
-        />
+        <meshStandardMaterial color="#ffffff" roughness={0.2} metalness={0.35} toneMapped={false} />
       </instancedMesh>
 
       {/* Unlit emissive tip */}

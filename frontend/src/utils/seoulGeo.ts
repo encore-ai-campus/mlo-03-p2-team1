@@ -1,17 +1,16 @@
 import { geoMercator } from 'd3-geo';
 import * as THREE from 'three';
-import * as topojson from 'topojson-client';
-import { REGIONS_META } from '../data/regionsMeta';
+import { MAP_PROJECTION_CONFIG } from '../config/scene';
+import { getRegionsMeta } from '../services/dashboardData';
 import type { GeoSourceStatus, ProjectedRegionGeometry } from '../types/dashboard';
 
-export const KOREA_TOPOJSON_URL =
-  'https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-municipalities-2018-topo-simple.json';
+export const SEOUL_LDONG_GEOJSON_URL = MAP_PROJECTION_CONFIG.geoJsonUrl;
 
-// Centered Mercator projection onto XZ plane (South Korea centered at [127.78, 35.95])
+// Centered Mercator projection onto XZ plane (Seoul centered at [126.978, 37.565])
 const projection = geoMercator()
-  .center([127.78, 35.95])
-  .scale(410)
-  .translate([0, 0]);
+  .center(MAP_PROJECTION_CONFIG.center)
+  .scale(MAP_PROJECTION_CONFIG.scale)
+  .translate(MAP_PROJECTION_CONFIG.translate);
 
 export function projectLngLat(centroid: [number, number]): [number, number] {
   const pt = projection(centroid);
@@ -28,7 +27,7 @@ function ringTo2DPoints(ring: number[][]): [number, number][] {
     const sy = -p[1];
     if (pts.length > 0) {
       const prev = pts[pts.length - 1];
-      if (Math.hypot(sx - prev[0], sy - prev[1]) < 0.008) continue;
+      if (Math.hypot(sx - prev[0], sy - prev[1]) < 0.004) continue;
     }
     pts.push([sx, sy]);
   }
@@ -61,11 +60,10 @@ function coordsToShapes(polygons: number[][][][]): THREE.Shape[] {
     }
     shape.closePath();
 
-    // Holes
     for (let h = 1; h < poly.length; h++) {
       const holePts = ringTo2DPoints(poly[h]);
       if (holePts.length < 3) continue;
-      if (polygonArea(holePts) < 0.003) continue;
+      if (polygonArea(holePts) < 0.001) continue;
       const holePath = new THREE.Path();
       holePath.moveTo(holePts[0][0], holePts[0][1]);
       for (let i = 1; i < holePts.length; i++) {
@@ -79,17 +77,15 @@ function coordsToShapes(polygons: number[][][][]): THREE.Shape[] {
   }
 
   if (!candidateShapes.length) return [];
-  // Keep main landmass + significant islands, always keeping at least the largest polygon
   candidateShapes.sort((a, b) => b.area - a.area);
-  const filtered = candidateShapes.filter((s, idx) => idx === 0 || s.area >= 0.006);
+  const filtered = candidateShapes.filter((s, idx) => idx === 0 || s.area >= 0.002);
   return filtered.map((s) => s.shape);
 }
 
-// Half-plane clip of a 2D convex polygon: keeps points where (p - pointOnLine) . normal <= 0
 function clipPolygonHalfPlane(
   poly: [number, number][],
   linePt: [number, number],
-  normal: [number, number]
+  normal: [number, number],
 ): [number, number][] {
   if (poly.length < 3) return [];
   const out: [number, number][] = [];
@@ -120,18 +116,17 @@ function clipPolygonHalfPlane(
 
 /**
  * Fallback generator: builds clean bounded Voronoi-clipped polygonal cells
- * around all 229 projected South Korean municipal centroids when remote GeoJSON fails.
+ * around all 467 Seoul legal-dong centroids.
  */
-export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
-  const projectedCenters = REGIONS_META.map((r) => {
+export function buildFallbackSeoulGeometries(): ProjectedRegionGeometry[] {
+  const projectedCenters = getRegionsMeta().map((r) => {
     const [px, py] = projectLngLat(r.centroid);
     return {
       regionCode: r.regionCode,
-      tier: r.tier,
       px,
       py,
       sx: px,
-      sy: -py, // Shape space
+      sy: -py,
     };
   });
 
@@ -139,7 +134,6 @@ export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
 
   for (let i = 0; i < projectedCenters.length; i++) {
     const cur = projectedCenters[i];
-    // Find nearest neighbor distance to size initial bounding polygon naturally
     let minDist = Infinity;
     const neighbors: { sx: number; sy: number; d: number }[] = [];
 
@@ -148,17 +142,13 @@ export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
       const other = projectedCenters[j];
       const d = Math.hypot(other.sx - cur.sx, other.sy - cur.sy);
       if (d < minDist) minDist = d;
-      if (d < 3.4) {
+      if (d < 2.4) {
         neighbors.push({ sx: other.sx, sy: other.sy, d });
       }
     }
 
-    const baseR =
-      cur.tier === 'PRIME_SEOUL' || cur.tier === 'CORE_SEOUL'
-        ? THREE.MathUtils.clamp(minDist * 0.72, 0.22, 0.42)
-        : THREE.MathUtils.clamp(minDist * 0.78, 0.34, 1.32);
+    const baseR = THREE.MathUtils.clamp(minDist * 0.82, 0.14, 0.95);
 
-    // Start with an 8-gon around (cur.sx, cur.sy)
     const sides = 8;
     let poly: [number, number][] = [];
     for (let s = 0; s < sides; s++) {
@@ -166,7 +156,6 @@ export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
       poly.push([cur.sx + Math.cos(angle) * baseR, cur.sy + Math.sin(angle) * baseR]);
     }
 
-    // Clip against nearby Voronoi perpendicular bisectors with small seam margin
     neighbors.sort((a, b) => a.d - b.d);
     for (const nb of neighbors) {
       if (nb.d > baseR * 2.1) break;
@@ -176,7 +165,7 @@ export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
       if (len < 1e-5) continue;
       const nx = dx / len;
       const ny = dy / len;
-      const seamGap = 0.015;
+      const seamGap = 0.01;
       const midX = (cur.sx + nb.sx) * 0.5 - nx * seamGap;
       const midY = (cur.sy + nb.sy) * 0.5 - ny * seamGap;
       poly = clipPolygonHalfPlane(poly, [midX, midY], [nx, ny]);
@@ -184,11 +173,10 @@ export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
     }
 
     if (poly.length < 3) {
-      // Emergency hexagon fallback if tightly surrounded
       poly = [];
       for (let s = 0; s < 6; s++) {
         const angle = (s / 6) * Math.PI * 2;
-        poly.push([cur.sx + Math.cos(angle) * 0.16, cur.sy + Math.sin(angle) * 0.16]);
+        poly.push([cur.sx + Math.cos(angle) * 0.1, cur.sy + Math.sin(angle) * 0.1]);
       }
     }
 
@@ -210,83 +198,73 @@ export function buildFallbackKoreaGeometries(): ProjectedRegionGeometry[] {
   return results;
 }
 
-interface TopoGeometryObj {
-  type: string;
-  properties?: { code?: string; name?: string };
+interface SeoulGeoFeature {
+  type: 'Feature';
+  properties: {
+    ldongCd: string;
+    ldongNm: string;
+    sggCd: string;
+    sggNm: string;
+    centroid: [number, number];
+  };
+  geometry:
+    | { type: 'Polygon'; coordinates: number[][][] }
+    | { type: 'MultiPolygon'; coordinates: number[][][][] };
 }
 
-export async function loadKoreaGeometries(forceFallback = false): Promise<{
+interface SeoulFeatureCollection {
+  type: 'FeatureCollection';
+  features: SeoulGeoFeature[];
+}
+
+export async function loadSeoulGeometries(forceFallback = false): Promise<{
   geometries: ProjectedRegionGeometry[];
   status: Exclude<GeoSourceStatus, 'loading'>;
 }> {
   if (forceFallback) {
     return {
-      geometries: buildFallbackKoreaGeometries(),
+      geometries: buildFallbackSeoulGeometries(),
       status: 'fallback',
     };
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  const timeoutId = setTimeout(() => controller.abort(), MAP_PROJECTION_CONFIG.fetchTimeoutMs);
 
   try {
-    const res = await fetch(KOREA_TOPOJSON_URL, { signal: controller.signal });
+    const res = await fetch(SEOUL_LDONG_GEOJSON_URL, { signal: controller.signal });
     clearTimeout(timeoutId);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const topology = await res.json();
-    const objectKey = Object.keys(topology.objects)[0];
-    const topoObject = topology.objects[objectKey];
-    const rawGeoms = topoObject.geometries as TopoGeometryObj[];
-
-    // Group 일반구 (code >= 31xxx and name matches "*시*구") under 4-digit city + '0'
-    const groups = new Map<string, TopoGeometryObj[]>();
-    for (const geom of rawGeoms) {
-      const code = geom.properties?.code ?? '';
-      const name = geom.properties?.name ?? '';
-      if (!code) continue;
-      const prefix2 = Number(code.slice(0, 2));
-      const isDoSiGu = prefix2 >= 31 && /시.+구$/.test(name);
-      const mergedCode = isDoSiGu ? `${code.slice(0, 4)}0` : code;
-      if (!groups.has(mergedCode)) groups.set(mergedCode, []);
-      groups.get(mergedCode)!.push(geom);
+    const collection = (await res.json()) as SeoulFeatureCollection;
+    const featureMap = new Map<string, SeoulGeoFeature>();
+    for (const feat of collection.features) {
+      if (feat.properties?.ldongCd) {
+        featureMap.set(feat.properties.ldongCd, feat);
+      }
     }
 
     let fallbackMap: Map<string, ProjectedRegionGeometry> | null = null;
     const getFallbackRegion = (regionCode: string) => {
       if (!fallbackMap) {
-        fallbackMap = new Map(
-          buildFallbackKoreaGeometries().map((g) => [g.regionCode, g])
-        );
+        fallbackMap = new Map(buildFallbackSeoulGeometries().map((g) => [g.regionCode, g]));
       }
       return fallbackMap.get(regionCode);
     };
 
     const output: ProjectedRegionGeometry[] = [];
 
-    for (const meta of REGIONS_META) {
-      const group = groups.get(meta.regionCode);
+    for (const meta of getRegionsMeta()) {
+      const feat = featureMap.get(meta.regionCode);
       const [cx, cz] = projectLngLat(meta.centroid);
-      if (!group || group.length === 0) {
+      if (!feat) {
         const fb = getFallbackRegion(meta.regionCode);
         if (fb) output.push(fb);
         continue;
       }
 
-      let polygons: number[][][][] = [];
-      if (group.length > 1) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const merged = topojson.merge(topology as any, group as any);
-        polygons = merged.coordinates;
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const feature = topojson.feature(topology as any, group[0] as any) as any;
-        if (feature.geometry.type === 'Polygon') {
-          polygons = [feature.geometry.coordinates];
-        } else if (feature.geometry.type === 'MultiPolygon') {
-          polygons = feature.geometry.coordinates;
-        }
-      }
+      const polygons =
+        feat.geometry.type === 'Polygon' ? [feat.geometry.coordinates] : feat.geometry.coordinates;
 
       const shapes = coordsToShapes(polygons);
       if (shapes.length === 0) {
@@ -299,18 +277,18 @@ export async function loadKoreaGeometries(forceFallback = false): Promise<{
         regionCode: meta.regionCode,
         shapes,
         center3D: [cx, cz],
-        boundsRadius: 0.5,
+        boundsRadius: 0.35,
       });
     }
 
     return {
       geometries: output,
-      status: 'topojson',
+      status: 'geojson',
     };
   } catch {
     clearTimeout(timeoutId);
     return {
-      geometries: buildFallbackKoreaGeometries(),
+      geometries: buildFallbackSeoulGeometries(),
       status: 'fallback',
     };
   }

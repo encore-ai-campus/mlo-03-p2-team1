@@ -34,6 +34,13 @@
   background: rgba(148, 163, 184, 0.7);
 }
 
+/* Accessible keyboard focus ring */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
 /* Glassmorphism helper */
 .hud-glass {
   background: rgba(9, 14, 28, 0.84);
