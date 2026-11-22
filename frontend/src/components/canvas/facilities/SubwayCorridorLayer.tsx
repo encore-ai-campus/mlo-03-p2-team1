@@ -86,7 +86,7 @@ export function SubwayCorridorLayer({ centerMap }: SubwayCorridorLayerProps) {
     };
   }, [mergedTracksGeo]);
 
-  const pulsesPerTrack = 4;
+  const pulsesPerTrack = 3;
   const totalPulses = tracks.length * pulsesPerTrack;
 
   useFrame(({ clock }) => {
@@ -97,10 +97,10 @@ export function SubwayCorridorLayer({ centerMap }: SubwayCorridorLayerProps) {
     for (let tIdx = 0; tIdx < tracks.length; tIdx++) {
       const { curve } = tracks[tIdx];
       for (let p = 0; p < pulsesPerTrack; p++) {
-        const raw = (elapsed * 0.28 + tIdx * 0.19 + p / pulsesPerTrack) % 2;
+        const raw = (elapsed * 0.055 + tIdx * 0.19 + (p * 2) / pulsesPerTrack) % 2;
         const u = raw <= 1 ? raw : 2 - raw;
         curve.getPointAt(THREE.MathUtils.clamp(u, 0.001, 0.999), _tempVec);
-        const pulseScale = 0.85 + 0.35 * Math.sin(elapsed * 5 + p);
+        const pulseScale = 0.9 + 0.14 * Math.sin(elapsed * 1.6 + p);
         _dummy.position.copy(_tempVec);
         _dummy.scale.setScalar(pulseScale);
         _dummy.updateMatrix();
