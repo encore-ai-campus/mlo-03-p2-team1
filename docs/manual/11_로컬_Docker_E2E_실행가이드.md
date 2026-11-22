@@ -16,6 +16,28 @@
 | Local DB (PostgreSQL 18) | `apartapart-postgres` | `local-db` | `localhost:5432` | 최초 기동 시 `docker/postgres/init/01_schema.sql`로 `gold.*`(8개)·`ai_ready.*`(2개) 테이블 자동 생성 |
 | Pipeline (Watch 자동 피딩·학습) | `apartapart-pipeline` | 기본 (상시 폴링) | 없음 (데몬) | `data/watch/`를 10초마다 폴링. 신규 원천 유입 시 `01_bronze` → `05_train` → DB 적재 → FastAPI 캐시 갱신 자동 실행 |
 
+```text
+[저장소 폴더]                                 [Docker Compose 컨테이너]
+
+pipeline/ · metadata/ · scripts/ · samples/ ──▶ apartapart-pipeline (Watch 폴링 · 전처리 · 학습 · DB 적재)
+                                                     │  ▲
+                                  ./data, ./report   │  │ PostgreSQL COPY 적재
+                                                     ▼  ▼
+docker/postgres/init/01_schema.sql          ──▶ apartapart-postgres (PostgreSQL 18, gold.* · ai_ready.*)
+                                                        ▲
+                                                        │ SQL 조회 (읽기 전용 서빙)
+backend/                                    ──▶ apartapart-backend  (FastAPI, 경량 API 서빙, :8000)
+                                                        ▲
+                                                        │ /api/* 프록시
+frontend/                                   ──▶ apartapart-frontend (Nginx + React/Three.js, :5173)
+```
+
+### Watch 폴더 파일 처리 규칙
+- **유입 감지**: `data/watch/`에 원천 묶음 폴더(`api/` 또는 `files/` 포함)나 `.zip` 파일이 들어오면 `10초`(`WATCH_POLL_SECONDS`) 간격으로 자동 감지합니다.
+- **복사 중 보호**: `.part`, `.tmp` 확장자나 숨김 파일은 무시하며, 이름 변경 후 `2초`(`WATCH_SETTLE_SECONDS`) 이상 수정이 없을 때만 실행합니다.
+- **처리 성공**: `data/watch/<이름>` → `data/processed/<YYYYMMDD_HHMMSS>__<이름>` 으로 이동(중복 실행 방지)하고, 원천은 `data/source/`에 보존됩니다.
+- **처리 실패·검증 탈락**: `data/watch/<이름>` → `data/quarantine/<YYYYMMDD_HHMMSS>__<이름>` 으로 격리하고 `report/pipeline_watch.log`에 원인을 기록합니다. 워처 데몬은 종료되지 않고 다음 유입을 계속 대기합니다.
+
 ---
 
 ## 2. 사전 준비
@@ -102,7 +124,7 @@ docker compose logs -f pipeline
 전체 원천 데이터(`data/source/api/`, `data/source/files/`)를 로컬에 보유하고 있다면 `--use-existing-source` 옵션으로 01 Bronze부터 DB 적재·학습·서빙 검증까지 한 번에 실행할 수 있습니다. (전체 원천 기준 약 15~20분 소요)
 
 ```bash
-docker compose --profile pipeline run --rm pipeline python scripts/run_local_e2e.py --use-existing-source
+docker compose exec pipeline python scripts/run_local_e2e.py --use-existing-source
 ```
 
 ---
@@ -127,6 +149,7 @@ docker compose --profile local-db down
 docker compose --profile local-db down -v
 ```
 
-- **팀원이 루트의 `pipeline/`이나 `metadata/`를 수정했을 때**: `docker compose --profile pipeline run --rm --build pipeline`으로 `--build`를 붙여 이미지를 다시 빌드하면 최신 코드가 반영됩니다.
+- **팀원이 루트의 `pipeline/`이나 `metadata/`를 수정했을 때**: `docker compose --profile local-db up --build -d pipeline`으로 `pipeline` 컨테이너만 다시 빌드해 재기동하면 최신 코드가 즉시 반영됩니다.
 - **DB 적재 후 프론트/API에 새 데이터가 안 보일 때**: `curl -s "http://localhost:8000/api/dashboard/bootstrap?refresh=true"`를 호출하거나 `docker compose restart backend`를 실행합니다.
 - **`password authentication failed for user "web"`**: `docker compose --profile local-db down -v`로 볼륨 초기화 후 다시 `up -d`로 기동하세요.
+- **검증 로그 참고**: 상시 Watch 데몬 실가동 E2E 검증 기록은 [live-watch-daemon-e2e-20261122-140425-85ba98d.txt](../evidence/live-watch-daemon-e2e-20261122-140425-85ba98d.txt)에서 확인할 수 있습니다.
