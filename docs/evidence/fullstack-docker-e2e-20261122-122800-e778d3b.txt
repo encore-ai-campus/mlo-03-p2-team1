@@ -1,0 +1,32 @@
+2026-11-22T12:28:00.262+09:00 RUN_START scope=source_to_docker_serving git_head=e778d3b runtime=colima_docker_compose
+2026-11-22T12:28:00.262+09:00 CODE_SHA256 file=docker-compose.yml sha256=fc4fc2abfa68c9bdefaac26dedf1f22f19baabf0ba1f4e2304033e9c27b67c11
+2026-11-22T12:28:00.263+09:00 CODE_SHA256 file=docker/postgres/init/01_schema.sql sha256=12b8edded0e23539f8704a6288ae99e674a7168fb9812a22de0472935fad7670
+2026-11-22T12:28:00.263+09:00 CODE_SHA256 file=backend/Dockerfile sha256=36f2cd9a1699006ab0df49b6a60d5694809ef551183d3e9b6f105972be229863
+2026-11-22T12:28:00.263+09:00 CODE_SHA256 file=frontend/Dockerfile sha256=343e5aca5b6fc7f5cdf9096704a81a7431dc6241f13e8639847c61e44bfce049
+2026-11-22T12:28:00.264+09:00 CODE_SHA256 file=frontend/nginx.conf sha256=12d0b7b9077753e737e462fc3764cb582d18ea40c6dc4a4f0fd5769f528b0471
+2026-11-22T12:28:00.264+09:00 CODE_SHA256 file=backend/app/features/dashboard/queries.py sha256=655e214de354a5aa201fc792c2e52be37806c305ad7197ad38be5ccb10b13978
+2026-11-22T12:28:00.264+09:00 CODE_SHA256 file=backend/app/features/dashboard/router.py sha256=9e356a0ad7fc870328e6f2127673c006339c365dc93c0d9c858d6e9eaef5a0f9
+2026-11-22T12:28:00.264+09:00 PARQUET_ARTIFACT file=data/gold/04_gold__dim_region.parquet size_bytes=16348 sha256=54cb3e42184cb8f4dc0b5c4201139435a7ceaaf8105a9e4ff630eb66dc830e14
+2026-11-22T12:28:00.265+09:00 PARQUET_ARTIFACT file=data/gold/04_gold__fact_apt_idx_qtr.parquet size_bytes=281599 sha256=fde4ad27f53bfe35e22bc2726f6623ce386ea36136f9e35c3175d56cd3a246bc
+2026-11-22T12:28:00.265+09:00 PARQUET_ARTIFACT file=data/gold/04_gold__fact_apt_trd_qtr.parquet size_bytes=146232 sha256=e85df40efd840defff6f212f3d918205aa5f407fad3bc73504f81a1aaf3d9824
+2026-11-22T12:28:00.266+09:00 PARQUET_ARTIFACT file=data/gold/04_gold__mart_ldong_infra_qtr.parquet size_bytes=379540 sha256=e01aa0713aecc53b31dfa7feb10190ef91d339dc0f07ad669949296fe36a1d4f
+2026-11-22T12:28:00.267+09:00 PARQUET_ARTIFACT file=data/ai_ready/05_ai_ready__feature_set.parquet size_bytes=1521680 sha256=0e98d940cad5322d92c54a55bfe998383b00475470bd1f982a7ab7d9a4f5e396
+2026-11-22T12:28:00.267+09:00 PARQUET_ARTIFACT file=data/ai_ready/05_ai_ready__prediction.parquet size_bytes=346828 sha256=e5a6eb5674850459f0d595d12ff29bda8d3a0ae0a4844725d8b07e323366835e
+2026-11-22T12:28:00.267+09:00 PIPELINE_METRICS models=baseline,price,price_lcns fold_rows=4058 mape_baseline=4.7390% mape_price=4.3768% mape_price_lcns=4.3748% direction_acc=72.37%
+2026-11-22T12:28:00.504+09:00 DOCKER_CONTAINER apartapart-backend|mlo-03-p2-team1-backend|Up 25 minutes (healthy)
+2026-11-22T12:28:00.504+09:00 DOCKER_CONTAINER apartapart-frontend|mlo-03-p2-team1-frontend|Up 25 minutes
+2026-11-22T12:28:00.504+09:00 DOCKER_CONTAINER apartapart-postgres|postgres:18-alpine|Up 25 minutes (healthy)
+2026-11-22T12:28:00.520+09:00 DB_TABLE_VERIFY table=gold.dim_region rows=467
+2026-11-22T12:28:00.520+09:00 DB_TABLE_VERIFY table=gold.dim_date rows=39
+2026-11-22T12:28:00.520+09:00 DB_TABLE_VERIFY table=gold.dim_lcns_induty rows=14
+2026-11-22T12:28:00.521+09:00 DB_TABLE_VERIFY table=gold.fact_apt_idx_qtr rows=18213
+2026-11-22T12:28:00.522+09:00 DB_TABLE_VERIFY table=gold.fact_apt_trd_qtr rows=18213
+2026-11-22T12:28:00.523+09:00 DB_TABLE_VERIFY table=gold.mart_ldong_infra_qtr rows=18213
+2026-11-22T12:28:00.524+09:00 DB_TABLE_VERIFY table=ai_ready.prediction rows=12837
+2026-11-22T12:28:00.539+09:00 HTTP_VERIFY GET http://127.0.0.1:5173/ status=200 server=nginx/1.27.5
+2026-11-22T12:28:00.543+09:00 HTTP_VERIFY GET http://127.0.0.1:5173/api/health status=200 body={"status":"ok"}
+2026-11-22T12:28:00.549+09:00 HTTP_VERIFY GET /api/dashboard/quarters/2026Q3 status=200 source=postgres dongs=467 eval=209 hit={'baseline': 15.3, 'price': 38.3, 'price_lcns': 39.7} mae={'baseline': 6.46, 'price': 4.14, 'price_lcns': 4.17}
+2026-11-22T12:28:00.555+09:00 HTTP_VERIFY GET /api/dashboard/quarters/2026Q4 status=200 source=postgres dongs=467 eval=221 hit={'baseline': None, 'price': None, 'price_lcns': None} mae={'baseline': None, 'price': None, 'price_lcns': None}
+2026-11-22T12:28:01.078+09:00 PYTEST ......                                                                   [100%]
+2026-11-22T12:28:01.078+09:00 PYTEST 6 passed in 0.11s
+2026-11-22T12:28:01.078+09:00 RESULT passed
