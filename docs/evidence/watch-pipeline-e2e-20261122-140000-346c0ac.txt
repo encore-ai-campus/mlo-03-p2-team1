@@ -1,0 +1,51 @@
+# Persistent Pipeline Watch-Folder Polling E2E Evidence
+Timestamp: 2026-11-22 13:59:08 +0900
+Base Commit: 346c0ac (main)
+Trigger: Drop samples/local_e2e/source -> data/watch/demo_batch
+
+## 1. Running Persistent Containers (4 services)
+NAMES                 IMAGE                      STATUS                    PORTS
+apartapart-pipeline   mlo-03-p2-team1-pipeline   Up About a minute         
+apartapart-backend    mlo-03-p2-team1-backend    Up 55 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+apartapart-frontend   mlo-03-p2-team1-frontend   Up 55 minutes             0.0.0.0:5173->80/tcp, [::]:5173->80/tcp
+apartapart-postgres   postgres:18-alpine         Up 2 hours (healthy)      0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+
+## 2. Persistent Daemon Startup Log (apartapart-pipeline)
+2026-11-22 04:58:44,909 [INFO] Pipeline watcher started: watch_dir=/app/data/watch, interval=10s, api_url=http://backend:8000
+
+## 3. Watch-Folder Auto-Trigger E2E Execution Log (9.6s)
+ Container mlo-03-p2-team1-pipeline-run-834180ad7c10 Creating 
+ Container mlo-03-p2-team1-pipeline-run-834180ad7c10 Created 
+2026-11-22 04:58:58,945 [INFO] Pipeline watcher started: watch_dir=/app/data/watch, interval=10s, api_url=http://backend:8000
+2026-11-22 04:58:58,953 [INFO] Detected new source batch: demo_batch
+2026-11-22 04:58:58,997 [INFO] Staged 25 files from directory demo_batch -> data/source/
+2026-11-22 04:58:58,997 [INFO] Step [01_bronze] start
+2026-11-22 04:59:00,420 [INFO] Step [01_bronze] done (1.42s)
+2026-11-22 04:59:00,420 [INFO] Step [02_normalize] start
+2026-11-22 04:59:01,956 [INFO] Step [02_normalize] done (1.54s)
+2026-11-22 04:59:01,956 [INFO] Step [03_clean] start
+2026-11-22 04:59:03,857 [INFO] Step [03_clean] done (1.90s)
+2026-11-22 04:59:03,857 [INFO] Step [04_gold] start
+2026-11-22 04:59:04,797 [INFO] Step [04_gold] done (0.94s)
+2026-11-22 04:59:04,797 [INFO] Step [05_feature_set] start
+2026-11-22 04:59:05,322 [INFO] Step [05_feature_set] done (0.52s)
+2026-11-22 04:59:05,322 [INFO] Step [load_gold] start
+2026-11-22 04:59:06,574 [INFO] Step [load_gold] done (1.25s)
+2026-11-22 04:59:06,575 [INFO] Step [05_train] start
+2026-11-22 04:59:07,323 [INFO] Step [05_train] done (0.75s)
+2026-11-22 04:59:07,323 [INFO] Step [load_ai_ready] start
+2026-11-22 04:59:07,845 [INFO] Step [load_ai_ready] done (0.52s)
+2026-11-22 04:59:08,509 [INFO] Refreshed backend cache: HTTP 200 (http://backend:8000/api/dashboard/bootstrap?refresh=true)
+2026-11-22 04:59:08,510 [INFO] Batch succeeded in 9.6s -> archived to data/processed/20261122_045908__demo_batch
+2026-11-22 04:59:08,510 [INFO] Pipeline watcher stopped.
+
+## 4. Post-Run Directory Verification
+data/processed/:
+total 0
+drwxr-xr-x   3 ckh  staff   96 Nov 22 13:59 .
+drwxr-xr-x@ 10 ckh  staff  320 Nov 22 13:59 ..
+drwxr-xr-x@  4 ckh  staff  128 Nov 22 13:58 20261122_045908__demo_batch
+data/watch/ (emptied):
+total 0
+drwxr-xr-x@  2 ckh  staff   64 Nov 22 13:59 .
+drwxr-xr-x@ 10 ckh  staff  320 Nov 22 13:59 ..

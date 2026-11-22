@@ -14,7 +14,7 @@
 | Frontend (Nginx + React/Three.js) | `apartapart-frontend` | 기본 | `http://localhost:5173` | 3D 대시보드 정적 서빙 및 `/api/*` → Backend 리버스 프록시 |
 | Backend (FastAPI) | `apartapart-backend` | 기본 | `http://localhost:8000` | PostgreSQL(`gold`, `ai_ready`) 조회 및 대시보드 REST API 서빙 (경량 이미지) |
 | Local DB (PostgreSQL 18) | `apartapart-postgres` | `local-db` | `localhost:5432` | 최초 기동 시 `docker/postgres/init/01_schema.sql`로 `gold.*`(8개)·`ai_ready.*`(2개) 테이블 자동 생성 |
-| Pipeline (배치·학습 전용) | `apartapart-pipeline` | `pipeline` | 없음 (일회성 실행) | `pipeline/` + `metadata/` + `scripts/` + `samples/` + LightGBM(`libgomp1`) 포함. 원천→학습→DB 적재·검증 실행 |
+| Pipeline (Watch 자동 피딩·학습) | `apartapart-pipeline` | 기본 (상시 폴링) | 없음 (데몬) | `data/watch/`를 10초마다 폴링. 신규 원천 유입 시 `01_bronze` → `05_train` → DB 적재 → FastAPI 캐시 갱신 자동 실행 |
 
 ---
 
@@ -37,13 +37,13 @@ cd mlo-03-p2-team1
 cp .env.example .env
 ```
 
-### Step 2. DB · Backend · Frontend 컨테이너 기동
+### Step 2. DB · Backend · Frontend · Pipeline(워처) 컨테이너 기동
 
 ```bash
 docker compose --profile local-db up --build -d
 ```
 
-세 컨테이너(`apartapart-postgres`, `apartapart-backend`, `apartapart-frontend`)가 정상 기동됐는지 확인합니다.
+네 컨테이너(`apartapart-postgres`, `apartapart-backend`, `apartapart-frontend`, `apartapart-pipeline`)가 정상 기동됐는지 확인합니다.
 
 ```bash
 docker compose --profile local-db ps
@@ -51,15 +51,23 @@ curl -s http://localhost:8000/api/health
 # 기대 출력: {"status":"ok"}
 ```
 
-### Step 3. 전용 `pipeline` 컨테이너로 전체 10단계 E2E 실행
+### Step 3. Watch 폴더에 테스트 원천 투입 → 자동 파이프라인 가동
+
+`apartapart-pipeline` 컨테이너가 `data/watch/` 폴더를 10초마다 폴링하고 있습니다. 비식별 테스트 원천(`samples/local_e2e/source/`)을 `data/watch/`에 넣기만 하면 전체 파이프라인이 자동으로 실행됩니다.
 
 ```bash
-docker compose --profile pipeline run --rm --build pipeline
+mkdir -p data/watch
+# 복사 중 부분 읽기를 막기 위해 .part 로 복사 후 이름 변경 권장
+cp -R samples/local_e2e/source data/watch/sample_batch.part \
+  && mv data/watch/sample_batch.part data/watch/sample_batch
+
+# 실시간 자동 실행 로그 확인 (약 10초 내 감지 → 전체 처리 약 10초 소요)
+docker compose logs -f pipeline
 ```
 
-이 명령은 전용 `pipeline` 컨테이너 안에서 **원천(`data/source/`)부터** 아래 10단계를 순서대로 실행한 뒤 자동 종료됩니다 (빌드 이후 실행 약 15초 소요):
+자동 실행되는 단계:
 
-1. **비식별 테스트 원천 배치**: `samples/local_e2e/source/` (11종 원천) → `data/source/` 복사
+1. **Watch 감지 및 원천 반영**: `data/watch/sample_batch/`(또는 `.zip`) 감지 → `data/source/`에 반영
 2. **01 Bronze**: `python pipeline/bronze/01_bronze.py` (SHA-256 검증·읽기 전용 보호 + Parquet 변환)
 3. **02 Silver 표준화**: `python pipeline/silver/02_normalize.py` (표준용어 사전 적용)
 4. **03 Silver 정제**: `python pipeline/silver/03_clean.py` (중복·법정동·업종 정제 및 완료 조건 검증)
@@ -68,23 +76,14 @@ docker compose --profile pipeline run --rm --build pipeline
 7. **Gold DB 적재**: `python scripts/load_postgres.py --stage gold` (로컬 PostgreSQL `gold.*` 8개 테이블 적재)
 8. **05 LightGBM 학습·예측**: `python pipeline/ai_ready/05_train.py` (롤링 CV 2021~2026 + `2026Q4` 예측)
 9. **학습 결과 DB 적재**: `python scripts/load_postgres.py --stage ai_ready` (`ai_ready.feature_set`, `ai_ready.prediction` 적재)
-10. **API·프론트 서빙 검증**:
-    - `GET http://backend:8000/api/health`
-    - `GET http://backend:8000/api/dashboard/bootstrap?refresh=true` (백엔드 캐시 갱신)
-    - `GET http://backend:8000/api/dashboard/quarters/2026Q3` 및 `2026Q4` (실제 시세 + AI 예측 확인)
-    - `GET http://frontend/` 및 `http://frontend/api/health` (Nginx 프론트 + API 프록시 확인)
+10. **캐시 갱신 및 아카이브**:
+    - `GET http://backend:8000/api/dashboard/bootstrap?refresh=true`로 백엔드 캐시 즉시 갱신
+    - 성공 시 `data/watch/sample_batch` → `data/processed/<timestamp>__sample_batch` 이동
+    - 실패/검증 오류 시 `data/quarantine/<timestamp>__sample_batch` 격리 및 `report/pipeline_watch.log` 기록
 
-> **단계별 개별 실행이 필요할 때**
+> **Watch 대신 즉시 수동 E2E 실행이 필요할 때**
 > ```bash
-> docker compose --profile pipeline run --rm pipeline python pipeline/bronze/01_bronze.py
-> docker compose --profile pipeline run --rm pipeline python pipeline/silver/02_normalize.py
-> docker compose --profile pipeline run --rm pipeline python pipeline/silver/03_clean.py
-> docker compose --profile pipeline run --rm pipeline python pipeline/gold/04_gold.py
-> docker compose --profile pipeline run --rm pipeline python pipeline/ai_ready/05_feature_set.py
-> docker compose --profile pipeline run --rm pipeline python scripts/load_postgres.py --stage gold
-> docker compose --profile pipeline run --rm pipeline python pipeline/ai_ready/05_train.py
-> docker compose --profile pipeline run --rm pipeline python scripts/load_postgres.py --stage ai_ready
-> curl -s "http://localhost:8000/api/dashboard/bootstrap?refresh=true" > /dev/null
+> docker compose exec pipeline python scripts/run_local_e2e.py --force
 > ```
 
 ### Step 4. 브라우저에서 프론트엔드 확인

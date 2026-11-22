@@ -21,4 +21,4 @@ COPY metadata ./metadata
 COPY scripts ./scripts
 COPY samples ./samples
 
-CMD ["python", "scripts/run_local_e2e.py", "--force"]
+CMD ["python", "scripts/watch_pipeline.py"]

@@ -65,7 +65,6 @@ services:
       context: .
       dockerfile: pipeline/Dockerfile
     container_name: apartapart-pipeline
-    profiles: ["pipeline"]
     env_file:
       - path: .env
         required: false
@@ -76,11 +75,14 @@ services:
       DBID: ${DBID:-web}
       DBPW: ${DBPW:-localdev}
       DBSSLMODE: ${DBSSLMODE:-disable}
+      WATCH_POLL_SECONDS: ${WATCH_POLL_SECONDS:-10}
+      BACKEND_URL: http://backend:8000
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
       - ./report:/app/report
+    restart: unless-stopped
 
 volumes:
   pgdata:
