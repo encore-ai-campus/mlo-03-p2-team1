@@ -118,7 +118,7 @@ function CompactToggleRow({
       disabled={disabled}
       aria-pressed={disabled ? false : active}
       onClick={onClick}
-      className={`flex w-full items-start gap-2 rounded-xl border p-2.5 text-left transition ${
+      className={`flex w-full items-start gap-2 rounded-xl border px-2.5 py-2 text-left transition ${
         disabled
           ? 'cursor-not-allowed border-slate-800/70 bg-slate-950/40 text-slate-500 opacity-65'
           : active
@@ -181,10 +181,10 @@ export function LeftFilterPanel() {
   return (
     <aside
       aria-label="예측 모델, 국면 필터 및 인허가 상권 레이어"
-      className="pointer-events-auto fixed bottom-3 left-3 top-[76px] z-20 flex w-[272px] flex-col gap-3"
+      className="pointer-events-auto fixed bottom-3 left-3 top-[76px] z-20 flex w-[272px] flex-col gap-2"
     >
       {/* AI Model Selector */}
-      <div className="hud-glass shrink-0 space-y-2 rounded-2xl p-3.5">
+      <div className="hud-glass shrink-0 space-y-1.5 rounded-2xl p-3">
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
             <Cpu className="h-3.5 w-3.5 text-cyan-400" />
@@ -226,7 +226,7 @@ export function LeftFilterPanel() {
       </div>
 
       {/* Regime Analysis Modes */}
-      <div className="hud-glass shrink-0 space-y-2 rounded-2xl p-3.5">
+      <div className="hud-glass shrink-0 space-y-1.5 rounded-2xl p-3">
         <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
           국면 분석 필터
         </div>
@@ -256,7 +256,7 @@ export function LeftFilterPanel() {
 
       {/* AI Mode: Prediction Error Tolerance Cards | Market Mode: Gold 6 Commercial License Industry Layers */}
       {isAiMode ? (
-        <div className="hud-glass flex min-h-0 flex-1 flex-col gap-2 overflow-hidden rounded-2xl p-3.5">
+        <div className="hud-glass flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden rounded-2xl p-3">
           <div className="flex shrink-0 items-center justify-between">
             <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
               <Target className="h-3.5 w-3.5 text-emerald-400" />
@@ -281,7 +281,7 @@ export function LeftFilterPanel() {
             )}
           </div>
 
-          <div className="flex flex-1 flex-col gap-2">
+          <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-0.5">
             {TOLERANCE_BAND_META.map((band) => {
               const active = activeToleranceBands[band.key];
               const stat = accuracy.bands[band.key];
@@ -291,7 +291,7 @@ export function LeftFilterPanel() {
                   type="button"
                   aria-pressed={active}
                   onClick={() => toggleToleranceBand(band.key)}
-                  className={`flex w-full flex-1 flex-col justify-center gap-1.5 rounded-xl border px-3 py-2 text-left transition ${
+                  className={`flex min-h-[54px] w-full flex-1 shrink-0 flex-col justify-center gap-1 rounded-xl border px-2.5 py-1.5 text-left transition ${
                     active
                       ? 'border-slate-600/85 bg-slate-800/80 text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
                       : 'border-slate-800/70 bg-slate-950/45 text-slate-400 hover:border-slate-700 hover:text-slate-200'
@@ -306,10 +306,12 @@ export function LeftFilterPanel() {
                           boxShadow: active ? `0 0 8px ${band.color}` : undefined,
                         }}
                       />
-                      <span className="font-mono text-[13px] font-bold">{band.label}</span>
+                      <span className="font-mono text-[12px] font-bold leading-none">
+                        {band.label}
+                      </span>
                     </div>
                     <span
-                      className={`font-mono text-xs font-bold ${
+                      className={`font-mono text-xs font-bold leading-none ${
                         active ? band.badgeClass : 'text-slate-400'
                       }`}
                     >
@@ -317,7 +319,7 @@ export function LeftFilterPanel() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <div className="flex items-center justify-between text-[11px] leading-tight text-slate-400">
                     <span>{band.desc}</span>
                     <span className="font-mono text-slate-300">
                       {isAiEval ? `${stat.count}동` : '—'}
@@ -339,7 +341,7 @@ export function LeftFilterPanel() {
           </div>
         </div>
       ) : (
-        <div className="hud-glass flex min-h-0 flex-1 flex-col gap-2 overflow-hidden rounded-2xl p-3.5">
+        <div className="hud-glass flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden rounded-2xl p-3">
           <div className="flex shrink-0 items-center justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
               인허가 상권 (6업종)
@@ -349,7 +351,7 @@ export function LeftFilterPanel() {
             </span>
           </div>
 
-          <div className="flex flex-1 flex-col gap-1.5">
+          <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-0.5">
             {INDUSTRY_ORDER.map((key) => {
               const meta = INDUSTRY_META[key];
               const Icon = INDUSTRY_ICONS[key];
@@ -360,7 +362,7 @@ export function LeftFilterPanel() {
                   type="button"
                   aria-pressed={active}
                   onClick={() => toggleIndustry(key)}
-                  className={`flex w-full flex-1 items-center justify-between gap-2.5 rounded-xl border px-3 py-1.5 text-left transition ${
+                  className={`flex min-h-[44px] w-full flex-1 shrink-0 items-center justify-between gap-2 rounded-xl border px-2.5 py-1 text-left transition ${
                     active
                       ? 'border-slate-600/80 bg-slate-800/80 text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
                       : 'border-slate-800/70 bg-slate-950/45 text-slate-400 hover:border-slate-700 hover:text-slate-200'
@@ -400,7 +402,7 @@ export function LeftFilterPanel() {
       )}
 
       {/* Rolling CV Model Benchmark Summary (AI Ready 2021-2026) */}
-      <div className="hud-glass shrink-0 space-y-2 rounded-2xl p-3.5">
+      <div className="hud-glass shrink-0 space-y-1.5 rounded-2xl p-3">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
             롤링 검증 성능 (21~26)

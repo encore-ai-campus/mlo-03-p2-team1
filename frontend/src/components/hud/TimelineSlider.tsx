@@ -15,30 +15,35 @@ const PERIOD_LABEL = {
   forecast: { text: '다음 분기 예측', cls: 'text-violet-300' },
 } as const;
 
-const MAX_IDX = TIMELINE_QUARTERS.length - 1;
+const FULL_MAX_IDX = TIMELINE_QUARTERS.length - 1;
 const EVAL_START_IDX = TIMELINE_QUARTERS.indexOf('2021Q1');
+const LAST_EVAL_IDX = TIMELINE_QUARTERS.indexOf(LATEST_OBSERVED_QUARTER);
 const FORECAST_IDX = TIMELINE_QUARTERS.indexOf(FORECAST_QUARTER);
-
-const TRAIN_EVAL_BOUNDARY_PCT = ((EVAL_START_IDX - 0.5) / MAX_IDX) * 100;
-const EVAL_FORECAST_BOUNDARY_PCT = ((FORECAST_IDX - 0.5) / MAX_IDX) * 100;
 
 export function TimelineSlider() {
   const selectedQuarter = useDashboardStore((s) => s.selectedQuarter);
+  const viewMode = useDashboardStore((s) => s.viewMode);
   const isPlaying = useDashboardStore((s) => s.isPlaying);
   const setSelectedQuarter = useDashboardStore((s) => s.setSelectedQuarter);
   const togglePlaying = useDashboardStore((s) => s.togglePlaying);
 
   useTimelinePlayback();
 
-  const activeIdx = TIMELINE_QUARTERS.indexOf(selectedQuarter);
-  const thumbPct = (activeIdx / MAX_IDX) * 100;
+  const isAiMode = viewMode === 'error';
+  const maxIdx = isAiMode ? LAST_EVAL_IDX : FULL_MAX_IDX;
+  const trainEvalBoundaryPct = ((EVAL_START_IDX - 0.5) / maxIdx) * 100;
+  const evalForecastBoundaryPct = isAiMode ? 100 : ((FORECAST_IDX - 0.5) / maxIdx) * 100;
+
+  const activeIdx = Math.min(maxIdx, TIMELINE_QUARTERS.indexOf(selectedQuarter));
+  const thumbPct = (activeIdx / maxIdx) * 100;
   const summary = getQuarterSummary(selectedQuarter);
   const theme = REGIME_THEME[summary.regime];
   const periodInfo = PERIOD_LABEL[summary.periodType];
   const isForecast = selectedQuarter === FORECAST_QUARTER;
+  const isLatestEval = selectedQuarter === LATEST_OBSERVED_QUARTER;
 
   const stepBy = (delta: number) => {
-    const nextIdx = Math.min(MAX_IDX, Math.max(0, activeIdx + delta));
+    const nextIdx = Math.min(maxIdx, Math.max(0, activeIdx + delta));
     setSelectedQuarter(TIMELINE_QUARTERS[nextIdx]);
   };
 
@@ -80,7 +85,7 @@ export function TimelineSlider() {
           <button
             type="button"
             onClick={() => stepBy(1)}
-            disabled={activeIdx >= MAX_IDX}
+            disabled={activeIdx >= maxIdx}
             aria-label="다음 분기"
             title="다음 분기"
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/80 bg-slate-900/60 text-slate-200 transition hover:border-slate-500 hover:text-white disabled:opacity-30"
@@ -117,19 +122,21 @@ export function TimelineSlider() {
             <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
               <div
                 className="absolute inset-y-0 left-0 bg-slate-500/75"
-                style={{ width: `${TRAIN_EVAL_BOUNDARY_PCT}%` }}
+                style={{ width: `${trainEvalBoundaryPct}%` }}
               />
               <div
                 className="absolute inset-y-0 bg-cyan-500/45"
                 style={{
-                  left: `${TRAIN_EVAL_BOUNDARY_PCT}%`,
-                  width: `${EVAL_FORECAST_BOUNDARY_PCT - TRAIN_EVAL_BOUNDARY_PCT}%`,
+                  left: `${trainEvalBoundaryPct}%`,
+                  width: `${evalForecastBoundaryPct - trainEvalBoundaryPct}%`,
                 }}
               />
-              <div
-                className="absolute inset-y-0 right-0 bg-violet-400/80"
-                style={{ left: `${EVAL_FORECAST_BOUNDARY_PCT}%` }}
-              />
+              {!isAiMode && (
+                <div
+                  className="absolute inset-y-0 right-0 bg-violet-400/80"
+                  style={{ left: `${evalForecastBoundaryPct}%` }}
+                />
+              )}
               <div
                 className="absolute inset-y-0 left-0 bg-white/25"
                 style={{ width: `${thumbPct}%` }}
@@ -139,7 +146,7 @@ export function TimelineSlider() {
             {/* Train | Eval Boundary Line */}
             <div
               className="pointer-events-none absolute top-1/2 h-5 w-[2.5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-300 shadow-[0_0_8px_#22d3ee]"
-              style={{ left: `${TRAIN_EVAL_BOUNDARY_PCT}%` }}
+              style={{ left: `${trainEvalBoundaryPct}%` }}
             />
 
             {/* Synced round thumb */}
@@ -151,7 +158,7 @@ export function TimelineSlider() {
             <input
               type="range"
               min={0}
-              max={MAX_IDX}
+              max={maxIdx}
               step={1}
               value={activeIdx}
               onChange={(e) => {
@@ -168,31 +175,50 @@ export function TimelineSlider() {
             <span className="absolute left-0">17Q1</span>
             <span
               className="absolute -translate-x-1/2 font-semibold text-cyan-300"
-              style={{ left: `${TRAIN_EVAL_BOUNDARY_PCT}%` }}
+              style={{ left: `${trainEvalBoundaryPct}%` }}
             >
               21Q1 검증
             </span>
-            <span className="absolute right-0 text-violet-300">26Q4</span>
+            <span className={`absolute right-0 ${isAiMode ? 'text-cyan-300' : 'text-violet-300'}`}>
+              {isAiMode ? '26Q3' : '26Q4'}
+            </span>
           </div>
         </div>
 
-        {/* Quick Forecast Jump */}
-        <button
-          type="button"
-          aria-pressed={isForecast}
-          onClick={() =>
-            setSelectedQuarter(isForecast ? LATEST_OBSERVED_QUARTER : FORECAST_QUARTER)
-          }
-          className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-4 text-sm font-bold transition ${
-            isForecast
-              ? 'border-violet-400/80 bg-violet-500/30 text-violet-100 shadow-[0_0_14px_-3px_rgba(167,139,250,0.65)]'
-              : 'border-violet-500/40 bg-violet-500/15 text-violet-200 hover:border-violet-400/65 hover:bg-violet-500/25'
-          }`}
-          title={isForecast ? '최신 실측 분기(2026Q3)로 돌아가기' : '2026Q4 다음 분기 예측 보기'}
-        >
-          <Sparkles className="h-4 w-4" />
-          <span>{isForecast ? '실측 26Q3' : '26Q4 예측'}</span>
-        </button>
+        {/* Quick End / Forecast Jump */}
+        {isAiMode ? (
+          <button
+            type="button"
+            aria-pressed={isLatestEval}
+            onClick={() => setSelectedQuarter(LATEST_OBSERVED_QUARTER)}
+            className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-4 text-sm font-bold transition ${
+              isLatestEval
+                ? 'border-cyan-400/80 bg-cyan-500/30 text-cyan-100 shadow-[0_0_14px_-3px_rgba(34,211,238,0.65)]'
+                : 'border-cyan-500/40 bg-cyan-500/15 text-cyan-200 hover:border-cyan-400/65 hover:bg-cyan-500/25'
+            }`}
+            title="마지막 예측 검증 분기(2026Q3) 보기"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>최종 26Q3</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-pressed={isForecast}
+            onClick={() =>
+              setSelectedQuarter(isForecast ? LATEST_OBSERVED_QUARTER : FORECAST_QUARTER)
+            }
+            className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-4 text-sm font-bold transition ${
+              isForecast
+                ? 'border-violet-400/80 bg-violet-500/30 text-violet-100 shadow-[0_0_14px_-3px_rgba(167,139,250,0.65)]'
+                : 'border-violet-500/40 bg-violet-500/15 text-violet-200 hover:border-violet-400/65 hover:bg-violet-500/25'
+            }`}
+            title={isForecast ? '최신 실측 분기(2026Q3)로 돌아가기' : '2026Q4 다음 분기 예측 보기'}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>{isForecast ? '실측 26Q3' : '26Q4 예측'}</span>
+          </button>
+        )}
       </div>
     </footer>
   );

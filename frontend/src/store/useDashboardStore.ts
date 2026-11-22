@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { INITIAL_ACTIVE_FACILITIES } from '../config/facilities';
 import { INITIAL_ACTIVE_INDUSTRIES } from '../config/industries';
 import {
+  FORECAST_QUARTER,
+  LATEST_OBSERVED_QUARTER,
   TIMELINE_QUARTERS,
   type AiAccuracyFilter,
   type BriefingTab,
@@ -13,6 +15,12 @@ import {
   type ModelName,
   type QuarterValue,
 } from '../types/dashboard';
+
+const LAST_EVAL_INDEX = TIMELINE_QUARTERS.indexOf(LATEST_OBSERVED_QUARTER);
+
+function getMaxQuarterIndex(viewMode: MapViewMode): number {
+  return viewMode === 'error' ? LAST_EVAL_INDEX : TIMELINE_QUARTERS.length - 1;
+}
 
 export const INITIAL_TOLERANCE_BANDS: Record<ErrorToleranceBand, boolean> = {
   '0_2': true,
@@ -86,28 +94,42 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   dataSource: 'mock',
   dataVersion: 0,
 
-  setSelectedQuarter: (quarter) => set({ selectedQuarter: quarter }),
+  setSelectedQuarter: (quarter) =>
+    set((state) => ({
+      selectedQuarter:
+        state.viewMode === 'error' && quarter === FORECAST_QUARTER
+          ? LATEST_OBSERVED_QUARTER
+          : quarter,
+    })),
 
   stepQuarter: () =>
     set((state) => {
+      const maxIdx = getMaxQuarterIndex(state.viewMode);
       const idx = TIMELINE_QUARTERS.indexOf(state.selectedQuarter);
-      if (idx >= TIMELINE_QUARTERS.length - 1) {
-        return { isPlaying: false };
+      if (idx >= maxIdx) {
+        return {
+          selectedQuarter: TIMELINE_QUARTERS[maxIdx],
+          isPlaying: false,
+        };
       }
       const nextIdx = idx + 1;
       return {
         selectedQuarter: TIMELINE_QUARTERS[nextIdx],
-        isPlaying: nextIdx < TIMELINE_QUARTERS.length - 1,
+        isPlaying: nextIdx < maxIdx,
       };
     }),
 
   setSelectedModel: (model) => set({ selectedModel: model }),
   setViewMode: (mode) =>
-    set({
+    set((state) => ({
       viewMode: mode,
+      selectedQuarter:
+        mode === 'error' && state.selectedQuarter === FORECAST_QUARTER
+          ? LATEST_OBSERVED_QUARTER
+          : state.selectedQuarter,
       aiAccuracyFilter: 'all',
       activeToleranceBands: { ...INITIAL_TOLERANCE_BANDS },
-    }),
+    })),
   setAiAccuracyFilter: (filter) => set({ aiAccuracyFilter: filter }),
   toggleToleranceBand: (band) =>
     set((state) => ({
@@ -129,7 +151,9 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       if (state.isPlaying) {
         return { isPlaying: false };
       }
-      const atEnd = state.selectedQuarter === TIMELINE_QUARTERS[TIMELINE_QUARTERS.length - 1];
+      const maxIdx = getMaxQuarterIndex(state.viewMode);
+      const currentIdx = TIMELINE_QUARTERS.indexOf(state.selectedQuarter);
+      const atEnd = currentIdx >= maxIdx;
       return {
         selectedQuarter: atEnd ? TIMELINE_QUARTERS[0] : state.selectedQuarter,
         isPlaying: true,
