@@ -1,0 +1,257 @@
+# Masked Raw Source -> Bronze -> Silver -> Gold -> Train -> DB -> API -> Frontend E2E Evidence
+Timestamp: 2026-11-22 13:12:05 +0900
+Base Commit: 95d5ef3 (main)
+Command: docker compose --profile pipeline run --rm --build pipeline
+
+## 1. Masked Source Sample SHA-256 Checksums (samples/local_e2e/source/)
+beff1ec0ca65d965c91cf1549964b12ac2fdeaa380104de15e5666ef37c9c198  samples/local_e2e/source/api/apt_rent/202601/apt_rent__11110_202601__p0001.xml
+5a6da314feb9f0c38b3bc9bcacf7cf3c7e60d6cb60c964355f5b7511806037d7  samples/local_e2e/source/api/apt_trade/201701/apt_trade__sample_2017__p0001.xml
+fb41d1adc1b2f9cd5d06249db1746f5d9be59d414662a5086b0af2366865cdc6  samples/local_e2e/source/api/apt_trade/201801/apt_trade__sample_2018__p0001.xml
+c161519b5c15cf2a9c4b06b92f05aee7a7762f8f4dab1b49d1b9100971fb3025  samples/local_e2e/source/api/apt_trade/201901/apt_trade__sample_2019__p0001.xml
+88e7341c5e98e80cd229c723be281078d8fde289a0916da3e8b68d534dc63199  samples/local_e2e/source/api/apt_trade/202001/apt_trade__sample_2020__p0001.xml
+88fbd58ab289f80011d2040ad8e30b41b1a053a2d5ffda2189adab84f72c8553  samples/local_e2e/source/api/apt_trade/202101/apt_trade__sample_2021__p0001.xml
+dac56777f9758e456056718795caf87cc6c7395a4075823d0a8d8d06d6d07a72  samples/local_e2e/source/api/apt_trade/202201/apt_trade__sample_2022__p0001.xml
+40110b9f1e7b0011ab43cbd91867fcdad10f78c979990425c110e689c270b112  samples/local_e2e/source/api/apt_trade/202301/apt_trade__sample_2023__p0001.xml
+df7284985f0a349fba585c77fed3d569082aa3ee81b1c4fae922e2c68ad86354  samples/local_e2e/source/api/apt_trade/202401/apt_trade__sample_2024__p0001.xml
+1825ff739db12630add5c1dea887dca81d0c2fffa6aae4fd7f9cf02876b1fb54  samples/local_e2e/source/api/apt_trade/202501/apt_trade__sample_2025__p0001.xml
+2b23fcf4c1de3091865b9b19d235efbb442b0696d8d8c54a0f246d223f9c2815  samples/local_e2e/source/api/apt_trade/202601/apt_trade__sample_2026__p0001.xml
+dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22  samples/local_e2e/source/api/beauty/20261119/_done_snapshot
+6f35c7e6ed36629d376eb3c6afbfc84835f0516475a3449b5f85ec753215d262  samples/local_e2e/source/api/beauty/20261119/beauty__sample__p0001.xml
+dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22  samples/local_e2e/source/api/clinic/20261119/_done_snapshot
+fc9226e5baeccb87c7f7caf1b4f568d87a11aae65e7b9ddedcc95a03f9046a58  samples/local_e2e/source/api/clinic/20261119/clinic__sample__p0001.xml
+dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22  samples/local_e2e/source/api/food_general/20261118/_done_snapshot
+9437117e5517ac4ed4192037ec6b2108b6c8937122f57ff398b0ee9451998544  samples/local_e2e/source/api/food_general/20261118/food_general__sample__p0001.xml
+dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22  samples/local_e2e/source/api/food_rest/20261118/_done_snapshot
+d9a2ef3566831913b75237eb6c255a6eb2500c160c0415f3a4a12580f9bf1b8e  samples/local_e2e/source/api/food_rest/20261118/food_rest__sample__p0001.xml
+dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22  samples/local_e2e/source/api/pharmacy/20261119/_done_snapshot
+aeeefecd5b1974eb59e53e479a5472b0affc589260878073f354c5c5d85dea7b  samples/local_e2e/source/api/pharmacy/20261119/pharmacy__sample__p0001.xml
+d98b99f0648f0f7fb6c2b5fc6e27507bdef66be43bd5a5d4093decb24f5b38f8  samples/local_e2e/source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip
+
+## 2. Full 10-Step Pipeline Container Execution Log (12.2s)
+ Image mlo-03-p2-team1-pipeline Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 549B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 625B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.13-slim
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 150B done
+#4 DONE 0.0s
+
+#5 [1/9] FROM docker.io/library/python:3.13-slim@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb
+#5 resolve docker.io/library/python:3.13-slim@sha256:2d44738ebf4ce5f63b9d9ea871e9c7cfdc0426f7b0c97cac915fd88ded1d86bb 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 9.47MB 0.1s done
+#6 DONE 0.1s
+
+#7 [4/9] COPY pipeline/requirements.txt ./pipeline/requirements.txt
+#7 CACHED
+
+#8 [2/9] WORKDIR /app
+#8 CACHED
+
+#9 [6/9] COPY pipeline ./pipeline
+#9 CACHED
+
+#10 [5/9] RUN pip install --no-cache-dir         -r pipeline/requirements.txt         "psycopg[binary]>=3.2,<4"         "python-dotenv>=1,<2"
+#10 CACHED
+
+#11 [3/9] RUN apt-get update     && apt-get install -y --no-install-recommends libgomp1     && rm -rf /var/lib/apt/lists/*
+#11 CACHED
+
+#12 [7/9] COPY metadata ./metadata
+#12 CACHED
+
+#13 [8/9] COPY scripts ./scripts
+#13 DONE 0.0s
+
+#14 [9/9] COPY samples ./samples
+#14 DONE 0.0s
+
+#15 exporting to image
+#15 exporting layers 0.1s done
+#15 exporting manifest sha256:2b7d0561f04d3257bf4c3284d603311da2bcb4c43c6090544ed287b4f5b8470a done
+#15 exporting config sha256:e95f266119fb2035a9efdd3e243d3ac7d59b0441211911dc77f1d74c156ffa3a done
+#15 exporting attestation manifest sha256:6964b111ab428e8693cd3270d43978575d16c16659773ecd2ee486c859746903 done
+#15 exporting manifest list sha256:e66f278829ac68c3724b0159808ceeb3770650a0476c613011e4e943d17ab450 done
+#15 naming to docker.io/library/mlo-03-p2-team1-pipeline:latest done
+#15 unpacking to docker.io/library/mlo-03-p2-team1-pipeline:latest 0.0s done
+#15 DONE 0.2s
+
+#16 resolving provenance for metadata file
+#16 DONE 0.0s
+ Image mlo-03-p2-team1-pipeline Built 
+ Container mlo-03-p2-team1-pipeline-run-dbb4da5f0bef Creating 
+ Container mlo-03-p2-team1-pipeline-run-dbb4da5f0bef Created 
+
+=== [1/10 stage-source] 비식별 테스트 원천(source) 배치 ===
+  - staged 25 sample source files (9.01 MB) -> /app/data/source
+
+=== [2/10 bronze] /usr/local/bin/python pipeline/bronze/01_bronze.py ===
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_강원_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_강원_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_경기_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_경기_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_경남_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_경남_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_경북_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_경북_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_대구_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_대구_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_대전_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_대전_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_부산_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_부산_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_서울_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_서울_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_세종_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_세종_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_울산_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_울산_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_인천_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_인천_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_전남광주_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_전남광주_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_전북_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_전북_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_제주_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_제주_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_충남_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_충남_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] store_info | Source/files/store_info/소상공인시장진흥공단_상가(상권)정보_20260930.zip!/소상공인시장진흥공단_상가(상권)정보_충북_202609.csv → 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_충북_202609.parquet: 원천 1 / bronze 1 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/1.병원정보서비스(2026.9.).csv → 01_bronze__hira_inst__1.병원정보서비스(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/10.의료기관별상세정보서비스_08_특수진료정보서비스(2026.9.).csv → 01_bronze__hira_inst__10.의료기관별상세정보서비스_08_특수진료정보서비스(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/11.의료기관별상세정보서비스_09_전문병원지정분야(2026.9.).csv → 01_bronze__hira_inst__11.의료기관별상세정보서비스_09_전문병원지정분야(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/12.의료기관별상세정보서비스_10_기타인력정보(2026.9.).csv → 01_bronze__hira_inst__12.의료기관별상세정보서비스_10_기타인력정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/2.약국정보서비스(2026.9.).csv → 01_bronze__hira_inst__2.약국정보서비스(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/3.의료기관별상세정보서비스_01_시설정보(2026.9.).csv → 01_bronze__hira_inst__3.의료기관별상세정보서비스_01_시설정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/4.의료기관별상세정보서비스_02_세부정보(2026.9.).csv → 01_bronze__hira_inst__4.의료기관별상세정보서비스_02_세부정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/5.의료기관별상세정보서비스_03_진료과목정보(2026.9.).csv → 01_bronze__hira_inst__5.의료기관별상세정보서비스_03_진료과목정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/6.의료기관별상세정보서비스_04_교통정보(2026.9.).csv → 01_bronze__hira_inst__6.의료기관별상세정보서비스_04_교통정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/7.의료기관별상세정보서비스_05_의료장비정보(2026.9.).csv → 01_bronze__hira_inst__7.의료기관별상세정보서비스_05_의료장비정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/8.의료기관별상세정보서비스_06_식대가산정보(2026.9.).csv → 01_bronze__hira_inst__8.의료기관별상세정보서비스_06_식대가산정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] hira_inst | Source/files/hira_inst/건강보험심사평가원_전국 병의원 및 약국 현황_20260930.zip!/9.의료기관별상세정보서비스_07_간호등급정보(2026.9.).csv → 01_bronze__hira_inst__9.의료기관별상세정보서비스_07_간호등급정보(2026.9.).parquet: 원천 5 / bronze 5 (OK, created)
+[01] ldong_code | Source/files/ldong_code/법정동코드 전체자료.zip!/법정동코드 전체자료.txt → 01_bronze__ldong_code__법정동코드_전체자료.parquet: 원천 53,403 / bronze 53,403 (OK, created)
+[01] apt_trade | 원천 10개 → 01_bronze__apt_trade.parquet: 원천 9,113 / bronze 9,113 (OK, created)
+[01] apt_rent | 원천 1개 → 01_bronze__apt_rent.parquet: 원천 15 / bronze 15 (OK, created)
+[01] food_general | 원천 1개 → 01_bronze__food_general__20261118.parquet: 원천 250 / bronze 250 (OK, created)
+[01] food_general_file | Source/files/food_general_file/서울시 일반음식점 인허가 정보.csv → 01_bronze__food_general_file__서울시_일반음식점_인허가_정보.parquet: 원천 250 / bronze 250 (OK, created)
+[01] food_rest | 원천 1개 → 01_bronze__food_rest__20261118.parquet: 원천 250 / bronze 250 (OK, created)
+[01] clinic | 원천 1개 → 01_bronze__clinic__20261119.parquet: 원천 250 / bronze 250 (OK, created)
+[01] pharmacy | 원천 1개 → 01_bronze__pharmacy__20261119.parquet: 원천 250 / bronze 250 (OK, created)
+[01] beauty | 원천 1개 → 01_bronze__beauty__20261119.parquet: 원천 250 / bronze 250 (OK, created)
+
+[01] 완료 조건: 통과 | 행 수 일치 37/37 | 원천 불변 예 | 재실행 동일 0/37
+[01] 결과: data/bronze/README.md, report/bronze/01_bronze__manifest.csv
+=== [2/10 bronze] 완료 (2.07s) ===
+
+=== [3/10 normalize] /usr/local/bin/python pipeline/silver/02_normalize.py ===
+[02] 사전 검증 통과: 사전 419줄, 데이터셋 11개, bronze 37개 파일
+[02] apt_rent | 01_bronze__apt_rent.parquet → 02_silver__apt_rent.parquet: bronze 15 / silver 15 (OK, 변환 실패 0칸, created)
+[02] apt_trade | 01_bronze__apt_trade.parquet → 02_silver__apt_trade.parquet: bronze 9,113 / silver 9,113 (OK, 변환 실패 0칸, created)
+[02] beauty | 01_bronze__beauty__20261119.parquet → 02_silver__beauty__20261119.parquet: bronze 250 / silver 250 (OK, 변환 실패 0칸, created)
+[02] clinic | 01_bronze__clinic__20261119.parquet → 02_silver__clinic__20261119.parquet: bronze 250 / silver 250 (OK, 변환 실패 0칸, created)
+[02] food_general | 01_bronze__food_general__20261118.parquet → 02_silver__food_general__20261118.parquet: bronze 250 / silver 250 (OK, 변환 실패 0칸, created)
+[02] food_general_file | 01_bronze__food_general_file__서울시_일반음식점_인허가_정보.parquet → 02_silver__food_general_file__서울시_일반음식점_인허가_정보.parquet: bronze 250 / silver 250 (OK, 변환 실패 0칸, created)
+[02] food_rest | 01_bronze__food_rest__20261118.parquet → 02_silver__food_rest__20261118.parquet: bronze 250 / silver 250 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__1.병원정보서비스(2026.9.).parquet → 02_silver__hira_inst__1.병원정보서비스(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__10.의료기관별상세정보서비스_08_특수진료정보서비스(2026.9.).parquet → 02_silver__hira_inst__10.의료기관별상세정보서비스_08_특수진료정보서비스(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__11.의료기관별상세정보서비스_09_전문병원지정분야(2026.9.).parquet → 02_silver__hira_inst__11.의료기관별상세정보서비스_09_전문병원지정분야(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__12.의료기관별상세정보서비스_10_기타인력정보(2026.9.).parquet → 02_silver__hira_inst__12.의료기관별상세정보서비스_10_기타인력정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__2.약국정보서비스(2026.9.).parquet → 02_silver__hira_inst__2.약국정보서비스(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__3.의료기관별상세정보서비스_01_시설정보(2026.9.).parquet → 02_silver__hira_inst__3.의료기관별상세정보서비스_01_시설정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__4.의료기관별상세정보서비스_02_세부정보(2026.9.).parquet → 02_silver__hira_inst__4.의료기관별상세정보서비스_02_세부정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__5.의료기관별상세정보서비스_03_진료과목정보(2026.9.).parquet → 02_silver__hira_inst__5.의료기관별상세정보서비스_03_진료과목정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__6.의료기관별상세정보서비스_04_교통정보(2026.9.).parquet → 02_silver__hira_inst__6.의료기관별상세정보서비스_04_교통정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__7.의료기관별상세정보서비스_05_의료장비정보(2026.9.).parquet → 02_silver__hira_inst__7.의료기관별상세정보서비스_05_의료장비정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__8.의료기관별상세정보서비스_06_식대가산정보(2026.9.).parquet → 02_silver__hira_inst__8.의료기관별상세정보서비스_06_식대가산정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] hira_inst | 01_bronze__hira_inst__9.의료기관별상세정보서비스_07_간호등급정보(2026.9.).parquet → 02_silver__hira_inst__9.의료기관별상세정보서비스_07_간호등급정보(2026.9.).parquet: bronze 5 / silver 5 (OK, 변환 실패 0칸, created)
+[02] ldong_code | 01_bronze__ldong_code__법정동코드_전체자료.parquet → 02_silver__ldong_code__법정동코드_전체자료.parquet: bronze 53,403 / silver 53,403 (OK, 변환 실패 0칸, created)
+[02] pharmacy | 01_bronze__pharmacy__20261119.parquet → 02_silver__pharmacy__20261119.parquet: bronze 250 / silver 250 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_강원_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_강원_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_경기_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_경기_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_경남_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_경남_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_경북_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_경북_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_대구_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_대구_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_대전_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_대전_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_부산_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_부산_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_서울_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_서울_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_세종_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_세종_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_울산_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_울산_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_인천_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_인천_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_전남광주_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_전남광주_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_전북_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_전북_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_제주_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_제주_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_충남_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_충남_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+[02] store_info | 01_bronze__store_info__소상공인시장진흥공단_상가(상권)정보_충북_202609.parquet → 02_silver__store_info__소상공인시장진흥공단_상가(상권)정보_충북_202609.parquet: bronze 1 / silver 1 (OK, 변환 실패 0칸, created)
+
+[02] 완료 조건: 통과 | 행 수 일치 37/37 | bronze 불변 예 | 재실행 동일 0/37
+[02] 결과: data/silver/README.md, report/silver/02_silver__manifest.csv, report/silver/02_silver__change_log.csv
+=== [3/10 normalize] 완료 (1.95s) ===
+
+=== [4/10 clean] /usr/local/bin/python pipeline/silver/03_clean.py ===
+[03] 사전 검사 통과: cln_* 8개 파일, 데이터셋 10개
+[03] food_general: 02 250 → 03 250 (중복 제거 0, created)
+[03] food_rest: 02 250 → 03 250 (중복 제거 0, created)
+[03] clinic: 02 250 → 03 250 (중복 제거 0, created)
+[03] pharmacy: 02 250 → 03 250 (중복 제거 0, created)
+[03] beauty: 02 250 → 03 250 (중복 제거 0, created)
+[03] apt_trade: 9,113행 → data/silver/apt_trade/03_silver__apt_trade.parquet (created) | LDONG 고침 0행, SAME_DEAL_YN 343행
+[03] apt_rent: 15행 → data/silver/apt_rent/03_silver__apt_rent.parquet (created) | 법정동 실패 0행
+[03] hira_inst: 02 2개 10행 → data/silver/hira_inst/03_silver__hira_inst.parquet (created) | 법정동 실패 10 (서울 1)
+[03] store_info: 16개 파일 16행 → data/silver/store_info/03_silver__store_info.parquet (created) | 법정동 실패 0행
+[03] ldong_code: 53,403행 → data/silver/ldong_code/03_silver__ldong_code.parquet (created) | 서울 현행 493
+
+[03] 완료 조건: 통과 | 02 불변 예 | 기록 건수 일치 예 | 재실행 동일 0/10 (처음 실행은 created)
+[03] 시작 2026-11-22T13:11:57+09:00, 종료 2026-11-22T13:11:59+09:00
+[03] 결과: report/silver/03_silver__manifest.csv, report/silver/03_silver__change_log.csv, report/silver/03_silver__issue_list.csv
+=== [4/10 clean] 완료 (2.15s) ===
+
+=== [5/10 gold] /usr/local/bin/python pipeline/gold/04_gold.py ===
+dim_region: 467 rows (created)
+dim_date: 39 rows (created)
+dim_lcns_induty: 14 rows (created)
+fact_apt_trd: 8,939 rows (created)
+fact_apt_trd_qtr: 18,213 rows (created)
+fact_apt_idx_qtr: 18,213 rows (created)
+fact_lcns_qtr: 254,982 rows (created)
+mart_ldong_infra_qtr: 18,213 rows (created)
+=== [5/10 gold] 완료 (1.16s) ===
+
+=== [6/10 feature] /usr/local/bin/python pipeline/ai_ready/05_feature_set.py ===
+feature_set: 937 rows ({'labeled': 907, 'predict': 30}), 30 dongs, 48 features (created) -> /app/data/ai_ready/05_ai_ready__feature_set.parquet
+=== [6/10 feature] 완료 (0.68s) ===
+
+=== [7/10 load-gold] /usr/local/bin/python scripts/load_postgres.py --stage gold ===
+[DB] Connected: web@postgres:5432/web
+  - gold.dim_region                     467 rows (0.02s)
+  - gold.dim_date                        39 rows (0.00s)
+  - gold.dim_lcns_induty                 14 rows (0.01s)
+  - gold.fact_apt_idx_qtr            18,213 rows (0.19s)
+  - gold.fact_apt_trd_qtr            18,213 rows (0.05s)
+  - gold.fact_lcns_qtr              254,982 rows (0.55s)
+  - gold.mart_ldong_infra_qtr        18,213 rows (0.13s)
+  - gold.fact_apt_trd                 8,939 rows (0.07s)
+[DB] Done: 8 tables, 319,080 rows in 1.04s
+=== [7/10 load-gold] 완료 (1.56s) ===
+
+=== [8/10 train] /usr/local/bin/python pipeline/ai_ready/05_train.py ===
+prediction: 1,668 rows (created), MODEL_VER f6ea76a475ce
+FOLD_YR   MODEL_NM  ROW_CNT  MAPE_PCT  VS_BASELINE_PCT  DIRECTION_PCT  RANK_IC
+    ALL   baseline      526  7.146320         0.000000            NaN      NaN
+    ALL      price      526  7.560872        -5.800917      59.885932 0.194324
+    ALL price_lcns      526  7.546514        -5.600005      59.125475 0.213513
+MODEL_FROM   MODEL_TO  MAPE_DIFF_PCTP  CI_LOW_PCTP  CI_HIGH_PCTP  IMPROVED_FOLD_CNT  FOLD_CNT
+  baseline      price        0.414552     0.054942      0.746408                  3         6
+     price price_lcns       -0.014358    -0.072898      0.048163                  3         6
+=== [8/10 train] 완료 (1.01s) ===
+
+=== [9/10 load-ai] /usr/local/bin/python scripts/load_postgres.py --stage ai_ready ===
+[DB] Connected: web@postgres:5432/web
+  - ai_ready.feature_set                    937 rows (0.05s)
+  - ai_ready.prediction                   1,668 rows (0.02s)
+[DB] Done: 2 tables, 2,605 rows in 0.09s
+=== [9/10 load-ai] 완료 (0.64s) ===
+
+=== [10/10 verify] FastAPI & Frontend 서빙 검증 ===
+  - API health: {'status': 'ok'}
+  - API bootstrap (cache refreshed): source=postgres, modelVersion=f6ea76a475ce, quarters=40, regions=467
+  - 2026Q3: total=467, predicted=26
+  - 2026Q4: total=467, predicted=30
+  - Frontend (http://frontend/): HTTP 200, proxy /api/health={'status': 'ok'}
+
+[SUCCESS] 원천→Bronze→Silver→Gold→학습→DB 적재→서빙 전체 E2E 완료 (12.2s)
+브라우저에서 대시보드 확인: http://localhost:5173
