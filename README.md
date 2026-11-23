@@ -147,127 +147,152 @@ Gold는 **법정동 × 분기 단위로 아파트 매매가를 예측하는 것*
 
 ---
 
-## 7. 처리 구조 (파이프라인)
-
-<!-- TODO(임시 보관): AS-IS에서 뺀 "처리" 열. 프로시저 Silver 정제 부분에 "문제 → 처리" 표로 옮길 것.
-| 문제 | 처리 |
-| --- | --- |
-| 채널마다 다른 형식 | 표준 사전으로 이름·타입·단위 통일 |
-| 폐업일자 없음 | 최종수정일자를 대용 폐업일로 |
-| 중복 | 관리번호 중복은 최신 1행, 동일 조건 거래는 첫 행만 |
-| 법정동 정보 부족 | 원본코드 → 지번 → 도로명 순으로 부여 |
-| 업종 기준 불일치 | 업태 + 상호 키워드로 카페 분류 |
-| 이상값·자리표시 값 | 값은 유지하고 플래그·이슈 목록으로 표시 |
--->
+## 7. 주요 프로시저
 
 ![처리 구조](docs/architecture/pipeline_overview.png)
 
-실행 파일은 `pipeline/` 아래 단계별 폴더에 있고, 적재 스크립트만 `pipeline_container/`에 있습니다. 데이터 파일은 git에 올리지 않으며, 원천 목록·크기·SHA-256은 `data/source/SOURCE_README.md`, `_source_manifest.csv`에 기록합니다.
-
-| 단계 | 한 일 | 검증 | 실행 파일 | 기준 (`metadata/`) |
+| 단계 | 입력 → 출력 | 주요 처리 | 실행 파일 | 기준 (`metadata/`) |
 | --- | --- | --- | --- | --- |
-| 00 Source | API 응답 원문 저장, 파일 수집 | 원천 읽기 전용, SHA-256 기록 | `00_collect.py` | `src_*.csv` |
-| 01 Bronze | 원천을 값 그대로 parquet로, 추적 컬럼 추가 | 행 수 = 원천, 원천 불변 | `01_bronze.py` | `ds_dataset.csv` |
-| 02 Silver 표준화 | 표준 사전으로 컬럼명·타입·단위 통일 | 행 수 = Bronze (37/37 파일) | `02_normalize.py` | `std_*.csv` |
-| 03 Silver 정제 | 중복·영업 상태·대용 폐업일·법정동·분석 업종 판정 | 오염 정답지 39개 항목 차이 0 (오염 34 + 0건 확인 3 + 기준값 2)<br>행 수 = 02 − 중복 제거 (10/10 데이터셋) | `03_clean.py` | `cln_*.csv`<br>`known_issues.csv` |
-| 04 Gold | 법정동 × 분기 집계, 같은 단지 가격 지수, 스타 스키마 | 정답지 중 매매 4개 항목 재확인 차이 0<br>차원 연결률 100%<br>구 합계 = 동 합계 + 법정동 실패 | `04_gold.py` | `rule_gold_*.csv` |
-| 05 AI Ready | 피처셋 생성, 롤링 검증, 다음 분기 예측 | AR1~AR6 전부 PASS (시점 누수 검사 포함) | `05_feature_set.py`<br>`05_train.py` | `rule_ai_ready_*.csv` |
-| 적재 | Gold·AI Ready를 PostgreSQL에 적재 | 적재 테이블 행 수·값 PASS | `load_postgres.py` | `db/01_schema.sql` |
+| 00 Source | API·파일 → `source` | API 응답 원문 저장, 파일 수집 | `00_collect.py` | `src_*.csv` |
+| 01 Bronze | `source` → `bronze` | 원천을 값 그대로 parquet로, 추적 컬럼 추가 | `01_bronze.py` | `ds_dataset.csv` |
+| 02 Silver 표준화 | `bronze` → `silver` | 표준 사전으로 컬럼명·타입·단위 통일 | `02_normalize.py` | `std_*.csv` |
+| 03 Silver 정제 | `silver` 02 → 03 | 중복·영업 상태·대용 폐업일·법정동·분석 업종 판정 | `03_clean.py` | `cln_*.csv`<br>`known_issues.csv` |
+| 04 Gold | `silver` 03 → `gold` | 법정동 × 분기 집계, 같은 단지 가격 지수, 스타 스키마 | `04_gold.py` | `rule_gold_*.csv` |
+| 05 AI Ready | `gold` → `ai_ready` | 피처셋 생성, 롤링 검증, 다음 분기 예측 | `05_feature_set.py`<br>`05_train.py` | `rule_ai_ready_*.csv` |
+| 적재 | `gold`·`ai_ready` → PostgreSQL | 스키마별 적재 | `load_postgres.py` | `db/01_schema.sql` |
 
-**표준 사전**: 같은 "인허가일자"도 API에서는 `APVPERMYMD`, CSV에서는 `인허가일자`로 옵니다. 이런 원천 컬럼 419개를 사전 하나로 `LCNS_DTM` 같은 표준 이름·타입·단위로 통일했습니다. 사전은 표준 단어 199개와 접미사 9개(`_DTM` 날짜, `_CD` 코드, `_NM` 이름 등)로 이름을 짓고, 변환 규칙 17개(공백 제거, 만원 → 원 등)로 값을 맞춥니다.
+실행 파일은 `pipeline/` 아래 단계별 폴더에 있고, 적재 스크립트만 `pipeline_container/`에 있습니다.
 
-**구현 원칙**
+**처리 원칙**
 
 - 정제 규칙은 코드에 하드코딩하지 않고 `metadata/` CSV에서 읽습니다. 실행 결과는 `report/`에 남깁니다.
 - 원본 컬럼은 덮어쓰지 않습니다. 판단으로 만든 값은 분석용 컬럼과 출처 컬럼으로 붙입니다.
 - 행을 지우는 것은 관리번호 중복뿐입니다. 무엇을 집계에서 뺄지는 Gold가 플래그를 보고 정합니다.
 - 같은 입력으로 다시 실행하면 같은 파일이 나옵니다(`status=unchanged`).
 
----
+### 7.1 원천 → Bronze
 
-## 8. AI Ready 데이터
+API 응답은 받은 그대로 XML로, 파일은 원본 그대로 `data/source/`에 저장합니다. 원천은 읽기 전용으로 두고, 목록·크기·SHA-256을 `data/source/SOURCE_README.md`, `_source_manifest.csv`에 기록합니다. 데이터 파일은 git에 올리지 않습니다.
 
-### 8.1 학습용 피처셋 (`feature_set`)
+Bronze는 원천 값을 바꾸지 않고 parquet로 옮깁니다. 모든 행에 원천 파일 경로(`_source_file`, ZIP 안쪽 파일 포함)와 행 번호(`_source_row`)를 붙여, 어느 원천의 몇 번째 행인지 끝까지 추적할 수 있게 합니다.
 
-Gold 테이블을 법정동 × 분기 한 행으로 모아, 모델이 바로 학습할 수 있는 피처셋을 만들었습니다.
+### 7.2 Silver 표준화
 
-| 항목 | 내용 |
+**표준 사전**: 같은 "인허가일자"도 API에서는 `APVPERMYMD`, CSV에서는 `인허가일자`로 옵니다. 이런 원천 컬럼 419개를 사전 하나로 `LCNS_DTM` 같은 표준 이름·타입·단위로 통일했습니다. 사전은 표준 단어 199개와 접미사 9개(`_DTM` 날짜, `_CD` 코드, `_NM` 이름 등)로 이름을 짓고, 변환 규칙 17개(공백 제거, 만원 → 원 등)로 값을 맞춥니다.
+
+변환할 수 없는 값은 NULL로 두고, 그 행의 `STD_ERR_TXT`에 실패한 컬럼명을 남깁니다. 원래 값은 추적 컬럼으로 Bronze에서 찾을 수 있습니다.
+
+### 7.3 Silver 정제
+
+개요의 AS-IS 문제를 `metadata/cln_*.csv` 규칙으로 처리합니다. 행을 지우는 것은 관리번호 중복뿐이고, 나머지는 판단 결과를 분석용 컬럼과 플래그로 붙입니다.
+
+| 문제 | 처리 |
 | --- | --- |
-| 한 행 | 법정동 × 분기 t |
-| 타깃 | 다음 분기(t+1) 같은 단지 기준 ㎡당 매매가 변화율 |
-| 피처 | 48개: 가격 흐름(`PRICE`) 16개, 상권(`LCNS`) 32개. 분기 t까지의 값만 사용 |
-| 규모 | 269개 법정동, 학습·평가 7,300행, 다음 분기 예측 221행 |
-| 구분 | `labeled`(학습·평가) / `predict`(마지막 분기, 다음 분기 예측용) |
+| 채널마다 다른 형식 | 표준 사전으로 이름·타입·단위 통일 (7.2) |
+| 폐업일자 없음 | 최종수정일자를 대용 폐업일로 |
+| 중복 | 관리번호 중복은 최신 1행, 동일 조건 거래는 첫 행만 |
+| 법정동 정보 부족 | 원본코드 → 지번 → 도로명 순으로 부여 |
+| 업종 기준 불일치 | 업태 + 상호 키워드로 카페 분류 |
+| 이상값·자리표시 값 | 값은 유지하고 플래그·이슈 목록으로 표시 |
 
-피처 이름·묶음·설명은 코드가 아니라 [`metadata/rule_ai_ready_feature.csv`](metadata/rule_ai_ready_feature.csv)에 정의했습니다.
+### 7.4 Gold
 
-### 8.2 왜 변화율인가
+Silver 03을 직접 읽어 법정동 × 분기 단위로 집계합니다. 매매는 계약 해제를 빼고 동일 조건 중복은 1건만 남겨 거래 수와 ㎡당 매매가 중앙값을 내고, 두 분기에 모두 거래된 같은 단지끼리 비교해 가격 지수를 만듭니다. 인허가는 분석용 개업·폐업일로 분기 말 영업 수를 재구성합니다. 테이블 구성과 한 행의 의미는 [6. Gold 데이터](#6-gold-데이터-스타-스키마)에 있습니다.
 
-처음에는 법정동의 분기 매매가 수준을 예측하려 했지만, 두 가지 문제가 있었습니다.
+### 7.5 AI Ready
 
-- 동 매매가 중앙값은 **그 분기에 어떤 단지가 팔렸는지**에 따라 크게 출렁입니다. 비싼 단지가 몇 건 더 팔리면 실제 가격 변화가 없어도 값이 오릅니다.
-- 가격 수준은 대부분 위치(구·동)로 설명되어, 모델이 맞혀도 새로 알려 주는 정보가 적습니다.
+Gold를 **법정동 × 분기 t** 한 행으로 모아 학습용 피처셋(`feature_set`)을 만듭니다. 피처 48개(가격 흐름 16 · 상권 32)는 분기 t까지의 값만 씁니다.
 
-그래서 예측 대상을 **다음 분기 같은 단지 기준 ㎡당 매매가 변화율**로 바꿨습니다. 두 분기에 모두 거래된 같은 단지끼리만 비교하므로, 어떤 단지가 많이 팔렸는지에 따라 값이 출렁이는 문제가 줄어듭니다.
+타깃은 매매가 수준이 아니라 **다음 분기 같은 단지 기준 ㎡당 매매가 변화율**입니다. 동 중앙값은 그 분기에 어떤 단지가 팔렸는지에 따라 출렁여서, 두 분기에 모두 거래된 같은 단지끼리 비교할 수 있도록 구성했습니다.
 
-모델은 변화율을 예측하지만, 처음 목표였던 매매가도 놓치지 않도록 예측 변화율을 기준 분기(예측 시점)의 동 ㎡당 매매가 중앙값에 적용한 예측 매매가를 계산해 대시보드에 참고용으로 함께 보여 줍니다.
-
-### 8.3 검증
-
-AI Ready 데이터에서 가장 경계해야 할 문제는 학습에 미래 정보가 섞이는 **시점 누수**입니다. 구현 코드를 쓰지 않고 Gold에서 따로 계산해 대조하는 검사(`pipeline/validation/check_ai_ready.py`)를 두었고, 모든 항목이 통과했습니다.
-
-| 검사 | 내용 | 결과 |
-| --- | --- | --- |
-| 시점 누수 | Gold를 분기 t까지 잘라 다시 만든 피처가 원래 피처와 같은지 (4개 시점) | PASS |
-| 타깃 재계산 | 거래 원본에서 직접 계산한 변화율 = 타깃 | 7,300행 PASS |
-| 키·연결 | 키 중복 0, Gold 차원 연결, 타깃 분기 = 다음 분기 | PASS |
-
-전체 검사 결과: [`report/ai_ready/05_ai_ready__check.csv`](report/ai_ready/05_ai_ready__check.csv)
-
-### 8.4 이 데이터로 돌려 본 예측
-
-테스트 연도(2021~2026)마다 그 이전 데이터로만 학습하는 **롤링 검증**으로 평가했습니다.
-
-| 모델 | 오차 (MAPE) | 방향 정확도 |
-| --- | ---: | ---: |
-| 기준선 ("다음 분기에도 그대로") | 4.74% | — |
-| 집값 흐름 (LightGBM) | 4.38% | 72.3% |
-| 집값 흐름 + 상권(인허가 증감) | 4.37% | 72.4% |
-
-- **집값 흐름 모델은 기준선보다 오차를 0.36%p 줄였습니다** (95% 신뢰구간 [-0.47, -0.25]%p, 6개 연도 중 4개 연도 개선).
-- **상권 피처를 더해도 정확도는 사실상 같았습니다** (차이 -0.002%p, 신뢰구간이 0을 포함).
-- 금리 인상으로 시장이 꺾인 2022년에는 기준선보다 크게 틀렸습니다(방향 정확도 33%).
-
-전체 결과: [`report/ai_ready/05_ai_ready__summary.md`](report/ai_ready/05_ai_ready__summary.md)
+피처 이름·묶음·설명: [`metadata/rule_ai_ready_feature.csv`](metadata/rule_ai_ready_feature.csv)
 
 ---
 
-## 9. 대시보드
+## 8. 수행결과
 
-대시보드는 앞서 정제·통합한 **Gold와 AI Ready 데이터를 화면에 띄웁니다.** PostgreSQL에 적재한 테이블을 FastAPI 백엔드가 읽어 프론트엔드(React + React Three Fiber)에 전달하고, 지도와 상세 패널의 수치는 아래 표의 테이블에서 옵니다.
+단계마다 처리 코드와 검증 코드, 실행 결과를 정리했습니다. 실행 기록은 `report/`에 있습니다.
 
-**실거래 시세**: 법정동별 분기 매매가 변화와 업종별 인프라 지표
+### 8.1 Source
+
+![00 Source: API 응답 XML 원문](docs/images/result_00_source.png)
+
+- **처리 코드:** [`pipeline/source/00_collect.py`](pipeline/source/00_collect.py)
+- **검증:** 원천 파일마다 크기·SHA-256 기록
+- **기록:** [`data/source/SOURCE_README.md`](data/source/SOURCE_README.md), [`_source_manifest.csv`](data/source/_source_manifest.csv)
+
+모든 단계의 출발점인 원본입니다. 국토교통부·서울 열린데이터광장 Open API 응답은 받은 그대로 XML로, 소상공인시장진흥공단·건강보험심사평가원·행정안전부 파일은 원본 그대로 저장했습니다. 원천 11종, 17,378,236행을 수집했고 파일마다 크기와 SHA-256을 기록했습니다.
+
+### 8.2 Bronze
+
+![01 Bronze: 원천 값 그대로 Parquet](docs/images/result_01_bronze.png)
+
+- **처리 코드:** [`pipeline/bronze/01_bronze.py`](pipeline/bronze/01_bronze.py)
+- **검증:** 원천 행 수를 다른 방법(csv 모듈, XML 태그 개수)으로 따로 세어 대조 ([`pipeline/common/source_reader.py`](pipeline/common/source_reader.py)의 `count_source_rows`)
+- **기록:** [`data/bronze/README.md`](data/bronze/README.md)
+
+Source의 원천(XML·CSV·XLSX·TXT)을 값은 바꾸지 않고 Parquet로 옮겼습니다. XML 태그 하나가 컬럼 하나가 되고 값은 모두 문자열 그대로 두며, 모든 행에 `_source_file`·`_source_row`를 붙였습니다. 37개 파일 모두 원천과 행 수가 일치했고, 실행 전후 원천 SHA-256이 같았으며, 재실행 결과는 `unchanged`였습니다.
+
+### 8.3 Silver 표준화
+
+![02 Silver 표준화: 표준 컬럼명·타입](docs/images/result_02_silver_std.png)
+
+- **처리 코드:** [`pipeline/silver/02_normalize.py`](pipeline/silver/02_normalize.py)
+- **검증 코드:** [`pipeline/validation/check_std_rules.py`](pipeline/validation/check_std_rules.py)
+- **기록:** [`report/silver/02_silver__manifest.csv`](report/silver/02_silver__manifest.csv), [`02_silver__change_log.csv`](report/silver/02_silver__change_log.csv)
+
+Bronze의 원천 컬럼명을 표준 사전에 맞춰 바꾸고, 문자열이던 값을 정의된 타입·단위로 변환했습니다. `APVPERMYMD` → `LCNS_DTM`처럼 이름을 바꾸고, 계약일 년·월·일 3개 컬럼은 날짜 하나로, 거래금액은 만원 → 원으로 맞췄습니다. 원천 컬럼 419개에 적용했습니다. 변환 규칙 검사 19/19를 통과했고, 37개 파일 17,378,236행을 한 행도 잃지 않고 표준화했습니다.
+
+### 8.4 Silver 정제 · 품질 검증
+
+![03 Silver 정제: 법정동 출처·동일 조건 거래 플래그](docs/images/result_03_silver_clean.png)
+
+- **처리 코드:** [`pipeline/silver/03_clean.py`](pipeline/silver/03_clean.py), [`cln_rules.py`](pipeline/silver/cln_rules.py)
+- **검증 코드:** [`pipeline/validation/check_cln_rules.py`](pipeline/validation/check_cln_rules.py), [`check_cln_numbers.py`](pipeline/validation/check_cln_numbers.py)
+- **기록:** [`report/silver/03_silver__known_issues_check.csv`](report/silver/03_silver__known_issues_check.csv)
+
+Silver 표준화 단계의 표준 컬럼은 그대로 두고, 판단 결과를 새 컬럼으로 붙였습니다. 매매에는 법정동 출처(`LDONG_SRC_CD`)와 동일 조건 거래 플래그(`SAME_DEAL_YN`)를, 인허가에는 영업 상태·대용 폐업일·법정동·분석 업종을 붙였습니다. 행은 휴게음식점 관리번호 중복 323행만 정리했습니다. 정제 규칙 검사 47/47, 산출물 10개 완료 조건을 통과했고, 오염 정답지 39개 항목 모두 기대 건수와 실제 탐지 건수가 일치했습니다(차이 0).
+
+### 8.5 Gold
+
+![04 Gold: mart_ldong_infra_qtr](docs/images/result_04_gold.png)
+
+- **처리 코드:** [`pipeline/gold/04_gold.py`](pipeline/gold/04_gold.py), [`price_index.py`](pipeline/gold/price_index.py)
+- **검증 코드:** [`pipeline/validation/check_gold_tables.py`](pipeline/validation/check_gold_tables.py), [`check_gold_numbers.py`](pipeline/validation/check_gold_numbers.py)
+- **기록:** [`report/gold/04_gold__work_summary.md`](report/gold/04_gold__work_summary.md)
+
+Silver 정제 단계의 행 단위 데이터를 법정동 × 분기로 집계했습니다. 사진의 `mart_ldong_infra_qtr`처럼 동·분기마다 거래 수, ㎡당 매매가 중앙값, 표본 부족 플래그(`LOW_SAMPLE_YN`)가 한 행에 모이고, 전체는 스타 스키마 8개 테이블로 구성됩니다. 매매 상세 611,300행, 법정동 × 분기 18,213행, 인허가 팩트 254,982행이며, 차원 연결 100%, Gold 재확인 이슈 4/4가 일치했습니다.
+
+### 8.6 AI Ready
+
+![05 AI Ready: feature_set](docs/images/result_05_ai_ready.png)
+
+- **처리 코드:** [`pipeline/ai_ready/05_feature_set.py`](pipeline/ai_ready/05_feature_set.py), [`05_train.py`](pipeline/ai_ready/05_train.py)
+- **검증 코드:** [`pipeline/validation/check_ai_ready.py`](pipeline/validation/check_ai_ready.py)
+- **기록:** [검사 결과](report/ai_ready/05_ai_ready__check.csv) · [예측 요약 (모델별 오차·연도별 결과)](report/ai_ready/05_ai_ready__summary.md)
+
+Gold의 법정동 × 분기 데이터를 학습용 한 행(법정동 × 기준 분기 t)으로 모으고, 다음 분기(`TARGET_YQ`)의 같은 단지 가격 변화율을 타깃(`TARGET_RET`)으로 붙였습니다. 학습에 미래 정보가 섞이는 **시점 누수**를 막는 데 집중했습니다. 구현 코드를 쓰지 않고 Gold에서 따로 계산해 대조하는 검사 25개(시점 누수·타깃 재계산·키 연결 포함)를 모두 통과했습니다. 모델은 테스트 연도(2021~2026)마다 그 이전 데이터로만 학습하는 **롤링 검증**으로 기준선·집값·집값+상권 세 가지를 비교했습니다.
+
+### 8.7 대시보드
+
+대시보드는 앞서 정제·통합한 **Gold와 AI Ready 데이터를 화면에 띄웁니다.** PostgreSQL에 적재한 테이블을 FastAPI 백엔드가 읽어 프론트엔드(React + React Three Fiber)에 전달합니다.
+
+배포한 대시보드는 <https://apartapart-team-dashboard.mlo-3-5476.chatgpt.site>에서 확인할 수 있습니다.
+
+**실거래 시세**: 법정동별 실제 가격 변화율을 색으로 보여 줍니다. 빨간색은 상승, 파란색은 하락입니다. 기둥 높이는 ㎡당 매매가를 의미하고, 선택한 업종이 많은 동은 파동으로 표시합니다. (데이터: `gold.mart_ldong_infra_qtr`, `gold.fact_apt_idx_qtr`)
 
 ![실거래 시세](docs/images/dashboard_real.gif)
 
-**AI 예측 시세**: 다음 분기 예측 변화율과 예측 매매가
+**AI 예측 시세**: 지난 분기는 예측 변화율이 실제와 얼마나 차이 났는지 4단계 색으로 보여 줍니다. 초록색은 0~2%p, 하늘색은 2~4%p, 주황색은 4~6%p, 빨간색은 6%p 이상입니다. 다음 분기는 예측한 가격 변화율을 실거래 시세와 같은 색(빨간색 상승, 파란색 하락)으로 보여 주고, 법정동을 클릭하면 예측 매매가도 볼 수 있습니다. (데이터: `ai_ready.prediction`)
 
 ![AI 예측 시세](docs/images/dashboard_predict.gif)
-
-| 화면 | 보여 주는 것 | 데이터 |
-| --- | --- | --- |
-| 3D 지도 (실거래 시세) | 법정동별 실제 가격 변화율(색), ㎡당 매매가(기둥 높이), 선택한 업종이 많은 동(파동) | `gold.mart_ldong_infra_qtr`, `gold.fact_apt_idx_qtr` |
-| 3D 지도 (AI 예측 시세) | 지난 분기: 예측이 실제와 얼마나 빗나갔는지 4단계 색으로<br>다음 분기: 예측한 가격 변화율을 색으로 | `ai_ready.prediction` |
-| 타임라인 | 2017Q1~2026Q3 분기 이동, 학습·검증 구간, 다음 분기 예측 | `ai_ready.prediction` |
-| 지역 상세 (법정동 클릭 시 오른쪽 패널) | 동 ㎡당 매매가, 실제와 예측 변화율, 가격 지수 추이, 업종별 증감 | `gold.mart_ldong_infra_qtr`, `gold.fact_apt_idx_qtr`, `ai_ready.prediction` |
-| 모델 비교 | 기준선·집값·집값+상권 모델의 오차(MAPE), 예측 오차 구간 | `ai_ready.prediction`, 롤링 검증 결과 |
 
 - 상단 탭에서 실거래 시세와 AI 예측 시세를 전환하고, 하단 타임라인으로 분기를 옮깁니다.
 - 법정동을 클릭하면 그 동의 매매가, 실제와 예측 변화율, 업종별 증감을 볼 수 있습니다.
 
 ---
 
-## 10. 저장소 구성과 산출물
+## 9. 저장소 구성과 산출물
 
 ```text
 mlo-03-p2-team1/
@@ -298,7 +323,7 @@ mlo-03-p2-team1/
 
 ---
 
-## 11. 한계와 향후 과제
+## 10. 한계와 향후 과제
 
 | 한계 | 향후 과제 |
 | --- | --- |
@@ -308,3 +333,14 @@ mlo-03-p2-team1/
 | **개업·폐업에 이전·재등록 포함**<br>Gold는 전체 기준으로 집계해, 가게가 자리를 옮기기만 해도 폐업 1건과 개업 1건으로 잡힙니다. | Silver의 이전·교체 연결을 활용해 이를 뺀 개업·폐업 지표를 Gold에 추가 |
 | **거래가 적은 동의 가격 불안정**<br>유효 매매가 없는 동이 129개, 가격 표본 5건 미만 셀이 9,593개입니다. | 인접 동이나 구 단위로 보완하는 지표 검토 |
 | **일부 집계가 AI Ready에 있음**<br>거래 구성(건물 나이·면적)과 구 단위 가격 집계를 AI Ready에서 계산해, 다른 쓰임에서 재사용할 수 없습니다. | Gold 분기 팩트로 옮기기 |
+
+---
+
+## 11. 회고록
+
+| 이름 | 회고 |
+| --- | --- |
+| 박완규 | 발표 뒤 작성 |
+| 이세훈 | 발표 뒤 작성 |
+| 정상효 | 발표 뒤 작성 |
+| 조경호 | 발표 뒤 작성 |
