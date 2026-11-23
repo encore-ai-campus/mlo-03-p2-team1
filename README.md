@@ -27,7 +27,7 @@
 | 인허가 | 미용업 (`beauty`) | 〃 | Open API | 100,349 |
 | 인허가 보조 | 일반음식점 CSV (`food_general_file`) | 〃 | 파일 (CSV, cp949) | 540,008 |
 | 대조용 스냅샷 | 상가(상권)정보 (`store_info`) | 소상공인시장진흥공단 | 파일 (ZIP·CSV) | 2,753,778 (16개 파일) |
-| 대조용 스냅샷 | 병의원·약국 현황 (`hira_inst`) | 건강보험심사평가원 | 파일 (ZIP·XLSX) | 915,009 (12개 파일) |
+| 대조용 스냅샷 | 병의원·약국 현황 (`hira_inst`) | 건강보험심사평가원 | 파일 (ZIP·CSV) | 915,009 (12개 파일) |
 | 코드 | 법정동코드 (`ldong_code`) | 행정안전부 | 파일 (TXT) | 53,403 |
 | **합계** | **11종** | | | **17,378,236** |
 
@@ -233,7 +233,7 @@ Gold를 **법정동 × 분기 t** 한 행으로 모아 학습용 피처셋(`feat
 - **검증:** 원천 행 수를 다른 방법(csv 모듈, XML 태그 개수)으로 따로 세어 대조 ([`pipeline/common/source_reader.py`](pipeline/common/source_reader.py)의 `count_source_rows`)
 - **기록:** [`report/bronze/01_bronze__manifest.csv`](report/bronze/01_bronze__manifest.csv), [`data/bronze/README.md`](data/bronze/README.md)
 
-Source의 원천(XML·CSV·XLSX·TXT)을 값은 바꾸지 않고 Parquet로 옮겼습니다. XML 태그 하나가 컬럼 하나가 되고 값은 모두 문자열 그대로 두며, 모든 행에 `_source_file`·`_source_row`를 붙였습니다. 37개 파일 모두 원천과 행 수가 일치했고, 실행 전후 원천 SHA-256이 같았으며, 재실행 결과는 `unchanged`였습니다.
+Source의 원천(XML·CSV·TXT)을 값은 바꾸지 않고 Parquet로 옮겼습니다. XML 태그 하나가 컬럼 하나가 되고 값은 모두 문자열 그대로 두며, 모든 행에 `_source_file`·`_source_row`를 붙였습니다. 37개 파일 모두 원천과 행 수가 일치했고, 실행 전후 원천 SHA-256이 같았으며, 재실행 결과는 `unchanged`였습니다.
 
 ### 8.3 Silver 표준화
 
