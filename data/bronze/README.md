@@ -117,4 +117,4 @@
 | pharmacy | xml | api/pharmacy/**/*.xml | - | - | - | - | - | - | per_dir | _done_snapshot | True |
 | beauty | xml | api/beauty/**/*.xml | - | - | - | - | - | - | per_dir | _done_snapshot | True |
 
-전체 값(원천 SHA-256, 열 목록, content_sha256)은 `bronze/01_bronze__manifest.csv` 에 있다.
+파일별 원천·Parquet 행 수, 행 수 일치 여부, 열 목록, Parquet SHA-256은 [`01_bronze__manifest.csv`](../../report/bronze/01_bronze__manifest.csv)에서 확인할 수 있다.
