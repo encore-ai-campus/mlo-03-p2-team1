@@ -96,7 +96,7 @@
 
 | ID | 단계 | 요구사항 | 검증 | 결과 |
 | --- | --- | --- | --- | --- |
-| B-01 | Bronze | 원천 11종을 값 그대로 Parquet로 저장하고, 행 수가 원천과 같아야 한다. | [`01_bronze__manifest.csv`](report/bronze/01_bronze__manifest.csv) | ✅ 37/37 파일 일치 |
+| B-01 | Bronze | 원천 11종을 값 그대로 Parquet로 저장하고, 행 수가 원천과 같아야 한다. | `01_bronze__manifest.csv` | ✅ 37/37 파일 일치 |
 | B-02 | Bronze | 모든 행에 원천 파일 경로와 행 번호(`_source_file`, `_source_row`)를 남겨야 한다. | Bronze Parquet 컬럼 | ✅ 추적 컬럼 확인 |
 | B-03 | Bronze | 원천은 읽기 전용(SHA-256 불변)이고, 같은 입력으로 재실행하면 출력이 같아야 한다. | `data/bronze/README.md` | ✅ 원천 불변, 재실행 `unchanged` |
 | S-01 | 표준화 | 원천 컬럼을 표준 사전의 이름·타입으로 바꾸고 변환 규칙을 적용해야 한다. | `check_std_rules.py` | ✅ 매핑 419개, 규칙 19/19 |
@@ -231,7 +231,7 @@ Gold를 **법정동 × 분기 t** 한 행으로 모아 학습용 피처셋(`feat
 
 - **처리 코드:** [`pipeline/bronze/01_bronze.py`](pipeline/bronze/01_bronze.py)
 - **검증:** 원천 행 수를 다른 방법(csv 모듈, XML 태그 개수)으로 따로 세어 대조 ([`pipeline/common/source_reader.py`](pipeline/common/source_reader.py)의 `count_source_rows`)
-- **기록:** [`data/bronze/README.md`](data/bronze/README.md)
+- **기록:** [`report/bronze/01_bronze__manifest.csv`](report/bronze/01_bronze__manifest.csv), [`data/bronze/README.md`](data/bronze/README.md)
 
 Source의 원천(XML·CSV·XLSX·TXT)을 값은 바꾸지 않고 Parquet로 옮겼습니다. XML 태그 하나가 컬럼 하나가 되고 값은 모두 문자열 그대로 두며, 모든 행에 `_source_file`·`_source_row`를 붙였습니다. 37개 파일 모두 원천과 행 수가 일치했고, 실행 전후 원천 SHA-256이 같았으며, 재실행 결과는 `unchanged`였습니다.
 
@@ -319,7 +319,7 @@ mlo-03-p2-team1/
 | 표준 사전 | `metadata/std_*.csv` |
 | 정제 기준·오염 정답지 | `metadata/cln_*.csv`, `metadata/known_issues.csv` |
 | Gold·AI Ready 규칙 | `metadata/rule_gold_*.csv`, `metadata/rule_ai_ready_*.csv` |
-| 단계별 실행 기록 | [`report/bronze/`](report/bronze/), `report/silver/`, `report/gold/`, `report/ai_ready/` |
+| 단계별 실행 기록 | `report/bronze/`, `report/silver/`, `report/gold/`, `report/ai_ready/` |
 | PostgreSQL 적재 검증 | `report/postgresql_load_verification.csv` |
 | 데이터 모델 ERD | `docs/erd/gold_star_schema.png` |
 
